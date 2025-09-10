@@ -4,35 +4,6 @@ COLOR_GREEN=`tput setaf 2;`  # 초록색 출력
 COLOR_NC=`tput sgr0;`        # 색상 초기화
 
 # -----------------------------------------------------------
-# 불필요한 import / 사용하지 않는 변수 자동 제거
-# -----------------------------------------------------------
-echo "Starting autoflake"
-uv run autoflake --remove-all-unused-imports --remove-unused-variables --in-place --recursive .
-echo "OK"
-
-# -----------------------------------------------------------
-# isort: import 순서 정렬 (실제로 수정)
-# black 프로필과 맞춰서 black과 충돌 방지
-# -----------------------------------------------------------
-echo "Starting isort (auto-fix imports)"
-uv run isort . --profile black
-echo "OK"
-
-# -----------------------------------------------------------
-# black: 코드 포맷팅 (줄맞춤, 따옴표 스타일 등 자동 수정)
-# -----------------------------------------------------------
-echo "Starting black"
-uv run black .
-echo "OK"
-
-# -----------------------------------------------------------
-# flake8: 린트 검사 (자동 수정하지 않고 리포트만)
-# -----------------------------------------------------------
-echo "Starting flake8"
-uv run flake8 app --exclude .venv
-echo "OK"
-
-# -----------------------------------------------------------
 # ruff: import 정렬(I 규칙) 자동 수정
 # -----------------------------------------------------------
 echo "Starting ruff (auto-fix: imports only)"

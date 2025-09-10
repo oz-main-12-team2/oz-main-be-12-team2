@@ -1,0 +1,29 @@
+[project]
+name = "oz-main-be-12-team2"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "django>=5.2.6",
+    "django-restframework>=0.0.1",
+    "drf-spectacular>=0.28.0",
+    "drf-yasg>=1.21.10",
+    "mypy>=1.17.1",
+]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.12.12",
+]
+
+[tool.ruff]
+line-length = 120
+exclude = ["migrations", ".venv"]
+select = ["E", "F", "I"]
+
+[tool.ruff.lint]
+# 자동수정은 임포트 정렬(I)만 허용
+select = ["I"]
+# 필요 시 보고 전용 규칙(F/E/W 등)은 실행 스크립트에서 --extend-select로 켜야함
+fixable = ["I"]
