@@ -50,4 +50,6 @@ project_name/
 ├── manage.py               # 관리 명령어
 ├── poetry.lock             # poetry 의존성 패키지 설치 정보
 └── pyproject.toml          # poetry 의존성 패키지 목록 및 설정
+
+readme
 ```
