@@ -48,6 +48,6 @@ project_name/
 │       ├── entrypoint.sh   # 도커 이미지 빌드 시 최종적으로 실행될 스크립트 ( 일반적으로 서버 실행 명령 )
 │       └── test.sh         # 코드 포매팅 및 테스트코드 실행 시 사용되는 스크립트
 ├── manage.py               # 관리 명령어
-├── poetry.lock             # poetry 의존성 패키지 설치 정보
+├── uv.lock                 # uv 의존성 패키지 설치 정보
 └── pyproject.toml          # poetry 의존성 패키지 목록 및 설정
 ```
