@@ -13,7 +13,7 @@ project_name/
 │   ├── urls.py
 │   └── wsgi.py
 ├── apps/                   # 앱 디렉토리 (앱별로 디렉토리를 나눔)
-│   ├── app_name1/
+│   ├── admins/
 │   │   ├── migrations/     # 마이그레이션 파일
 │   │   ├── services/       # 앱에서 사용되는 서비스 로직을 구현하는 폴더
 │   │   ├── repository/     # 앱의 데이터베이스 모델에 관련된 CRUD 동작을 정의하는 폴더
@@ -23,7 +23,7 @@ project_name/
 │   │   ├── tests.py        # 테스트 코드
 │   │   ├── urls.py         # 앱 전용 URL 라우팅
 │   │   └── views.py        # 뷰 로직
-│   ├── app_name2/          # 다른 앱
+│   ├── carts/          # 다른 앱
 │   │   ├── migrations/     # 마이그레이션 파일
 │   │   ├── services/       # 앱에서 사용되는 서비스 로직을 구현하는 폴더
 │   │   ├── repository/     # 앱의 데이터베이스 모델에 관련된 CRUD 동작을 정의하는 폴더
@@ -33,7 +33,36 @@ project_name/
 │   │   ├── tests.py        # 테스트 코드
 │   │   ├── urls.py         # 앱 전용 URL 라우팅
 │   │   └── views.py        # 뷰 로직
-│   └── ...
+│   ├── orders/          # 다른 앱
+│   │   ├── migrations/     # 마이그레이션 파일
+│   │   ├── services/       # 앱에서 사용되는 서비스 로직을 구현하는 폴더
+│   │   ├── repository/     # 앱의 데이터베이스 모델에 관련된 CRUD 동작을 정의하는 폴더
+│   │   ├── admin.py        # Django Admin 관련 설정
+│   │   ├── apps.py         # 앱 설정
+│   │   ├── models.py       # 모델 정의
+│   │   ├── tests.py        # 테스트 코드
+│   │   ├── urls.py         # 앱 전용 URL 라우팅
+│   │   └── views.py        # 뷰 로직
+│   ├── products/          # 다른 앱
+│   │   ├── migrations/     # 마이그레이션 파일
+│   │   ├── services/       # 앱에서 사용되는 서비스 로직을 구현하는 폴더
+│   │   ├── repository/     # 앱의 데이터베이스 모델에 관련된 CRUD 동작을 정의하는 폴더
+│   │   ├── admin.py        # Django Admin 관련 설정
+│   │   ├── apps.py         # 앱 설정
+│   │   ├── models.py       # 모델 정의
+│   │   ├── tests.py        # 테스트 코드
+│   │   ├── urls.py         # 앱 전용 URL 라우팅
+│   │   └── views.py        # 뷰 로직
+│   └── users/          # 다른 앱
+│       ├── migrations/     # 마이그레이션 파일
+│       ├── services/       # 앱에서 사용되는 서비스 로직을 구현하는 폴더
+│       ├── repository/     # 앱의 데이터베이스 모델에 관련된 CRUD 동작을 정의하는 폴더
+│       ├── admin.py        # Django Admin 관련 설정
+│       ├── apps.py         # 앱 설정
+│       ├── models.py       # 모델 정의
+│       ├── tests.py        # 테스트 코드
+│       ├── urls.py         # 앱 전용 URL 라우팅
+│       └── views.py        # 뷰 로직
 ├── envs/                   # 환경변수 파일들
 │   ├── .env.local          # 로컬 환경에서 서버 구동 및 테스트 시 필요한 환경변수
 │   └── .env.prod           # 배포 환경에서 서버 구동 및 테스트 시 필요한 환경변수
