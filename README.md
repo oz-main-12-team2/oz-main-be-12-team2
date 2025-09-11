@@ -14,8 +14,6 @@ project_name/
 │   ├── carts/          # 장바구니 앱
 │   │   ├── migrations/     # 마이그레이션 파일
 │   │   ├── __init__.py
-│   │   ├── admin_urls.py   # 관리자 기능 라우터
-│   │   ├── admin_views.py  # 관리자 기능 뷰
 │   │   ├── apps.py         # 앱 설정
 │   │   ├── models.py       # 모델 정의
 │   │   ├── serializers.py  # 시리얼라이저 정의
