@@ -82,3 +82,8 @@ project_name/
 ├── uv.lock                 # uv 의존성 패키지 설치 정보
 └── pyproject.toml          # poetry 의존성 패키지 목록 및 설정
 ```
+
+### commit 전 테스트 스크립트 수행
+```bash
+./scripts/test.sh
+```
