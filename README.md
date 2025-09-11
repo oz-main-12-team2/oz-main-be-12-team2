@@ -11,7 +11,7 @@ project_name/
 │   ├── urls.py
 │   └── wsgi.py
 ├── apps/                   # 앱 디렉토리 (앱별로 디렉토리를 나눔)
-│   ├── carts/          # 장바구니 앱
+│   ├── carts/              # 장바구니 앱
 │   │   ├── migrations/     # 마이그레이션 파일
 │   │   ├── __init__.py
 │   │   ├── apps.py         # 앱 설정
@@ -20,7 +20,7 @@ project_name/
 │   │   ├── tests.py        # 테스트 코드
 │   │   ├── urls.py         # 앱 전용 URL 라우팅
 │   │   └── views.py        # 뷰 로직
-│   ├── orders/          # 주문내역 앱
+│   ├── orders/             # 주문내역 앱
 │   │   ├── migrations/     # 마이그레이션 파일
 │   │   ├── __init__.py
 │   │   ├── admin_urls.py   # 관리자 기능 라우터
@@ -30,7 +30,7 @@ project_name/
 │   │   ├── tests.py        # 테스트 코드
 │   │   ├── urls.py         # 앱 전용 URL 라우팅
 │   │   └── views.py        # 뷰 로직
-│   ├── payments/          # 결제내역 앱
+│   ├── payments/           # 결제내역 앱
 │   │   ├── migrations/     # 마이그레이션 파일
 │   │   ├── __init__.py
 │   │   ├── admin_urls.py   # 관리자 기능 라우터
@@ -41,7 +41,7 @@ project_name/
 │   │   ├── tests.py        # 테스트 코드
 │   │   ├── urls.py         # 앱 전용 URL 라우팅
 │   │   └── views.py        # 뷰 로직
-│   ├── products/          # 상품 앱
+│   ├── products/           # 상품 앱
 │   │   ├── migrations/     # 마이그레이션 파일
 │   │   ├── __init__.py
 │   │   ├── admin_urls.py   # 관리자 기능 라우터
@@ -53,7 +53,7 @@ project_name/
 │   │   ├── tests.py        # 테스트 코드
 │   │   ├── urls.py         # 앱 전용 URL 라우팅
 │   │   └── views.py        # 뷰 로직
-│   ├── users/          # 사용자 앱
+│   ├── users/              # 사용자 앱
     │   ├── migrations/     # 마이그레이션 파일
 │   │   ├── __init__.py
 │   │   ├── admin_urls.py   # 관리자 기능 라우터
@@ -64,10 +64,10 @@ project_name/
 │   │   ├── tests.py        # 테스트 코드
 │   │   ├── urls.py         # 앱 전용 URL 라우팅
 │   │   └── views.py        # 뷰 로직
-│   └── utils/          # 공통 사용 부분
-│       └── models.py        # 상속 가능한 공통 모델
-├── .env                   # 환경변수
-├── .env.example           # 환경변수 예시
+│   └── utils/              # 공통 사용 부분
+│       └── models.py       # 상속 가능한 공통 모델
+├── .env                    # 환경변수
+├── .env.example            # 환경변수 예시
 ├── resources/              # 초기 설정 파일 및 스크립트, nginx, docker, kubernetes 의 yaml 파일
 │   ├── nginx/
 │   │   └── nginx.conf      # 모델 정의
