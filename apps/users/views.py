@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import User
-from .serializers import SocialSignUpSerializer, UserProfileSerializer, UserSignUpSerializer
+from .serializers import SocialSignUpSerializer, UserProfileSerializer, UserSignUpSerializer, ChangePasswordSerializer
 
 
 @api_view(['POST'])
@@ -145,3 +145,39 @@ def user_delete(request):
         {'message': '회원탈퇴가 완료되었습니다.'},
         status=status.HTTP_200_OK
     )
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def change_password(request):
+    """비밀번호 변경"""
+    user = request.user
+
+    # 소셜 로그인 사용자는 비밀번호 변경 불가
+    if user.is_social:
+        return Response(
+            {'error': '소셜 로그인 사용자는 비밀번호를 변경할 수 없습니다.'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    serializer = ChangePasswordSerializer(data=request.data)
+    if serializer.is_valid():
+        old_password = serializer.validated_data['old_password']
+        new_password = serializer.validated_data['new_password']
+
+        # 기존 비밀번호 확인
+        if not user.check_password(old_password):
+            return Response(
+                {'error': '기존 비밀번호가 올바르지 않습니다.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # 새 비밀번호 설정
+        user.set_password(new_password)
+        user.save()
+
+        return Response(
+            {'message': '비밀번호가 성공적으로 변경되었습니다.'},
+            status=status.HTTP_200_OK
+        )
+
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

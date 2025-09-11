@@ -65,3 +65,16 @@ class AdminUserUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['name', 'address', 'is_admin']
+
+class ChangePasswordSerializer(serializers.Serializer):
+    """비밀번호 변경 serializer"""
+    old_password = serializers.CharField(required=True)
+    new_password = serializers.CharField(required=True, validators=[validate_password])
+    new_password_confirm = serializers.CharField(required=True)
+
+    def validate(self, attrs):
+        if attrs['new_password'] != attrs['new_password_confirm']:
+            raise serializers.ValidationError({
+                'new_password_confirm': '새 비밀번호가 일치하지 않습니다.'
+            })
+        return attrs

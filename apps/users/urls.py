@@ -9,4 +9,5 @@ urlpatterns = [
     path('login/naver/', views.naver_login, name='user_naver_login'),
     path('me/', views.user_profile, name='user_profile'),
     path('me/', views.user_delete, name='user_delete'),
+    path('change-password/', views.change_password, name='user_change_password'),
 ]

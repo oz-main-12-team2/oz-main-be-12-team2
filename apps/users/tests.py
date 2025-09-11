@@ -146,3 +146,110 @@ class AdminAPITest(TestCase):
         url = reverse('admin_user_list')
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+class ChangePasswordTest(TestCase):
+    """비밀번호 변경 API 테스트"""
+
+    def setUp(self):
+        self.client = APIClient()
+        self.user = User.objects.create_user(
+            email='test@example.com',
+            name='테스트 사용자',
+            password='oldpassword123'
+        )
+        self.social_user = User.objects.create_user(
+            email='social@example.com',
+            name='소셜 사용자',
+            is_social=True
+        )
+        self.change_password_url = '/api/user/change-password/'
+
+    def test_change_password_success(self):
+        """비밀번호 변경 성공 테스트"""
+        self.client.force_authenticate(user=self.user)
+        data = {
+            'old_password': 'oldpassword123',
+            'new_password': 'newpassword456',
+            'new_password_confirm': 'newpassword456'
+        }
+        response = self.client.put(self.change_password_url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn('message', response.data)
+
+        # 새 비밀번호로 로그인 확인
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.check_password('newpassword456'))
+
+    def test_change_password_wrong_old_password(self):
+        """잘못된 기존 비밀번호 테스트"""
+        self.client.force_authenticate(user=self.user)
+        data = {
+            'old_password': 'wrongpassword',
+            'new_password': 'newpassword456',
+            'new_password_confirm': 'newpassword456'
+        }
+        response = self.client.put(self.change_password_url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('error', response.data)
+
+        # 기존 비밀번호 그대로 유지 확인
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.check_password('oldpassword123'))
+
+    def test_change_password_mismatch(self):
+        """새 비밀번호 불일치 테스트"""
+        self.client.force_authenticate(user=self.user)
+        data = {
+            'old_password': 'oldpassword123',
+            'new_password': 'newpassword456',
+            'new_password_confirm': 'differentpassword'
+        }
+        response = self.client.put(self.change_password_url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('new_password_confirm', response.data)
+
+    def test_change_password_weak_password(self):
+        """약한 비밀번호 테스트 (Django validation)"""
+        self.client.force_authenticate(user=self.user)
+        data = {
+            'old_password': 'oldpassword123',
+            'new_password': '123',  # 너무 짧은 비밀번호
+            'new_password_confirm': '123'
+        }
+        response = self.client.put(self.change_password_url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('new_password', response.data)
+
+    def test_change_password_social_user(self):
+        """소셜 사용자 비밀번호 변경 시도 테스트"""
+        self.client.force_authenticate(user=self.social_user)
+        data = {
+            'old_password': 'anypassword',
+            'new_password': 'newpassword456',
+            'new_password_confirm': 'newpassword456'
+        }
+        response = self.client.put(self.change_password_url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('소셜 로그인 사용자', response.data['error'])
+
+    def test_change_password_unauthenticated(self):
+        """인증되지 않은 사용자 테스트"""
+        data = {
+            'old_password': 'oldpassword123',
+            'new_password': 'newpassword456',
+            'new_password_confirm': 'newpassword456'
+        }
+        response = self.client.put(self.change_password_url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_change_password_missing_fields(self):
+        """필수 필드 누락 테스트"""
+        self.client.force_authenticate(user=self.user)
+        data = {
+            'old_password': 'oldpassword123',
+            # new_password 누락
+            'new_password_confirm': 'newpassword456'
+        }
+        response = self.client.put(self.change_password_url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('new_password', response.data)
