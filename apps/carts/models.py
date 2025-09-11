@@ -1,20 +1,26 @@
-from django.db import models
 from django.conf import settings
+from django.core.validators import MinValueValidator
+from django.db import models
 
-# User 모델 (settings.AUTH_USER_MODEL 참조)
+from apps.utils.models import TimestampModel
+
 User = settings.AUTH_USER_MODEL
 
 
-class Cart(models.Model):
+class Cart(models.Model, TimestampModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="carts")
-    product = models.ForeignKey("products.Product", on_delete=models.CASCADE, related_name="carts")
-    quantity = models.PositiveIntegerField(default=1)
-
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        unique_together = ("user", "product")  # 동일 유저-상품 중복 방지
 
     def __str__(self):
-        return f"{self.user} - {self.product} x {self.quantity}"
+        return f"{self.user}의 장바구니"
+
+
+class CartProduct(models.Model):
+    cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name="cart_products")
+    product = models.ForeignKey("products.Product", on_delete=models.CASCADE, related_name="cart_products")
+    quantity = models.PositiveIntegerField(default=1, validators=[MinValueValidator(1)])  # 기본값 & 최솟값 1로 지정
+
+    class Meta:
+        unique_together = ("cart", "product")  # 같은 장바구니에 동일 상품 중복 방지
+
+    def __str__(self):
+        return f"{self.cart.user} - {self.product} x {self.quantity}"

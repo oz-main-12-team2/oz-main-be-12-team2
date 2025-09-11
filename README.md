@@ -17,6 +17,7 @@ project_name/
 │   │   ├── apps.py         # 앱 설정
 │   │   ├── models.py       # 모델 정의
 │   │   ├── serializers.py  # 시리얼라이저 정의
+│   │   ├── signals.py      # 사용자 생성 시 장바구니 자동 생성 signal 처리
 │   │   ├── tests.py        # 테스트 코드
 │   │   ├── urls.py         # 앱 전용 URL 라우팅
 │   │   └── views.py        # 뷰 로직

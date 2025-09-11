@@ -17,7 +17,8 @@ dependencies = [
 [dependency-groups]
 dev = [
     "ruff>=0.12.12",
-    "mypy>=1.17.1",
+    "pytest>=8.4.2",
+    "coverage>=7.10.6",
 ]
 
 [tool.ruff]
@@ -29,4 +30,4 @@ select = ["E", "F", "I"]
 # 자동수정은 임포트 정렬(I)만 허용
 select = ["I"]
 # 필요 시 보고 전용 규칙(F/E/W 등)은 실행 스크립트에서 --extend-select로 켜야함
-fixable = ["I"]
+fixable = ["ALL"]

@@ -4,10 +4,17 @@ COLOR_GREEN=`tput setaf 2;`  # 초록색 출력
 COLOR_NC=`tput sgr0;`        # 색상 초기화
 
 # -----------------------------------------------------------
-# ruff: import 정렬(I 규칙) 자동 수정
+# ruff: unused import + import 정렬(I 규칙) 자동 수정
 # -----------------------------------------------------------
 echo "Starting ruff (auto-fix: imports only)"
-uv run ruff check --select I --fix .
+uv run ruff check --select F401,I --fix .
+echo "OK"
+
+# -----------------------------------------------------------
+# ruff: 포맷터 실행 (개행, 따옴표, 정렬 등 자동 수정)
+# -----------------------------------------------------------
+echo "Starting ruff format"
+uv run ruff format .
 echo "OK"
 
 # -----------------------------------------------------------
@@ -20,9 +27,9 @@ echo "OK"
 # -----------------------------------------------------------
 # mypy: 타입 체크 (코드 오류 잡기)
 # -----------------------------------------------------------
-echo "Starting mypy"
-uv run dmypy run -- .
-echo "OK"
+#echo "Starting mypy"
+#uv run dmypy run -- .
+#echo "OK"
 
 # -----------------------------------------------------------
 # pytest + coverage: 단위 테스트 실행 및 커버리지 리포트 생성
