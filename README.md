@@ -18,6 +18,7 @@ project_name/
 │   │   ├── admin_views.py  # 관리자 기능 뷰
 │   │   ├── apps.py         # 앱 설정
 │   │   ├── models.py       # 모델 정의
+│   │   ├── serializers.py  # 시리얼라이저 정의
 │   │   ├── tests.py        # 테스트 코드
 │   │   ├── urls.py         # 앱 전용 URL 라우팅
 │   │   └── views.py        # 뷰 로직
@@ -27,7 +28,7 @@ project_name/
 │   │   ├── admin_urls.py   # 관리자 기능 라우터
 │   │   ├── admin_views.py  # 관리자 기능 뷰
 │   │   ├── apps.py         # 앱 설정
-│   │   ├── models.py       # 모델 정의
+│   │   ├── serializers.py  # 시리얼라이저 정의
 │   │   ├── tests.py        # 테스트 코드
 │   │   ├── urls.py         # 앱 전용 URL 라우팅
 │   │   └── views.py        # 뷰 로직
@@ -37,6 +38,7 @@ project_name/
 │   │   ├── admin_urls.py   # 관리자 기능 라우터
 │   │   ├── admin_views.py  # 관리자 기능 뷰
 │   │   ├── apps.py         # 앱 설정
+│   │   ├── serializers.py  # 시리얼라이저 정의
 │   │   ├── models.py       # 모델 정의
 │   │   ├── tests.py        # 테스트 코드
 │   │   ├── urls.py         # 앱 전용 URL 라우팅
@@ -48,6 +50,7 @@ project_name/
 │   │   ├── admin_views.py  # 관리자 기능 뷰
 │   │   ├── admin_stats.py  # 관리자 기능 - 판매량 기준 집계
 │   │   ├── apps.py         # 앱 설정
+│   │   ├── serializers.py  # 시리얼라이저 정의
 │   │   ├── models.py       # 모델 정의
 │   │   ├── tests.py        # 테스트 코드
 │   │   ├── urls.py         # 앱 전용 URL 라우팅
@@ -58,6 +61,7 @@ project_name/
 │   │   ├── admin_urls.py   # 관리자 기능 라우터
 │   │   ├── admin_views.py  # 관리자 기능 뷰
 │   │   ├── apps.py         # 앱 설정
+│   │   ├── serializers.py  # 시리얼라이저 정의
 │   │   ├── models.py       # 모델 정의
 │   │   ├── tests.py        # 테스트 코드
 │   │   ├── urls.py         # 앱 전용 URL 라우팅
