@@ -40,7 +40,6 @@ class CartProductCreateView(generics.CreateAPIView):
         return cart_product
 
 
-
 # ✅ 장바구니 상품 수정(수량 변경) + 삭제
 class CartProductUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = CartProductSerializer
@@ -61,9 +60,7 @@ class CartProductUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
     def delete(self, request, *args, **kwargs):
         instance = self.get_object()
         self.perform_destroy(instance)
-        return Response({"detail": "상품이 장바구니에서 삭제되었습니다."},
-                        status=status.HTTP_204_NO_CONTENT)
-
+        return Response({"detail": "상품이 장바구니에서 삭제되었습니다."}, status=status.HTTP_204_NO_CONTENT)
 
 
 # ✅ 장바구니 전체 비우기
