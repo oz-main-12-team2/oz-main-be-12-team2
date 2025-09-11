@@ -51,3 +51,17 @@ class UserProfileSerializer(serializers.ModelSerializer):
         model = User
         fields = ['email', 'name', 'address', 'created_at']
         read_only_fields = ['email', 'created_at']
+
+class AdminUserSerializer(serializers.ModelSerializer):
+    """관리자용 사용자 조회 serializer"""
+    class Meta:
+        model = User
+        fields = ['id', 'email', 'name', 'address', 'is_admin', 'is_social', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'email', 'created_at', 'updated_at']
+
+
+class AdminUserUpdateSerializer(serializers.ModelSerializer):
+    """관리자용 사용자 수정 serializer"""
+    class Meta:
+        model = User
+        fields = ['name', 'address', 'is_admin']
