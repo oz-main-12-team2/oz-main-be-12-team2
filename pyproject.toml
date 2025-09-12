@@ -19,6 +19,8 @@ dependencies = [
 dev = [
     "ruff>=0.12.12",
     "mypy>=1.17.1",
+    "pytest>=8.0.0",
+    "pytest-django>=4.0.0",
 ]
 
 [tool.ruff]
