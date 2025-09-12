@@ -1,5 +1,7 @@
 from django.contrib import admin
+
 from .models import Order  # OrderItem은 아직 코드 없으므로 제거
+
 
 # OrderItemInline도 제거하거나 주석 처리
 @admin.register(Order)

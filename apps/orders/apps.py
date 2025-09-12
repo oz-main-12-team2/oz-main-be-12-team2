@@ -1,6 +1,7 @@
 # apps/orders/apps.py
 from django.apps import AppConfig
 
+
 class OrdersConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'apps.orders'  # 반드시 전체 경로로 지정

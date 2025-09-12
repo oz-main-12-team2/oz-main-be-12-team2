@@ -1,9 +1,11 @@
-from rest_framework import viewsets, status
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-from .models import Order, Cart, CartItem
-from .serializers import OrderSerializer, CartSerializer, CartItemSerializer
 from django.shortcuts import get_object_or_404
+from rest_framework import status, viewsets
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+
+from .models import Cart, CartItem, Order
+from .serializers import CartItemSerializer, CartSerializer, OrderSerializer
+
 
 class CartViewSet(viewsets.ModelViewSet):
     serializer_class = CartSerializer
