@@ -96,5 +96,7 @@ jobs:
 
       # FastAPI에서 pytest로 테스트를 실행합니다.
       - name: Run tests with pytest
+        env:
+          SECRET_KEY: 'test-secret-key-for-ci-only'
         run: |
           uv run pytest
