@@ -98,6 +98,5 @@ jobs:
       - name: Run tests with pytest
         env:
           SECRET_KEY: 'test-secret-key-for-ci-only'
-          DJANGO_SETTINGS_MODULE: 'config.settings'
         run: |
-          uv run pytest
+          uv run pytest manage.py test
