@@ -4,18 +4,18 @@ from . import admin_views, stats_views
 
 urlpatterns = [
     # URL: /api/admin/product/create
-    path("product/create/", admin_views.admin_product_create, name="admin_product_create"),
+    path("create/", admin_views.admin_product_create, name="admin_product_create"),
     # URL: /api/admin/product/{product_id} (수정 및 상세 조회)
     # 뷰 함수명은 필요에 따라 admin_product_detail_and_update로 가정합니다.
-    path("product/<int:pk>/", admin_views.admin_product_update, name="admin_product_update"),
+    path("<int:pk>/", admin_views.admin_product_update, name="admin_product_update"),
     # URL: /api/admin/product/{product_id} (삭제)
     path(
-        "product/<int:pk>/delete/",
+        "<int:pk>/delete/",
         admin_views.admin_product_delete,
         name="admin_product_delete",
     ),
     # URL: /api/admin/product/statistics
-    path("product/statistics/", stats_views.admin_sales_stats, name="admin_sales_stats"),
+    path("statistics/", stats_views.admin_sales_stats, name="admin_sales_stats"),
 ]
 
 
