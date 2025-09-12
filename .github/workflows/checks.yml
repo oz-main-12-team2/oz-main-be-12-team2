@@ -96,5 +96,13 @@ jobs:
 
       # FastAPI에서 pytest로 테스트를 실행합니다.
       - name: Run tests with pytest
+        env:
+          DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
+          DJANGO_SETTINGS_MODULE: 'config.settings'
+          POSTGRES_HOST: 'localhost'
+          POSTGRES_PORT: '5432'
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
         run: |
           uv run pytest

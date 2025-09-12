@@ -58,3 +58,27 @@ class OrderItem(models.Model):
 
     def __str__(self):
         return f"{self.product_name} x {self.quantity}"
+
+
+
+class Cart(models.Model):
+    '''
+    테스트용 임시 카트
+    '''
+    user = models.ForeignKey("users.User", on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "cart"
+
+
+class CartItem(models.Model):
+    '''
+    테스트용 임시 카트아이템
+    '''
+    cart = models.ForeignKey(Cart, on_delete=models.CASCADE)
+    product = models.ForeignKey("products.Product", on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1)
+
+    class Meta:
+        db_table = 'cart_item'

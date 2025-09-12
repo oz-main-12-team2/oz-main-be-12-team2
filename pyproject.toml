@@ -19,6 +19,8 @@ dependencies = [
 dev = [
     "ruff>=0.12.12",
     "mypy>=1.17.1",
+    "pytest>=8.0.0",
+    "pytest-django>=4.0.0",
 ]
 
 [tool.ruff]
@@ -42,3 +44,6 @@ drf-spectacular = "^0.28.0"
 drf-yasg = "^1.21.10"
 gunicorn = "^23.0.0"
 
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings"
+addopts = "--tb=short"
