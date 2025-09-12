@@ -44,3 +44,6 @@ drf-spectacular = "^0.28.0"
 drf-yasg = "^1.21.10"
 gunicorn = "^23.0.0"
 
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings"
+addopts = "--tb=short"
