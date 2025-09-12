@@ -53,6 +53,7 @@ class UserAPITest(TestCase):
         self.client = APIClient()
         self.register_url = reverse('user_register')
         self.login_url = reverse('user_login')
+        self.logout_url = reverse("user_logout")
 
     def test_user_registration(self):
         """회원가입 API 테스트"""
@@ -112,6 +113,56 @@ class UserAPITest(TestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn('error', response.data)
 
+    def test_logout_without_refresh_token(self):
+        """refresh_token 없이 호출"""
+        # 사용자 생성 및 인증 설정
+        user = User.objects.create_user(
+            email="logouttest@example.com", name="로그아웃 테스트", password="logoutpass123"
+        )
+        self.client.force_authenticate(user=user)
+
+        response = self.client.post(self.logout_url, {})
+        self.assertEqual(response.status_code, 200)
+
+    def test_logout_invalid_refresh_token(self):
+        """잘못된 refresh_token으로 호출"""
+        # 사용자 생성 및 인증 설정
+        user = User.objects.create_user(
+            email="logouttest2@example.com", name="로그아웃 테스트2", password="logoutpass123"
+        )
+        self.client.force_authenticate(user=user)
+
+        response = self.client.post(self.logout_url, {"refresh": "invalid_token"})
+        self.assertEqual(response.status_code, 400)
+
+    def test_user_profile_get(self):
+        """사용자 프로필 조회 테스트"""
+        user = User.objects.create_user(email="profile@example.com", name="프로필 테스트", password="profilepass123")
+        self.client.force_authenticate(user=user)
+
+        response = self.client.get(reverse("user_profile"))
+        self.assertEqual(response.status_code, 200)
+
+    def test_user_profile_put_success(self):
+        """사용자 프로필 수정 성공 테스트"""
+        user = User.objects.create_user(email="profile@example.com", name="프로필 테스트", password="profilepass123")
+        self.client.force_authenticate(user=user)
+
+        data = {"name": "수정된 이름"}
+        response = self.client.put(reverse("user_profile"), data, format="json")
+        self.assertEqual(response.status_code, 200)
+
+    def test_user_delete(self):
+        """회원 탈퇴 테스트"""
+        user = User.objects.create_user(email="delete@example.com", name="탈퇴 테스트", password="deletepass123")
+        self.client.force_authenticate(user=user)
+
+        response = self.client.delete(reverse("user_delete"))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["message"], "회원탈퇴가 완료되었습니다.")
+
+        # 사용자가 실제로 삭제되었는지 확인
+        self.assertFalse(User.objects.filter(email="delete@example.com").exists())
 
 class AdminAPITest(TestCase):
     """관리자 API 테스트"""
