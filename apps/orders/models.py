@@ -1,5 +1,7 @@
-from django.db import models
+from django.conf import settings
 from django.contrib.auth.models import User
+from django.db import models
+
 
 class Product(models.Model):
     """
@@ -31,25 +33,28 @@ class Product(models.Model):
         ordering = ["-created_at"]
 
 
+
 class Order(models.Model):
-    """
-    주문 정보를 담는 모델입니다.
-    """
-    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="주문자")
-    status = models.CharField(max_length=50, default="주문완료", verbose_name="주문 상태")
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="주문일")
+    STATUS_CHOICES = [
+        ("PENDING", "Pending"),
+        ("PROCESSING", "Processing"),
+        ("COMPLETED", "Completed"),
+        ("CANCELLED", "Cancelled"),
+    ]
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="PENDING")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"주문 #{self.id} ({self.user.username})"
+        return f"Order {self.id} - {self.user}"
 
 class OrderItem(models.Model):
-    """
-    주문에 포함된 개별 상품 정보를 담는 모델입니다.
-    """
-    order = models.ForeignKey(Order, on_delete=models.CASCADE, verbose_name="주문", related_name="items")
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, verbose_name="상품")
-    quantity = models.IntegerField(default=1, verbose_name="수량")
-    price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="가격")
-    
+    order = models.ForeignKey(Order, related_name="items", on_delete=models.CASCADE)
+    product_name = models.CharField(max_length=255)
+    quantity = models.PositiveIntegerField(default=1)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+
     def __str__(self):
-        return f"{self.product.name} ({self.quantity}개) - 주문 #{self.order.id}"
+        return f"{self.product_name} x {self.quantity}"

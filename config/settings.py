@@ -43,9 +43,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    "apps.products",
-    "apps.orders",
-    'apps.users',
+
+    # 프로젝트 앱
+    'apps.orders.apps.OrdersConfig',
+    'apps.users.apps.UsersConfig',
+    'apps.products.apps.ProductsConfig',
+    'apps.carts.apps.CartsConfig',
     'rest_framework',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
