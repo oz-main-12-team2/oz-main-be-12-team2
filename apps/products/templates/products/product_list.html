@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>상품 목록 및 랭킹</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { display: flex; gap: 40px; }
+        .ranking, .product-list { flex: 1; }
+        h1, h2 { color: #333; }
+        ul { list-style-type: none; padding: 0; }
+        li { background: #f4f4f4; margin: 10px 0; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        li strong { color: #007bff; }
+    </style>
+</head>
+<body>
+    <h1>북적북적 서점</h1>
+    <div class="container">
+        <div class="ranking">
+            <h2>베스트셀러 랭킹</h2>
+            <ul>
+                {% for item in top_ranking_products %}
+                <li>
+                    <strong>{{ forloop.counter }}위</strong>: {{ item.product__name }} ({{ item.order_count }}권 판매)
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="product-list">
+            <h2>전체 상품 목록</h2>
+            <ul>
+                {% for product in products %}
+                <li>
+                    <strong>{{ product.name }}</strong><br>
+                    작가: {{ product.author }}<br>
+                    가격: {{ product.price }}원
+                    <br><a href="{% url 'products:product_detail' pk=product.pk %}">상세보기</a>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</body>
+</html>
