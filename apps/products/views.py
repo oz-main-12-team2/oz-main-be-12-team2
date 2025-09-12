@@ -1,8 +1,11 @@
-from django.shortcuts import render, get_object_or_404, redirect
 from django.db.models import Sum
+from django.shortcuts import get_object_or_404, redirect, render
+
+from apps.orders.models import OrderItem  # OrderDetail 모델이 필요합니다.
+
+from .forms import ProductForm  # forms.py가 있다면 import
 from .models import Product
-from apps.orders.models import OrderItem # OrderDetail 모델이 필요합니다.
-from .forms import ProductForm # forms.py가 있다면 import
+
 
 # 책 목록을 보여주는 뷰 (랭킹 정보 추가)
 def product_list(request):
