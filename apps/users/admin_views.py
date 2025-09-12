@@ -1,0 +1,89 @@
+from django.shortcuts import get_object_or_404
+from rest_framework import status
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+
+from .models import User
+from .serializers import AdminUserSerializer, AdminUserUpdateSerializer, UserProfileSerializer
+
+
+class IsAdmin:
+    """관리자 권한 체크 커스텀 Permission"""
+    def has_permission(self, request, view):
+        return request.user.is_authenticated and request.user.is_admin
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def admin_user_list(request):
+    """전체 사용자 조회 - 관리자 전용"""
+    if not request.user.is_admin:
+        return Response(
+            {'error': '관리자만 접근 가능합니다.'},
+            status=status.HTTP_403_FORBIDDEN
+        )
+
+    users = User.objects.all().order_by('-created_at')
+    serializer = AdminUserSerializer(users, many=True)
+    return Response(serializer.data)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def admin_user_detail(request, user_id):
+    """특정 사용자 상세 조회 - 관리자 전용"""
+    if not request.user.is_admin:
+        return Response(
+            {'error': '관리자만 접근 가능합니다.'},
+            status=status.HTTP_403_FORBIDDEN
+        )
+
+    user = get_object_or_404(User, id=user_id)
+    serializer = AdminUserSerializer(user)
+    return Response(serializer.data)
+
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def admin_user_update(request, user_id):
+    """특정 사용자 정보 수정 - 관리자 전용"""
+    if not request.user.is_admin:
+        return Response(
+            {'error': '관리자만 접근 가능합니다.'},
+            status=status.HTTP_403_FORBIDDEN
+        )
+
+    user = get_object_or_404(User, id=user_id)
+    serializer = AdminUserUpdateSerializer(user, data=request.data, partial=True)
+
+    if serializer.is_valid():
+        serializer.save()
+        return Response(AdminUserSerializer(user).data)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def admin_user_delete(request, user_id):
+    """특정 사용자 삭제 - 관리자 전용"""
+    if not request.user.is_admin:
+        return Response(
+            {'error': '관리자만 접근 가능합니다.'},
+            status=status.HTTP_403_FORBIDDEN
+        )
+
+    user = get_object_or_404(User, id=user_id)
+
+    # 자기 자신은 삭제할 수 없음
+    if user.id == request.user.id:
+        return Response(
+            {'error': '자기 자신은 삭제할 수 없습니다.'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    user.delete()
+    return Response(
+        {'message': f'사용자 {user.email}이 삭제되었습니다.'},
+        status=status.HTTP_200_OK
+    )
