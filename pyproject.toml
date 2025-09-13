@@ -48,3 +48,4 @@ gunicorn = "^23.0.0"
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "config.settings"
 addopts = "--tb=short"
+python_files = "tests.py test_*.py *_test.py" 
