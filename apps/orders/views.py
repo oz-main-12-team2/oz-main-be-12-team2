@@ -2,9 +2,8 @@ from django.shortcuts import get_object_or_404
 from rest_framework import status, viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-
-from .models import Cart, CartItem, Order
-from .serializers import CartItemSerializer, CartSerializer, OrderSerializer
+from .models import Cart, CartItem, Order, OrderItem
+from .serializers import CartSerializer, CartItemSerializer, OrderSerializer
 
 
 class CartViewSet(viewsets.ModelViewSet):
@@ -22,6 +21,7 @@ class CartViewSet(viewsets.ModelViewSet):
         serializer = CartSerializer(cart)
         return Response(serializer.data)
 
+
 class OrderViewSet(viewsets.ModelViewSet):
     serializer_class = OrderSerializer
     permission_classes = [IsAuthenticated]
@@ -34,11 +34,15 @@ class OrderViewSet(viewsets.ModelViewSet):
         if not cart.cartitem_set.exists():
             return Response({'detail': 'Cart is empty'}, status=status.HTTP_400_BAD_REQUEST)
 
-        total_price = sum([item.product.price * item.quantity for item in cart.cartitem_set.all()])
-        order = Order.objects.create(user=request.user, total_price=total_price)
+        order = Order.objects.create(user=request.user)
 
         for item in cart.cartitem_set.all():
-            order.items.create(product=item.product, quantity=item.quantity, price=item.product.price)
+            OrderItem.objects.create(
+                order=order,
+                product=item.product,
+                quantity=item.quantity,
+                price=item.product.price
+            )
         cart.cartitem_set.all().delete()
 
         serializer = OrderSerializer(order)
