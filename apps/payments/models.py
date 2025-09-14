@@ -2,25 +2,23 @@ from django.db import models
 
 
 class PaymentMethod(models.TextChoices):
-    CARD = "CARD", "신용카드"
-    BANK = "BANK", "계좌이체"
-    KAKAO = "KAKAO", "카카오페이"
-    NAVER = "NAVER", "네이버페이"
+    CARD = "카드", "카드"
+    BANK = "계좌이체", "계좌이체"
+    PHONE = "휴대폰 결제", "휴대폰 결제"
 
 
 class PaymentStatus(models.TextChoices):
-    PENDING = "PENDING", "결제 대기"
-    SUCCESS = "SUCCESS", "결제 성공"
-    FAILED = "FAILED", "결제 실패"
-    REFUNDED = "REFUNDED", "환불"
+    SUCCESS = "성공", "성공"
+    FAIL = "실패", "실패"
+    CANCEL = "취소", "취소"
 
 
 class Payment(models.Model):
-    order = models.ForeignKey("apps.orders.Order", on_delete=models.CASCADE, related_name="payments")
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    order = models.ForeignKey("orders.Order", on_delete=models.CASCADE, related_name="payments")
     method = models.CharField(max_length=20, choices=PaymentMethod.choices)
-    status = models.CharField(max_length=20, choices=PaymentStatus.choices, default=PaymentStatus.PENDING)
+    total_price = models.DecimalField(max_digits=10, decimal_places=2)
+    status = models.CharField(max_length=10, choices=PaymentStatus.choices)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Payment {self.id} - {self.status}"
+        return f"[{self.id}] {self.method} - {self.total_price} ({self.status})"

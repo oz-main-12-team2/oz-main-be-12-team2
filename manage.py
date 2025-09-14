@@ -1,9 +1,14 @@
 #!/usr/bin/env python
 """Django's command-line utility for administrative tasks."""
-
 import os
 import sys
 
+# ─────────────── 추가 ───────────────
+# 현재 manage.py 위치를 Python path에 추가하여 apps 패키지 인식 가능하게 함
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+if BASE_DIR not in sys.path:
+    sys.path.append(BASE_DIR)
+# ───────────────────────────────────
 
 def main():
     """Run administrative tasks."""
