@@ -2,7 +2,7 @@ from django.db import models
 
 
 class PaymentMethod(models.TextChoices):
-    CARD = "카드", "카드"
+    CARD = "카드", "카드"   # value, label
     BANK = "계좌이체", "계좌이체"
     PHONE = "휴대폰 결제", "휴대폰 결제"
 

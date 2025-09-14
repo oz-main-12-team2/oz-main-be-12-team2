@@ -2,8 +2,9 @@ import pytest
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
 
-from apps.orders.models import Order
+from apps.orders.models import Order, OrderItem
 from apps.payments.models import Payment, PaymentMethod, PaymentStatus
+from apps.products.models import Product  # 상품 모델 있다고 가정
 
 User = get_user_model()
 
@@ -12,18 +13,40 @@ User = get_user_model()
 class TestUserPaymentAPI:
     def setup_method(self):
         self.client = APIClient()
-        self.user = User.objects.create_user(email="user@test.com", password="password123")
-        self.order = Order.objects.create(user=self.user, total_price=10000)
+        self.user = User.objects.create_user(
+            email="user@test.com",
+            password="password123",
+            name="테스트유저",
+        )
+
+        # 주문 생성
+        self.order = Order.objects.create(
+            user=self.user,
+            total_price=10000,
+            recipient_name="홍길동",
+            recipient_phone="010-1234-5678",
+            recipient_address="서울시 테스트구 테스트동",
+        )
+
+        # 주문 상세 생성 (상품 가정)
+        product = Product.objects.create(name="테스트상품", price=10000, stock=10)
+        OrderItem.objects.create(
+            order=self.order,
+            product=product,
+            quantity=1,
+            unit_price=10000,
+            total_price=10000,
+        )
 
     def test_create_payment_success(self):
         self.client.force_authenticate(user=self.user)
 
         response = self.client.post(
-            "/api/payment/create/",
+            "/api/payments/create/",
             {
                 "order_id": self.order.id,
                 "method": PaymentMethod.CARD,
-                "total_price": "45000.00",
+                "total_price": "10000.00",
                 "status": PaymentStatus.SUCCESS,
             },
             format="json",
@@ -35,13 +58,23 @@ class TestUserPaymentAPI:
         assert Payment.objects.count() == 1
 
     def test_create_payment_other_user_order(self):
-        other_user = User.objects.create_user(email="other@test.com", password="password123")
-        other_order = Order.objects.create(user=other_user, total_price=20000)
+        other_user = User.objects.create_user(
+            email="other@test.com",
+            password="password123",
+            name="다른유저",
+        )
+        other_order = Order.objects.create(
+            user=other_user,
+            total_price=20000,
+            recipient_name="김철수",
+            recipient_phone="010-2222-3333",
+            recipient_address="부산시 테스트구",
+        )
 
         self.client.force_authenticate(user=self.user)
 
         response = self.client.post(
-            "/api/payment/create/",
+            "/api/payments/create/",
             {
                 "order_id": other_order.id,
                 "method": PaymentMethod.CARD,
@@ -51,8 +84,7 @@ class TestUserPaymentAPI:
             format="json",
         )
 
-        # 본인 주문이 아니므로 생성 불가
-        assert response.status_code == 400 or response.status_code == 403
+        assert response.status_code in (400, 403)
 
     def test_user_can_list_own_payments(self):
         Payment.objects.create(
@@ -60,7 +92,7 @@ class TestUserPaymentAPI:
         )
 
         self.client.force_authenticate(user=self.user)
-        response = self.client.get("/api/payment/")
+        response = self.client.get("/api/payments/")
 
         assert response.status_code == 200
         assert len(response.data) == 1
@@ -72,54 +104,78 @@ class TestUserPaymentAPI:
         )
 
         self.client.force_authenticate(user=self.user)
-        response = self.client.get(f"/api/payment/{payment.id}/")
+        response = self.client.get(f"/api/payments/{payment.id}/")
 
         assert response.status_code == 200
         assert response.data["id"] == payment.id
 
     def test_user_cannot_access_others_payment(self):
-        other_user = User.objects.create_user(email="other@test.com", password="password123")
-        other_order = Order.objects.create(user=other_user, total_price=20000)
+        other_user = User.objects.create_user(
+            email="other@test.com",
+            password="password123",
+            name="다른유저",
+        )
+        other_order = Order.objects.create(
+            user=other_user,
+            total_price=20000,
+            recipient_name="김철수",
+            recipient_phone="010-2222-3333",
+            recipient_address="부산시 테스트구",
+        )
         other_payment = Payment.objects.create(
             order=other_order, method=PaymentMethod.CARD, total_price=20000, status=PaymentStatus.SUCCESS
         )
 
         self.client.force_authenticate(user=self.user)
-        response = self.client.get(f"/api/payment/{other_payment.id}/")
+        response = self.client.get(f"/api/payments/{other_payment.id}/")
 
-        assert response.status_code == 404  # 접근 불가
+        assert response.status_code == 404
 
 
 @pytest.mark.django_db
 class TestAdminPaymentAPI:
     def setup_method(self):
         self.client = APIClient()
-        self.admin = User.objects.create_superuser(email="admin@test.com", password="admin123")
-        self.user = User.objects.create_user(email="user@test.com", password="password123")
-        self.order = Order.objects.create(user=self.user, total_price=10000)
+        self.admin = User.objects.create_superuser(
+            email="admin@test.com",
+            password="admin123",
+            name="관리자",
+        )
+        self.user = User.objects.create_user(
+            email="user2@test.com",
+            password="password123",
+            name="테스트유저2",
+        )
+        self.order = Order.objects.create(
+            user=self.user,
+            total_price=15000,
+            recipient_name="홍길동",
+            recipient_phone="010-4444-5555",
+            recipient_address="인천시 테스트구",
+        )
         self.payment = Payment.objects.create(
             order=self.order,
             method=PaymentMethod.CARD,
-            total_price=10000,
+            total_price=15000,
             status=PaymentStatus.SUCCESS,
         )
 
     def test_admin_can_list_all_payments(self):
         self.client.force_authenticate(user=self.admin)
-        response = self.client.get("/api/admin/payment/")
+        response = self.client.get("/api/admin/payments/")
 
         assert response.status_code == 200
         assert len(response.data) >= 1
 
     def test_admin_can_retrieve_payment(self):
         self.client.force_authenticate(user=self.admin)
-        response = self.client.get(f"/api/admin/payment/{self.payment.id}/")
+        response = self.client.get(f"/api/admin/payments/{self.payment.id}/")
 
         assert response.status_code == 200
         assert response.data["id"] == self.payment.id
 
     def test_non_admin_cannot_access_admin_endpoints(self):
         self.client.force_authenticate(user=self.user)
-        response = self.client.get("/api/admin/payment/")
+        response = self.client.get("/api/admin/payments/")
 
         assert response.status_code == 403

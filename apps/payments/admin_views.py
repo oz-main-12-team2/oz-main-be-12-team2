@@ -13,7 +13,7 @@ class AdminPaymentListView(generics.ListAPIView):
     permission_classes = [permissions.IsAdminUser]
 
 
-# ✅ 특정 결제 상세 조회 (관리자 전용)
+# ✅ 특정 결제 내역 상세 조회 (관리자 전용)
 class AdminPaymentDetailView(generics.RetrieveAPIView):
     queryset = Payment.objects.all()
     serializer_class = PaymentSerializer

@@ -5,7 +5,7 @@ from .models import Payment
 from .serializers import PaymentSerializer
 
 
-# ✅ 결제 생성
+# ✅ 결제 내역 생성
 class PaymentCreateView(generics.CreateAPIView):
     serializer_class = PaymentSerializer
     authentication_classes = [TokenAuthentication]
