@@ -7,7 +7,7 @@ from apps.utils.models import TimestampModel
 User = settings.AUTH_USER_MODEL
 
 
-class Cart(models.Model, TimestampModel):
+class Cart(TimestampModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="carts")
 
     def __str__(self):
