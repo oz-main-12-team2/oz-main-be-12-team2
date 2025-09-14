@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'apps.users.apps.UsersConfig',
     'apps.products.apps.ProductsConfig',
     'apps.carts.apps.CartsConfig',
+    'apps.payments.apps.PaymentsConfig',
     'rest_framework',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
