@@ -1,10 +1,11 @@
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 from .models import Cart
 
-User = settings.AUTH_USER_MODEL
+User = get_user_model()
 
 
 # 사용자 생성시 장바구니 자동 생성

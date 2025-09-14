@@ -37,7 +37,7 @@ class CartProductCreateView(generics.CreateAPIView):
             cart_product.quantity += quantity
             cart_product.save()
 
-        return cart_product
+        serializer.instance = cart_product
 
 
 # ✅ 장바구니 상품 수정(수량 변경) + 삭제

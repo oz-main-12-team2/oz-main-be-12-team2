@@ -12,7 +12,9 @@ dependencies = [
     "drf-spectacular>=0.28.0",
     "drf-yasg>=1.21.10",
     "gunicorn>=23.0.0",
-    "psycopg>=3.2.10",
+    "psycopg[binary]>=3.2.10",
+    "pytest>=8.4.2",
+    "pytest-django>=4.11.1",
 ]
 
 [dependency-groups]

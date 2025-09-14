@@ -46,11 +46,13 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     # own
-    "apps.users",
-    "apps.products",
-    "apps.carts",   # migration시 순서대로 실행됨
-    # third party
-    "rest_framework",
+    'apps.orders.apps.OrdersConfig',
+    'apps.users.apps.UsersConfig',
+    'apps.products.apps.ProductsConfig',
+    'apps.carts.apps.CartsConfig',
+    'rest_framework',
+    'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',
 ]
 
 MIDDLEWARE = [

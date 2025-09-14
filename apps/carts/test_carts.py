@@ -1,31 +1,79 @@
-from django.contrib.auth import get_user_model
+from django.test import TestCase
 from django.urls import reverse
+from rest_framework.test import APIClient
 from rest_framework import status
-from rest_framework.test import APITestCase
 
+from apps.users.models import User
 from apps.products.models import Product
-
-from .models import Cart
-
-User = get_user_model()
+from apps.carts.models import Cart, CartProduct
 
 
-class CartAPITestCase(APITestCase):
+class CartAPITest(TestCase):
+    """장바구니 API 테스트"""
+
     def setUp(self):
-        self.user = User.objects.create_user(email="test@test.com", password="password123")
-        self.client.login(email="test@test.com", password="password123")
-        self.product = Product.objects.create(name="테스트 상품", price=10000)
+        self.client = APIClient()
+        self.user = User.objects.create_user(
+            email="test@example.com",
+            name="테스트 사용자",
+            password="testpass123"
+        )
+        self.client.force_authenticate(user=self.user)
 
-    def test_add_to_cart(self):
-        url = reverse("cart-list-create")
-        data = {"product": self.product.id, "quantity": 2}
-        response = self.client.post(url, data)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(Cart.objects.count(), 1)
+        self.product = Product.objects.create(
+            name="테스트 상품",
+            description="테스트 설명",
+            author="테스트 작가",
+            publisher="테스트 출판사",
+            price="10000.00",
+            stock=10,
+            category="소설",
+            image_url="http://example.com/image.jpg",
+        )
 
-    def test_view_cart(self):
-        Cart.objects.create(user=self.user, product=self.product, quantity=1)
-        url = reverse("cart-list-create")
+    def test_cart_list(self):
+        """장바구니 조회"""
+        url = reverse("cart-list")
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertGreaterEqual(len(response.data), 1)
+        self.assertIsInstance(response.json(), list)
+
+    def test_add_product_to_cart(self):
+        """장바구니에 상품 추가"""
+        url = reverse("cart-add")
+        data = {"product": self.product.id, "quantity": 2}
+        response = self.client.post(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data["quantity"], 2)
+        self.assertEqual(response.data["product"], self.product.id)
+
+    def test_update_cart_product_quantity(self):
+        """상품 수량 변경"""
+        cart, _ = Cart.objects.get_or_create(user=self.user)
+        cart_product = CartProduct.objects.create(cart=cart, product=self.product, quantity=1)
+
+        url = reverse("cart-update", args=[cart_product.id])
+        data = {"product": self.product.id, "quantity": 5}
+        response = self.client.put(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["quantity"], 5)
+
+    def test_delete_cart_product(self):
+        """장바구니 상품 삭제"""
+        cart, _ = Cart.objects.get_or_create(user=self.user)
+        cart_product = CartProduct.objects.create(cart=cart, product=self.product, quantity=1)
+
+        url = reverse("cart-update", args=[cart_product.id])
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertFalse(CartProduct.objects.filter(id=cart_product.id).exists())
+
+    def test_clear_cart(self):
+        """장바구니 전체 비우기"""
+        cart, _ = Cart.objects.get_or_create(user=self.user)
+        CartProduct.objects.create(cart=cart, product=self.product, quantity=2)
+
+        url = reverse("cart-clear")
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(cart.cart_products.count(), 0)
