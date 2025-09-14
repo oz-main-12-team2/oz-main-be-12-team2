@@ -1,6 +1,7 @@
 import pytest
-from rest_framework.test import APIClient
 from django.contrib.auth import get_user_model
+from rest_framework.test import APIClient
+
 from apps.orders.models import Order
 from apps.payments.models import Payment, PaymentMethod, PaymentStatus
 
@@ -9,7 +10,6 @@ User = get_user_model()
 
 @pytest.mark.django_db
 class TestUserPaymentAPI:
-
     def setup_method(self):
         self.client = APIClient()
         self.user = User.objects.create_user(email="user@test.com", password="password123")
@@ -55,8 +55,9 @@ class TestUserPaymentAPI:
         assert response.status_code == 400 or response.status_code == 403
 
     def test_user_can_list_own_payments(self):
-        Payment.objects.create(order=self.order, method=PaymentMethod.CARD,
-                               total_price=10000, status=PaymentStatus.SUCCESS)
+        Payment.objects.create(
+            order=self.order, method=PaymentMethod.CARD, total_price=10000, status=PaymentStatus.SUCCESS
+        )
 
         self.client.force_authenticate(user=self.user)
         response = self.client.get("/api/payment/")
@@ -66,8 +67,9 @@ class TestUserPaymentAPI:
         assert response.data[0]["order_id"] == self.order.id
 
     def test_user_can_retrieve_own_payment(self):
-        payment = Payment.objects.create(order=self.order, method=PaymentMethod.CARD,
-                                         total_price=10000, status=PaymentStatus.SUCCESS)
+        payment = Payment.objects.create(
+            order=self.order, method=PaymentMethod.CARD, total_price=10000, status=PaymentStatus.SUCCESS
+        )
 
         self.client.force_authenticate(user=self.user)
         response = self.client.get(f"/api/payment/{payment.id}/")
@@ -78,8 +80,9 @@ class TestUserPaymentAPI:
     def test_user_cannot_access_others_payment(self):
         other_user = User.objects.create_user(email="other@test.com", password="password123")
         other_order = Order.objects.create(user=other_user, total_price=20000)
-        other_payment = Payment.objects.create(order=other_order, method=PaymentMethod.CARD,
-                                               total_price=20000, status=PaymentStatus.SUCCESS)
+        other_payment = Payment.objects.create(
+            order=other_order, method=PaymentMethod.CARD, total_price=20000, status=PaymentStatus.SUCCESS
+        )
 
         self.client.force_authenticate(user=self.user)
         response = self.client.get(f"/api/payment/{other_payment.id}/")
@@ -89,7 +92,6 @@ class TestUserPaymentAPI:
 
 @pytest.mark.django_db
 class TestAdminPaymentAPI:
-
     def setup_method(self):
         self.client = APIClient()
         self.admin = User.objects.create_superuser(email="admin@test.com", password="admin123")

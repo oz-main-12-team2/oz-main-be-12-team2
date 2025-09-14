@@ -1,20 +1,38 @@
 from rest_framework import generics, permissions
 from rest_framework.authentication import TokenAuthentication
+
 from .models import Payment
 from .serializers import PaymentSerializer
 
 
-# ✅ 결제 내역 전체 조회 & 생성
-class PaymentListCreateView(generics.ListCreateAPIView):
-    queryset = Payment.objects.all()
+# ✅ 결제 생성
+class PaymentCreateView(generics.CreateAPIView):
     serializer_class = PaymentSerializer
     authentication_classes = [TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
 
+    def perform_create(self, serializer):
+        order = serializer.validated_data["order"]
+        if order.user != self.request.user:
+            raise PermissionError("본인 주문에 대해서만 결제할 수 있습니다.")
+        serializer.save()
 
-# ✅ 단일 결제 상세 조회 & 수정 & 삭제
-class PaymentDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Payment.objects.all()
+
+# ✅ 본인 결제 내역 조회 (리스트)
+class UserPaymentListView(generics.ListAPIView):
     serializer_class = PaymentSerializer
     authentication_classes = [TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return Payment.objects.filter(order__user=self.request.user).order_by("-created_at")
+
+
+# ✅ 본인 결제 상세 조회
+class UserPaymentDetailView(generics.RetrieveAPIView):
+    serializer_class = PaymentSerializer
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return Payment.objects.filter(order__user=self.request.user)

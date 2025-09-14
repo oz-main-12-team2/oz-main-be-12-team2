@@ -1,11 +1,11 @@
 from django.test import TestCase
 from django.urls import reverse
-from rest_framework.test import APIClient
 from rest_framework import status
+from rest_framework.test import APIClient
 
-from apps.users.models import User
-from apps.products.models import Product
 from apps.carts.models import Cart, CartProduct
+from apps.products.models import Product
+from apps.users.models import User
 
 
 class CartAPITest(TestCase):
@@ -13,11 +13,7 @@ class CartAPITest(TestCase):
 
     def setUp(self):
         self.client = APIClient()
-        self.user = User.objects.create_user(
-            email="test@example.com",
-            name="테스트 사용자",
-            password="testpass123"
-        )
+        self.user = User.objects.create_user(email="test@example.com", name="테스트 사용자", password="testpass123")
         self.client.force_authenticate(user=self.user)
 
         self.product = Product.objects.create(
