@@ -1,7 +1,8 @@
+import mimetypes
 import os
 from pathlib import Path
+
 from dotenv import load_dotenv
-import mimetypes
 
 # .env 파일 로드
 load_dotenv()
@@ -112,6 +113,8 @@ STATICFILES_DIRS = [
 ]
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+STATIC_URL = "/static/"
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # 커스텀 유저 모델
 AUTH_USER_MODEL = 'users.User'
