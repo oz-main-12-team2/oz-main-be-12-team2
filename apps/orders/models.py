@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db import models
+
 from apps.utils.models import TimestampModel
 
 
@@ -25,7 +26,7 @@ class Order(TimestampModel):
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, related_name="items", on_delete=models.CASCADE)
-    product = models.ForeignKey("products.Product", on_delete=models.CASCADE) #이부분수정 외래키연결을위해
+    product = models.ForeignKey("products.Product", on_delete=models.CASCADE)  # 이부분수정 외래키연결을위해
     quantity = models.PositiveIntegerField(default=1)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     # TODO : unit_price, total_price
