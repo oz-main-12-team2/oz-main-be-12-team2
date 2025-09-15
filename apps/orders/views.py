@@ -9,7 +9,6 @@ from .models import Order, OrderItem
 from .serializers import OrderSerializer
 
 
-
 class OrderViewSet(viewsets.ModelViewSet):
     serializer_class = OrderSerializer
     permission_classes = [IsAuthenticated]
@@ -37,13 +36,12 @@ class OrderViewSet(viewsets.ModelViewSet):
             user=request.user,
             recipient_name=recipient_name,
             recipient_phone=recipient_phone,
-            recipient_address=recipient_address
+            recipient_address=recipient_address,
         )
 
         for item in cart.cartitem_set.all():
             OrderItem.objects.create(
-                order=order, product=item.product,
-                quantity=item.quantity, price=item.product.price
+                order=order, product=item.product, quantity=item.quantity, price=item.product.price
             )
         cart.cartitem_set.all().delete()
 
@@ -51,7 +49,5 @@ class OrderViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     def completed_orders_stats(self, request):
-        total_sales = OrderItem.objects.filter(order__status="COMPLETED").aggregate(
-            total=Sum("price")
-        )["total"] or 0
+        total_sales = OrderItem.objects.filter(order__status="COMPLETED").aggregate(total=Sum("price"))["total"] or 0
         return Response({"total_sales": total_sales})
