@@ -17,6 +17,7 @@ class Order(TimestampModel):
     recipient_phone = models.CharField(max_length=20, blank=False)
     recipient_address = models.TextField(blank=False)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="PENDING")
+    # TODO : order number
 
     def __str__(self):
         return f"Order {self.id} - {self.user}"
@@ -27,6 +28,7 @@ class OrderItem(models.Model):
     product = models.ForeignKey("products.Product", on_delete=models.CASCADE) #이부분수정 외래키연결을위해
     quantity = models.PositiveIntegerField(default=1)
     price = models.DecimalField(max_digits=10, decimal_places=2)
+    # TODO : unit_price, total_price
 
     def __str__(self):
         return f"{self.product.name} x {self.quantity}"
