@@ -31,6 +31,9 @@ COPY --from=builder /app /app
 COPY --from=builder /bin/uv /bin/uv
 COPY ./scripts /scripts
 
+# 도커 & 장고 호환관련
+RUN /app/.venv/bin/python manage.py collectstatic --noinput
+
 # 실행 스크립트 권한 설정 및 dos2unix 처리 (Windows CRLF 방지)
 RUN chmod +x /scripts/run.sh && apt-get update && apt-get install -y dos2unix \
     && dos2unix /scripts/run.sh \
