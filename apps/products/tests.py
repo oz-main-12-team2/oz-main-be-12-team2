@@ -1,3 +1,4 @@
+
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.db.models import Sum
@@ -129,3 +130,4 @@ class AdminViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn("data", response.json())
         self.assertIn("total_revenue", response.json()["data"])
+
