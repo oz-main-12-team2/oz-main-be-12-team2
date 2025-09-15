@@ -1,8 +1,8 @@
+from django.db.models import Sum
 from django.shortcuts import get_object_or_404
 from rest_framework import status, viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from django.db.models import Sum
 
 from .models import Cart, CartItem, Order, OrderItem
 from .serializers import CartSerializer, OrderSerializer
