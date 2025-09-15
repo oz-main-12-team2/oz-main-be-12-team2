@@ -38,6 +38,7 @@ fixable = ["ALL"]
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "config.settings"
 addopts = "--tb=short"
+python_files = "tests.py test_*.py *_test.py" 
 
 # test 코드 빼고 coverage 측정
 [tool.coverage.run]

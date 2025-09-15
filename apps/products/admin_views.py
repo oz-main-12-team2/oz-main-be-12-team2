@@ -1,62 +1,53 @@
 import json
 
 from django.http import JsonResponse
-from django.shortcuts import get_object_or_404
-from django.views.decorators.http import require_POST
+from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_GET, require_POST, require_http_methods
+
 
 from .forms import ProductForm
 from .models import Product
 
 
 # 상품 등록 (POST)
+@require_POST
 def admin_product_create(request):
-    if request.method == "POST":
-        form = ProductForm(request.POST)
-        if form.is_valid():
-            product = form.save()
-            return JsonResponse(
-                {
-                    "success": True,
-                    "message": "상품이 등록되었습니다",
-                    "product_id": product.id,
-                },
-                status=201,
-            )
-        else:
-            return JsonResponse(
-                {
-                    "success": False,
-                    "message": "유효하지 않은 데이터입니다.",
-                    "errors": form.errors,
-                },
-                status=400,
-            )
-    return JsonResponse({"success": False, "message": "POST 요청만 허용됩니다."}, status=405)
+    # 1. request.body에서 JSON 데이터를 읽어옵니다.
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({"success": False, "message": "잘못된 JSON 형식입니다."}, status=400)
+
+    # 2. 읽어온 data로 Form을 초기화합니다.
+    form = ProductForm(data)
+    if form.is_valid():
+        form.save()
+        return JsonResponse({"success": True, "message": "상품이 생성되었습니다."}, status=201)
+    else:
+        # 유효성 검사 실패 시 에러 내용을 터미널에 출력
+        print("CREATE FORM ERRORS:", form.errors.as_json())
+        return JsonResponse({"success": False, "errors": form.errors}, status=400)
 
 
 # 상품 수정 (PUT)
-@require_POST
+@require_http_methods(["PUT", "PATCH"])
 def admin_product_update(request, pk):
     product = get_object_or_404(Product, pk=pk)
-    # PUT 요청을 처리하기 위해 request.body에서 JSON 데이터를 로드
+
     try:
         data = json.loads(request.body)
     except json.JSONDecodeError:
         return JsonResponse({"success": False, "message": "잘못된 JSON 형식입니다."}, status=400)
 
     form = ProductForm(data, instance=product)
+
     if form.is_valid():
         form.save()
         return JsonResponse({"success": True, "message": "상품이 수정되었습니다."}, status=200)
     else:
-        return JsonResponse(
-            {
-                "success": False,
-                "message": "유효하지 않은 데이터입니다.",
-                "errors": form.errors,
-            },
-            status=400,
-        )
+        # 유효성 검사 실패 시 에러 내용을 터미널에 출력
+        print("CREATE FORM ERRORS:", form.errors.as_json())
+        return JsonResponse({"success": False, "errors": form.errors}, status=400)
 
 
 # 상품 삭제 (DELETE)
