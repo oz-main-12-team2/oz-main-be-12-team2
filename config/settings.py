@@ -164,3 +164,9 @@ SOCIALACCOUNT_PROVIDERS = {
         "SCOPE": ["profile"],
     },
 }
+
+SITE_ID = 1
+
+# 개발환경용 사이트 도메인
+SITE_DOMAIN = 'localhost:8000'
+SITE_NAME = 'Local Development'
