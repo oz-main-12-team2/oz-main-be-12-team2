@@ -73,6 +73,8 @@ class UserAPITest(TestCase):
         self.assertIn("password_confirm", response.data)
 
     def test_user_login(self):
+        User.objects.create_user(email="logintest@example.com", name="로그인 테스트", password="loginpass123")
+
         """로그인 API 테스트"""
 
         # 로그인 시도
