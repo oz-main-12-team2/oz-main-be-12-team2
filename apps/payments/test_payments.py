@@ -162,20 +162,20 @@ class TestAdminPaymentAPI:
 
     def test_admin_can_list_all_payments(self):
         self.client.force_authenticate(user=self.admin)
-        response = self.client.get("/api/admin/payments/")
+        response = self.client.get("/api/admin/payment/")
 
         assert response.status_code == 200
         assert len(response.data) >= 1
 
     def test_admin_can_retrieve_payment(self):
         self.client.force_authenticate(user=self.admin)
-        response = self.client.get(f"/api/admin/payments/{self.payment.id}/")
+        response = self.client.get(f"/api/admin/payment/{self.payment.id}/")
 
         assert response.status_code == 200
         assert response.data["id"] == self.payment.id
 
     def test_non_admin_cannot_access_admin_endpoints(self):
         self.client.force_authenticate(user=self.user)
-        response = self.client.get("/api/admin/payments/")
+        response = self.client.get("/api/admin/payment/")
 
         assert response.status_code == 403
