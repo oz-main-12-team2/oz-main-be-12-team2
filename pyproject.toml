@@ -33,7 +33,7 @@ select = ["E", "F", "I"]
 # 자동수정은 임포트 정렬(I)만 허용
 select = ["I"]
 # 필요 시 보고 전용 규칙(F/E/W 등)은 실행 스크립트에서 --extend-select로 켜야함
-fixable = ["I"]
+fixable = ["ALL"]
 
 [tool.poetry.dependencies]
 python = "^3.13"

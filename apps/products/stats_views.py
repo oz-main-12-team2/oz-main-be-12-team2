@@ -1,11 +1,6 @@
 from datetime import date, timedelta
 
-from django.db.models import Sum
 from django.http import JsonResponse
-
-from apps.orders.models import OrderItem
-
-from .models import Product
 
 
 # 판매 통계 API

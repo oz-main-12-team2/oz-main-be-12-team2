@@ -1,8 +1,8 @@
 import json
 
 from django.http import JsonResponse
-from django.shortcuts import get_object_or_404, redirect, render
-from django.views.decorators.http import require_GET, require_POST
+from django.shortcuts import get_object_or_404
+from django.views.decorators.http import require_POST
 
 from .forms import ProductForm
 from .models import Product
@@ -31,9 +31,7 @@ def admin_product_create(request):
                 },
                 status=400,
             )
-    return JsonResponse(
-        {"success": False, "message": "POST 요청만 허용됩니다."}, status=405
-    )
+    return JsonResponse({"success": False, "message": "POST 요청만 허용됩니다."}, status=405)
 
 
 # 상품 수정 (PUT)
@@ -44,16 +42,12 @@ def admin_product_update(request, pk):
     try:
         data = json.loads(request.body)
     except json.JSONDecodeError:
-        return JsonResponse(
-            {"success": False, "message": "잘못된 JSON 형식입니다."}, status=400
-        )
+        return JsonResponse({"success": False, "message": "잘못된 JSON 형식입니다."}, status=400)
 
     form = ProductForm(data, instance=product)
     if form.is_valid():
         form.save()
-        return JsonResponse(
-            {"success": True, "message": "상품이 수정되었습니다."}, status=200
-        )
+        return JsonResponse({"success": True, "message": "상품이 수정되었습니다."}, status=200)
     else:
         return JsonResponse(
             {
@@ -71,10 +65,6 @@ def admin_product_delete(request, pk):
     try:
         product = Product.objects.get(pk=pk)
         product.delete()
-        return JsonResponse(
-            {"success": True, "message": "상품이 삭제되었습니다"}, status=200
-        )
+        return JsonResponse({"success": True, "message": "상품이 삭제되었습니다"}, status=200)
     except Product.DoesNotExist:
-        return JsonResponse(
-            {"success": False, "message": "상품을 찾을 수 없습니다"}, status=404
-        )
+        return JsonResponse({"success": False, "message": "상품을 찾을 수 없습니다"}, status=404)
