@@ -45,4 +45,4 @@ class CartItem(models.Model):
     quantity = models.PositiveIntegerField(default=1)
 
     class Meta:
-        db_table = 'cart_item'
+        db_table = "cart_item"

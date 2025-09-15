@@ -36,18 +36,15 @@ schema_view = get_schema_view(
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-
     # 앱 API
     path("api/product/", include("apps.products.urls")),
     path("api/admin/product/", include("apps.products.admin_urls")),
     path("api/user/", include("apps.users.urls")),
     path("api/admin/user/", include("apps.users.admin_urls")),
     path("api/orders/", include("apps.orders.urls")),
-
     # Swagger 문서 (로그인 없이 테스트)
     path("swagger/", schema_view.with_ui("swagger", cache_timeout=0), name="schema-swagger-ui"),
     path("redoc/", schema_view.with_ui("redoc", cache_timeout=0), name="schema-redoc"),
-
     path("accounts/", include("django.contrib.auth.urls")),
 ]
 
