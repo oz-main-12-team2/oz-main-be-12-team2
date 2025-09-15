@@ -48,40 +48,6 @@ def login(request):
 
 
 @api_view(["POST"])
-@permission_classes([AllowAny])
-def google_login(request):
-    """구글 소셜 로그인"""
-    # TODO: 구글 토큰 검증 로직 구현 필요
-    google_token = request.data.get("token")
-
-    if not google_token:
-        return Response({"error": "구글 토큰이 필요합니다."}, status=status.HTTP_400_BAD_REQUEST)
-
-    # 구글 토큰 검증 및 사용자 정보 획득 로직
-    # google_user_info = verify_google_token(google_token)
-
-    # 임시 응답 (실제 구현 시 수정 필요)
-    return Response({"message": "구글 로그인 API - 구현 예정"}, status=status.HTTP_501_NOT_IMPLEMENTED)
-
-
-@api_view(["POST"])
-@permission_classes([AllowAny])
-def naver_login(request):
-    """네이버 소셜 로그인"""
-    # TODO: 네이버 토큰 검증 로직 구현 필요
-    naver_token = request.data.get("token")
-
-    if not naver_token:
-        return Response({"error": "네이버 토큰이 필요합니다."}, status=status.HTTP_400_BAD_REQUEST)
-
-    # 네이버 토큰 검증 및 사용자 정보 획득 로직
-    # naver_user_info = verify_naver_token(naver_token)
-
-    # 임시 응답 (실제 구현 시 수정 필요)
-    return Response({"message": "네이버 로그인 API - 구현 예정"}, status=status.HTTP_501_NOT_IMPLEMENTED)
-
-
-@api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def logout(request):
     """로그아웃 - 리프레시 토큰 블랙리스트 처리"""
