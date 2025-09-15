@@ -34,9 +34,8 @@ class TestUserPaymentAPI:
             order=self.order,
             product=product,
             quantity=1,
-            # unit_price=10000,
-            # total_price=10000,
-            price=10000,  # TODO: 테이블 명세서에는 unit, total price 있음, 모델 확정하기
+            unit_price=10000,
+            total_price=10000,
         )
 
     def test_create_payment_success(self):
@@ -54,8 +53,7 @@ class TestUserPaymentAPI:
         )
 
         assert response.status_code == 201
-        assert response.data["success"] is True
-        assert response.data["data"]["method"] == PaymentMethod.CARD
+        assert response.data["method"] == PaymentMethod.CARD
         assert Payment.objects.count() == 1
 
     def test_create_payment_other_user_order(self):
