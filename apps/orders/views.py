@@ -1,3 +1,4 @@
+from django.db.models import Sum
 from django.shortcuts import get_object_or_404
 from rest_framework import status, viewsets
 from rest_framework.permissions import IsAuthenticated
@@ -8,12 +9,12 @@ from .models import Order, OrderItem
 from .serializers import OrderSerializer
 
 
+
 class OrderViewSet(viewsets.ModelViewSet):
     serializer_class = OrderSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        # Swagger 스키마 생성 시에는 빈 쿼리셋 반환
         if getattr(self, "swagger_fake_view", False):
             return Order.objects.none()
         if not self.request.user.is_authenticated:
@@ -28,13 +29,29 @@ class OrderViewSet(viewsets.ModelViewSet):
         if not cart.cartitem_set.exists():
             return Response({"detail": "Cart is empty"}, status=status.HTTP_400_BAD_REQUEST)
 
-        order = Order.objects.create(user=request.user)
+        recipient_name = request.data.get("recipient_name")
+        recipient_phone = request.data.get("recipient_phone")
+        recipient_address = request.data.get("recipient_address")
+
+        order = Order.objects.create(
+            user=request.user,
+            recipient_name=recipient_name,
+            recipient_phone=recipient_phone,
+            recipient_address=recipient_address
+        )
 
         for item in cart.cartitem_set.all():
             OrderItem.objects.create(
-                order=order, product=item.product, quantity=item.quantity, price=item.product.price
+                order=order, product=item.product,
+                quantity=item.quantity, price=item.product.price
             )
         cart.cartitem_set.all().delete()
 
         serializer = OrderSerializer(order)
         return Response(serializer.data)
+
+    def completed_orders_stats(self, request):
+        total_sales = OrderItem.objects.filter(order__status="COMPLETED").aggregate(
+            total=Sum("price")
+        )["total"] or 0
+        return Response({"total_sales": total_sales})
