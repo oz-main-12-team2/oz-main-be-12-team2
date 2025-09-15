@@ -13,6 +13,7 @@ dependencies = [
     "psycopg[binary]>=3.2.10",
     "python-dotenv>=1.1.1",
     "django-allauth[socialaccount]>=65.0.2",
+    "coverage>=7.10.6",
 ]
 
 [dependency-groups]
