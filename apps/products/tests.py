@@ -1,14 +1,7 @@
-import json
-from datetime import date, timedelta
-
-from django.db.models import Sum
 from django.test import Client, TestCase
 from django.urls import reverse
 
-from .admin_views import admin_product_create, admin_product_delete, admin_product_update
 from .models import Product
-from .stats_views import admin_sales_stats
-
 
 
 # `views.py`에서 필요한 OrderItem, Order 모델을 모킹하기 위해 임시로 정의

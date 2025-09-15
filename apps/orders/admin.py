@@ -11,6 +11,7 @@ class OrderItemInline(admin.TabularInline):
 
     def display_price(self, obj):
         return obj.price
+
     display_price.short_description = "Price"
 
 

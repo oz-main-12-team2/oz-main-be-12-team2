@@ -60,8 +60,6 @@ class OrderViewSet(viewsets.ModelViewSet):
 
     def completed_orders_stats(self, request):
         total_sales = (
-            OrderItem.objects.filter(order__status="배송완료")
-            .aggregate(total=Sum("total_price"))["total"]
-            or 0
+            OrderItem.objects.filter(order__status="배송완료").aggregate(total=Sum("total_price"))["total"] or 0
         )
         return Response({"total_sales": total_sales})
