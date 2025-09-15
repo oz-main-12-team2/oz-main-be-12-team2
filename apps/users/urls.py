@@ -1,7 +1,6 @@
-from django.urls import path
 from allauth.socialaccount.providers.google.views import oauth2_login as google_oauth2_login
 from allauth.socialaccount.providers.naver.views import oauth2_login as naver_oauth2_login
-
+from django.urls import path
 
 from . import views
 

@@ -46,7 +46,7 @@ urlpatterns = [
     path("redoc/", schema_view.with_ui("redoc", cache_timeout=0), name="schema-redoc"),
     path("accounts/", include("django.contrib.auth.urls")),
     # 콜백 처리용
-    path('accounts/', include('allauth.urls')),
+    path("accounts/", include("allauth.urls")),
 ]
 
 # 개발 환경에서 static 파일 서빙
