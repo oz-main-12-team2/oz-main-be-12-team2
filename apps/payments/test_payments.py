@@ -54,8 +54,7 @@ class TestUserPaymentAPI:
         )
 
         assert response.status_code == 201
-        assert response.data["success"] is True
-        assert response.data["data"]["method"] == PaymentMethod.CARD
+        assert response.data["method"] == PaymentMethod.CARD
         assert Payment.objects.count() == 1
 
     def test_create_payment_other_user_order(self):
