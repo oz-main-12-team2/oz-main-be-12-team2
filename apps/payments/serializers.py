@@ -8,7 +8,7 @@ class PaymentSerializer(serializers.ModelSerializer):
     # 요청과 응답 모두 order_id를 사용
     order_id = serializers.PrimaryKeyRelatedField(
         queryset=Order.objects.all(),
-        source="order",  # 내부적으로 Payment.order(FK)와 연결
+        source="order"  # 내부적으로 Payment.order(FK)와 연결
     )
 
     class Meta:
