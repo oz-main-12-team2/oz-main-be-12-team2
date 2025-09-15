@@ -157,20 +157,148 @@ class AdminAPITest(TestCase):
             email="user@example.com", name="일반 사용자", password="userpass123"
         )
 
+    # admin_user_list 함수 테스트 (라인 19-26)
     def test_admin_user_list_with_admin(self):
         """관리자 권한으로 사용자 목록 조회"""
         self.client.force_authenticate(user=self.admin_user)
         url = reverse("admin_user_list")
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 2)  # 관리자 + 일반 사용자
+        self.assertEqual(len(response.data), 2)
 
     def test_admin_user_list_with_normal_user(self):
-        """일반 사용자가 관리자 API 접근 시도"""
+        """일반 사용자가 관리자 API 접근 시도 - 라인 21-22"""
         self.client.force_authenticate(user=self.normal_user)
         url = reverse("admin_user_list")
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.data["error"], "관리자만 접근 가능합니다.")
+
+    # check_admin_permission 메서드 테스트 (라인 34-37)
+    def test_check_admin_permission_with_normal_user_get(self):
+        """일반 사용자가 GET 요청 시 권한 체크"""
+        self.client.force_authenticate(user=self.normal_user)
+        url = reverse("admin_user_detail", args=[self.admin_user.id])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.data["error"], "관리자만 접근 가능합니다.")
+
+    def test_check_admin_permission_with_normal_user_put(self):
+        """일반 사용자가 PUT 요청 시 권한 체크"""
+        self.client.force_authenticate(user=self.normal_user)
+        url = reverse("admin_user_detail", args=[self.admin_user.id])
+        data = {"name": "해킹 시도"}
+        response = self.client.put(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.data["error"], "관리자만 접근 가능합니다.")
+
+    def test_check_admin_permission_with_normal_user_delete(self):
+        """일반 사용자가 DELETE 요청 시 권한 체크"""
+        self.client.force_authenticate(user=self.normal_user)
+        url = reverse("admin_user_detail", args=[self.admin_user.id])
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.data["error"], "관리자만 접근 가능합니다.")
+
+    # AdminUserDetailView GET 메서드 테스트 (라인 39-45)
+    def test_admin_user_detail_get_success(self):
+        """관리자가 사용자 상세 조회 성공"""
+        self.client.force_authenticate(user=self.admin_user)
+        url = reverse("admin_user_detail", args=[self.normal_user.id])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["email"], self.normal_user.email)
+        self.assertEqual(response.data["name"], self.normal_user.name)
+
+    def test_admin_user_detail_get_not_found(self):
+        """존재하지 않는 사용자 조회 시 404"""
+        self.client.force_authenticate(user=self.admin_user)
+        url = reverse("admin_user_detail", args=[9999])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    # AdminUserDetailView PUT 메서드 테스트 (라인 47-56)
+    def test_admin_user_detail_put_success(self):
+        """관리자가 사용자 정보 수정 성공 - 라인 52-54"""
+        self.client.force_authenticate(user=self.admin_user)
+        url = reverse("admin_user_detail", args=[self.normal_user.id])
+        data = {"name": "수정된 이름", "address": "수정된 주소"}
+        response = self.client.put(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.normal_user.refresh_from_db()
+        self.assertEqual(self.normal_user.name, "수정된 이름")
+        self.assertEqual(self.normal_user.address, "수정된 주소")
+
+    def test_admin_user_detail_put_invalid_data_name_too_long(self):
+        """name 필드 100자 초과 시 400 에러 - 라인 55"""
+        self.client.force_authenticate(user=self.admin_user)
+        url = reverse("admin_user_detail", args=[self.normal_user.id])
+        data = {"name": "a" * 101}  # 100자 초과
+        response = self.client.put(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_admin_user_detail_put_invalid_data_address_too_long(self):
+        """address 필드 100자 초과 시 400 에러 - 라인 55"""
+        self.client.force_authenticate(user=self.admin_user)
+        url = reverse("admin_user_detail", args=[self.normal_user.id])
+        data = {"address": "a" * 101}  # 100자 초과
+        response = self.client.put(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_admin_user_detail_put_not_found(self):
+        """존재하지 않는 사용자 수정 시도 시 404"""
+        self.client.force_authenticate(user=self.admin_user)
+        url = reverse("admin_user_detail", args=[9999])
+        data = {"name": "존재하지 않음"}
+        response = self.client.put(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    # AdminUserDetailView DELETE 메서드 테스트 (라인 58-70)
+    def test_admin_user_detail_delete_success(self):
+        """관리자가 다른 사용자 삭제 성공 - 라인 66-67"""
+        self.client.force_authenticate(user=self.admin_user)
+        url = reverse("admin_user_detail", args=[self.normal_user.id])
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn("삭제되었습니다", response.data["message"])
+        self.assertFalse(User.objects.filter(id=self.normal_user.id).exists())
+
+    def test_admin_user_detail_delete_self_forbidden(self):
+        """관리자가 자기 자신 삭제 시도 시 400 에러 - 라인 63-64"""
+        self.client.force_authenticate(user=self.admin_user)
+        url = reverse("admin_user_detail", args=[self.admin_user.id])
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data["error"], "자기 자신은 삭제할 수 없습니다.")
+        # 실제로 삭제되지 않았는지 확인
+        self.assertTrue(User.objects.filter(id=self.admin_user.id).exists())
+
+    def test_admin_user_detail_delete_not_found(self):
+        """존재하지 않는 사용자 삭제 시도 시 404"""
+        self.client.force_authenticate(user=self.admin_user)
+        url = reverse("admin_user_detail", args=[9999])
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    # IsAdmin 클래스 테스트 (라인 14-15) - 직접 테스트
+    def test_is_admin_permission_class(self):
+        """IsAdmin 클래스의 has_permission 메서드 직접 테스트"""
+        from apps.users.admin_views import IsAdmin
+
+        permission = IsAdmin()
+
+        # Mock request 객체 생성
+        class MockRequest:
+            def __init__(self, user):
+                self.user = user
+
+        # 관리자 사용자 테스트
+        admin_request = MockRequest(self.admin_user)
+        self.assertTrue(permission.has_permission(admin_request, None))
+
+        # 일반 사용자 테스트
+        normal_request = MockRequest(self.normal_user)
+        self.assertFalse(permission.has_permission(normal_request, None))
 
 
 class ChangePasswordTest(TestCase):
