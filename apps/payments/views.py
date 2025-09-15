@@ -1,5 +1,6 @@
 from rest_framework import generics, permissions
 from rest_framework.authentication import TokenAuthentication
+from rest_framework.exceptions import PermissionDenied
 
 from .models import Payment
 from .serializers import PaymentSerializer
@@ -14,7 +15,7 @@ class PaymentCreateView(generics.CreateAPIView):
     def perform_create(self, serializer):
         order = serializer.validated_data["order"]
         if order.user != self.request.user:
-            raise PermissionError("본인 주문에 대해서만 결제할 수 있습니다.")
+            raise PermissionDenied("본인 주문에 대해서만 결제할 수 있습니다.")
         serializer.save()
 
 

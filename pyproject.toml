@@ -5,14 +5,14 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-    "django>=5.2.6",
+    "django>=5.0,<6.0",
+    "djangorestframework>=3.16.1",
     "django-allauth>=65.11.2",
-    "django-restframework>=0.0.1",
     "djangorestframework-simplejwt>=5.5.1",
-    "dotenv>=0.9.9",
     "drf-yasg[swagger-ui]>=1.21.10",
     "gunicorn>=23.0.0",
     "psycopg[binary]>=3.2.10",
+    "python-dotenv>=1.1.1",
     "django-allauth[socialaccount]",
 ]
 
@@ -39,3 +39,7 @@ fixable = ["ALL"]
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "config.settings"
 addopts = "--tb=short"
+
+# test 코드 빼고 coverage 측정
+[tool.coverage.run]
+omit = ["*/test_*.py"]

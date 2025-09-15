@@ -34,15 +34,16 @@ class TestUserPaymentAPI:
             order=self.order,
             product=product,
             quantity=1,
-            unit_price=10000,
-            total_price=10000,
+            # unit_price=10000,
+            # total_price=10000,
+            price=10000,  # TODO: 테이블 명세서에는 unit, total price 있음, 모델 확정하기
         )
 
     def test_create_payment_success(self):
         self.client.force_authenticate(user=self.user)
 
         response = self.client.post(
-            "/api/payments/create/",
+            "/api/payment/",
             {
                 "order_id": self.order.id,
                 "method": PaymentMethod.CARD,
@@ -74,7 +75,7 @@ class TestUserPaymentAPI:
         self.client.force_authenticate(user=self.user)
 
         response = self.client.post(
-            "/api/payments/create/",
+            "/api/payment/",
             {
                 "order_id": other_order.id,
                 "method": PaymentMethod.CARD,
@@ -92,7 +93,7 @@ class TestUserPaymentAPI:
         )
 
         self.client.force_authenticate(user=self.user)
-        response = self.client.get("/api/payments/")
+        response = self.client.get("/api/payment/my/")
 
         assert response.status_code == 200
         assert len(response.data) == 1
@@ -104,7 +105,7 @@ class TestUserPaymentAPI:
         )
 
         self.client.force_authenticate(user=self.user)
-        response = self.client.get(f"/api/payments/{payment.id}/")
+        response = self.client.get(f"/api/payment/{payment.id}/")
 
         assert response.status_code == 200
         assert response.data["id"] == payment.id
@@ -127,7 +128,7 @@ class TestUserPaymentAPI:
         )
 
         self.client.force_authenticate(user=self.user)
-        response = self.client.get(f"/api/payments/{other_payment.id}/")
+        response = self.client.get(f"/api/payment/{other_payment.id}/")
 
         assert response.status_code == 404
 
@@ -162,20 +163,20 @@ class TestAdminPaymentAPI:
 
     def test_admin_can_list_all_payments(self):
         self.client.force_authenticate(user=self.admin)
-        response = self.client.get("/api/admin/payments/")
+        response = self.client.get("/api/admin/payment/")
 
         assert response.status_code == 200
         assert len(response.data) >= 1
 
     def test_admin_can_retrieve_payment(self):
         self.client.force_authenticate(user=self.admin)
-        response = self.client.get(f"/api/admin/payments/{self.payment.id}/")
+        response = self.client.get(f"/api/admin/payment/{self.payment.id}/")
 
         assert response.status_code == 200
         assert response.data["id"] == self.payment.id
 
     def test_non_admin_cannot_access_admin_endpoints(self):
         self.client.force_authenticate(user=self.user)
-        response = self.client.get("/api/admin/payments/")
+        response = self.client.get("/api/admin/payment/")
 
         assert response.status_code == 403
