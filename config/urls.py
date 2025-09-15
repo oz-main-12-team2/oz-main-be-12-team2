@@ -21,15 +21,15 @@ from django.contrib import admin
 from django.urls import include, path
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path("admin/", admin.site.urls),
     path("api/product/", include("apps.products.urls")),
     path("api/admin/product/", include("apps.products.admin_urls")),
-    path('api/user/', include('apps.users.urls')),
-    path('api/admin/user/', include('apps.users.admin_urls')),
-    path('api/orders/', include('apps.orders.urls')),
-    path("api/cart/", include('apps.carts.urls')),
-    path('api/payment/', include('apps.payments.urls')),
-    path('api/admin/payment/', include('apps.payments.admin_urls')),
+    path("api/user/", include("apps.users.urls")),
+    path("api/admin/user/", include("apps.users.admin_urls")),
+    path("api/orders/", include("apps.orders.urls")),
+    path("api/cart/", include("apps.carts.urls")),
+    path("api/payment/", include("apps.payments.urls")),
+    path("api/admin/payment/", include("apps.payments.admin_urls")),
 ]
 
 if settings.DEBUG:

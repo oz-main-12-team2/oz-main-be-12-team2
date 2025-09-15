@@ -4,7 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from .models import Cart, CartItem, Order
-from .serializers import CartItemSerializer, CartSerializer, OrderSerializer
+from .serializers import CartSerializer, OrderSerializer
 
 
 class CartViewSet(viewsets.ModelViewSet):
@@ -22,6 +22,7 @@ class CartViewSet(viewsets.ModelViewSet):
         serializer = CartSerializer(cart)
         return Response(serializer.data)
 
+
 class OrderViewSet(viewsets.ModelViewSet):
     serializer_class = OrderSerializer
     permission_classes = [IsAuthenticated]
@@ -32,7 +33,7 @@ class OrderViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         cart = get_object_or_404(Cart, user=request.user)
         if not cart.cartitem_set.exists():
-            return Response({'detail': 'Cart is empty'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": "Cart is empty"}, status=status.HTTP_400_BAD_REQUEST)
 
         total_price = sum([item.product.price * item.quantity for item in cart.cartitem_set.all()])
         order = Order.objects.create(user=request.user, total_price=total_price)
