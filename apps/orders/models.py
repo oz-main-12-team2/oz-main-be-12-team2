@@ -1,35 +1,46 @@
 from django.conf import settings
 from django.db import models
+from django.utils.crypto import get_random_string
 
+from apps.products.models import Product
 from apps.utils.models import TimestampModel
 
 
 class Order(TimestampModel):
     STATUS_CHOICES = [
-        ("PENDING", "Pending"),
-        ("PROCESSING", "Processing"),
-        ("COMPLETED", "Completed"),
-        ("CANCELLED", "Cancelled"),
+        ("결제 완료", "결제 완료"),
+        ("배송중", "배송중"),
+        ("배송완료", "배송완료"),
     ]
 
+    order_number = models.CharField(max_length=20, unique=True, editable=False)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     total_price = models.DecimalField(max_digits=10, decimal_places=2)
-    recipient_name = models.CharField(max_length=50, blank=False)
+    recipient_name = models.CharField(max_length=10, blank=False)
     recipient_phone = models.CharField(max_length=20, blank=False)
     recipient_address = models.TextField(blank=False)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="PENDING")
-    # TODO : order number
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="결제 완료")
+
+    def save(self, *args, **kwargs):
+        if not self.order_number:
+            self.order_number = get_random_string(length=12, allowed_chars="0123456789")
+        super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"Order {self.id} - {self.user}"
+        return f"Order {self.order_number} - {self.user}"
 
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, related_name="items", on_delete=models.CASCADE)
-    product = models.ForeignKey("products.Product", on_delete=models.CASCADE)  # 이부분수정 외래키연결을위해
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1)
-    price = models.DecimalField(max_digits=10, decimal_places=2)
-    # TODO : unit_price, total_price
+    unit_price = models.DecimalField(max_digits=10, decimal_places=2)
+    total_price = models.DecimalField(max_digits=10, decimal_places=2, editable=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        self.total_price = self.unit_price * self.quantity
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.product.name} x {self.quantity}"

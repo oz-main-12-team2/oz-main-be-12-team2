@@ -37,17 +37,31 @@ class OrderViewSet(viewsets.ModelViewSet):
             recipient_name=recipient_name,
             recipient_phone=recipient_phone,
             recipient_address=recipient_address,
+            total_price=0,  # 초기값
         )
 
+        total_price = 0
         for item in cart.cartitem_set.all():
-            OrderItem.objects.create(
-                order=order, product=item.product, quantity=item.quantity, price=item.product.price
+            order_item = OrderItem.objects.create(
+                order=order,
+                product=item.product,
+                quantity=item.quantity,
+                unit_price=item.product.price,
             )
+            total_price += order_item.total_price
+
+        order.total_price = total_price
+        order.save()
+
         cart.cartitem_set.all().delete()
 
         serializer = OrderSerializer(order)
         return Response(serializer.data)
 
     def completed_orders_stats(self, request):
-        total_sales = OrderItem.objects.filter(order__status="COMPLETED").aggregate(total=Sum("price"))["total"] or 0
+        total_sales = (
+            OrderItem.objects.filter(order__status="배송완료")
+            .aggregate(total=Sum("total_price"))["total"]
+            or 0
+        )
         return Response({"total_sales": total_sales})
