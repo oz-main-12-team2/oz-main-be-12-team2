@@ -4,6 +4,10 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
+# DEBUG가 False이면 CSS 다 깨져보이는 것 해결
+# TODO: 개발용 setting, 배포용 setting 분리
+# DEBUG = True
+
 # .env 파일 로드
 load_dotenv()
 
@@ -12,7 +16,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # 보안 키
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "unsafe-default-key")
 
-# 디버그 모드
+# 디버그 모드 - 환경변수에서 DEBUG 값을 주지 않으면 자동으로 FALSE
 DEBUG = os.getenv("DEBUG", "False").lower() in ("true", "1", "yes")
 
 # 허용 호스트

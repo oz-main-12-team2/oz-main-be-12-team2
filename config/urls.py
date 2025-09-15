@@ -41,6 +41,9 @@ urlpatterns = [
     path("api/user/", include("apps.users.urls")),
     path("api/admin/user/", include("apps.users.admin_urls")),
     path("api/orders/", include("apps.orders.urls")),
+    path("api/cart/", include("apps.carts.urls")),
+    path("api/payment/", include("apps.payments.urls")),
+    path("api/admin/payment/", include("apps.payments.admin_urls")),
     # Swagger 문서 (로그인 없이 테스트)
     path("swagger/", schema_view.with_ui("swagger", cache_timeout=0), name="schema-swagger-ui"),
     path("redoc/", schema_view.with_ui("redoc", cache_timeout=0), name="schema-redoc"),
@@ -48,8 +51,5 @@ urlpatterns = [
 ]
 
 # 개발 환경에서 static 파일 서빙
-if settings.DEBUG:
-    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
-
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

@@ -9,8 +9,7 @@ dependencies = [
     "django-restframework>=0.0.1",
     "djangorestframework-simplejwt>=5.5.1",
     "dotenv>=0.9.9",
-    "drf-spectacular>=0.28.0",
-    "drf-yasg>=1.21.10",
+    "drf-yasg[swagger-ui]>=1.21.10",
     "gunicorn>=23.0.0",
     "psycopg[binary]>=3.2.10",
 ]
@@ -35,15 +34,15 @@ select = ["I"]
 # 필요 시 보고 전용 규칙(F/E/W 등)은 실행 스크립트에서 --extend-select로 켜야함
 fixable = ["ALL"]
 
-[tool.poetry.dependencies]
-python = "^3.13"
-Django = "^5.2"
-psycopg = { version = "^3.2", extras = ["binary"] }
-django-restframework = "^0.0.1"
-dotenv = "^0.9.9"
-drf-spectacular = "^0.28.0"
-drf-yasg = "^1.21.10"
-gunicorn = "^23.0.0"
+#[tool.poetry.dependencies]
+#python = "^3.13"
+#Django = "^5.2"
+#psycopg = { version = "^3.2", extras = ["binary"] }
+#django-restframework = "^0.0.1"
+#dotenv = "^0.9.9"
+#drf-spectacular = "^0.28.0"
+#drf-yasg = "^1.21.10"
+#gunicorn = "^23.0.0"
 
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "config.settings"
