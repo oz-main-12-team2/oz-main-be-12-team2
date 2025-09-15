@@ -74,8 +74,6 @@ class UserAPITest(TestCase):
 
     def test_user_login(self):
         """로그인 API 테스트"""
-        # 먼저 사용자 생성
-        user = User.objects.create_user(email="logintest@example.com", name="로그인 테스트", password="loginpass123")
 
         # 로그인 시도
         data = {"email": "logintest@example.com", "password": "loginpass123"}
