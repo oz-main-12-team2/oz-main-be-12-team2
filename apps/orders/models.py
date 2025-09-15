@@ -14,6 +14,7 @@ class Order(TimestampModel):
     ]
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    total_price = models.DecimalField(max_digits=10, decimal_places=2)
     recipient_name = models.CharField(max_length=50, blank=False)
     recipient_phone = models.CharField(max_length=20, blank=False)
     recipient_address = models.TextField(blank=False)
