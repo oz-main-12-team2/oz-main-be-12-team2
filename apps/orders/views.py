@@ -13,6 +13,9 @@ class OrderViewSet(viewsets.ModelViewSet):
     serializer_class = OrderSerializer
     permission_classes = [IsAuthenticated]
 
+    # PATCH 제거, DELETE도 필요 없으면 제거 가능
+    http_method_names = ["get", "post", "put"]  # PATCH 제외, DELETE 제외
+
     def get_queryset(self):
         if getattr(self, "swagger_fake_view", False):
             return Order.objects.none()
@@ -27,16 +30,13 @@ class OrderViewSet(viewsets.ModelViewSet):
         # 사용자 장바구니 가져오기
         cart = get_object_or_404(Cart, user=request.user)
 
-        # related_name="items" 기준으로 CartItem 존재 여부 확인
         if not hasattr(cart, "items") or not cart.items.exists():
             return Response({"detail": "Cart is empty"}, status=status.HTTP_400_BAD_REQUEST)
 
-        # 주문 정보
         recipient_name = request.data.get("recipient_name")
         recipient_phone = request.data.get("recipient_phone")
         recipient_address = request.data.get("recipient_address")
 
-        # 주문 생성
         order = Order.objects.create(
             user=request.user,
             recipient_name=recipient_name,
@@ -46,7 +46,7 @@ class OrderViewSet(viewsets.ModelViewSet):
         )
 
         total_price = 0
-        for item in cart.items.all():  # items로 CartItem 접근
+        for item in cart.items.all():
             order_item = OrderItem.objects.create(
                 order=order,
                 product=item.product,
@@ -58,7 +58,6 @@ class OrderViewSet(viewsets.ModelViewSet):
         order.total_price = total_price
         order.save()
 
-        # 장바구니 비우기
         cart.items.all().delete()
 
         serializer = OrderSerializer(order)
