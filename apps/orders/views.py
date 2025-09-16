@@ -24,24 +24,29 @@ class OrderViewSet(viewsets.ModelViewSet):
         if not request.user.is_authenticated:
             return Response({"detail": "Authentication required"}, status=status.HTTP_401_UNAUTHORIZED)
 
+        # 사용자 장바구니 가져오기
         cart = get_object_or_404(Cart, user=request.user)
-        if not cart.cartitem_set.exists():
+
+        # related_name="items" 기준으로 CartItem 존재 여부 확인
+        if not hasattr(cart, "items") or not cart.items.exists():
             return Response({"detail": "Cart is empty"}, status=status.HTTP_400_BAD_REQUEST)
 
+        # 주문 정보
         recipient_name = request.data.get("recipient_name")
         recipient_phone = request.data.get("recipient_phone")
         recipient_address = request.data.get("recipient_address")
 
+        # 주문 생성
         order = Order.objects.create(
             user=request.user,
             recipient_name=recipient_name,
             recipient_phone=recipient_phone,
             recipient_address=recipient_address,
-            total_price=0,  # 초기값
+            total_price=0,
         )
 
         total_price = 0
-        for item in cart.cartitem_set.all():
+        for item in cart.items.all():  # items로 CartItem 접근
             order_item = OrderItem.objects.create(
                 order=order,
                 product=item.product,
@@ -53,10 +58,11 @@ class OrderViewSet(viewsets.ModelViewSet):
         order.total_price = total_price
         order.save()
 
-        cart.cartitem_set.all().delete()
+        # 장바구니 비우기
+        cart.items.all().delete()
 
         serializer = OrderSerializer(order)
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def completed_orders_stats(self, request):
         total_sales = (
