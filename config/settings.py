@@ -185,7 +185,4 @@ SITE_NAME = "Local Development"
 
 
 # CORS 설정
-CORS_ALLOWED_ORIGINS = os.getenv(
-    "CORS_ALLOWED_ORIGINS",
-    "http://localhost:3000 http://127.0.0.1:3000"
-).split()
+CORS_ALLOWED_ORIGINS = os.getenv("CORS_ALLOWED_ORIGINS", "http://localhost:3000 http://127.0.0.1:3000").split()
