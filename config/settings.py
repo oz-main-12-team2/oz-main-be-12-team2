@@ -3,10 +3,14 @@ import os
 from pathlib import Path
 
 from dotenv import load_dotenv
+from datetime import timedelta
 
-# DEBUG가 False이면 CSS 다 깨져보이는 것 해결
-# TODO: 개발용 setting, 배포용 setting 분리
-# DEBUG = True
+
+# JWT 토큰 만료 시간
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=int(os.getenv("ACCESS_TOKEN_LIFETIME", 30))),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=int(os.getenv("REFRESH_TOKEN_LIFETIME", 7))),
+}
 
 # .env 파일 로드
 load_dotenv()
