@@ -9,10 +9,10 @@ class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
         # 소셜 계정 데이터에서 이름 정보 추출
         extra_data = sociallogin.account.extra_data
 
-        if sociallogin.account.provider == 'google':
-            user.name = extra_data.get('name', '')
-        elif sociallogin.account.provider == 'naver':
-            user.name = extra_data.get('name', '')
+        if sociallogin.account.provider == "google":
+            user.name = extra_data.get("name", "")
+        elif sociallogin.account.provider == "naver":
+            user.name = extra_data.get("name", "")
 
         user.is_social = True
         user.save()
