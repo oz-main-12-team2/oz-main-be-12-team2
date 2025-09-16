@@ -2,14 +2,14 @@ import json
 
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
-from django.views.decorators.http import require_http_methods, require_POST
+from rest_framework.decorators import api_view
 
 from .forms import ProductForm
 from .models import Product
 
 
 # 상품 등록 (POST)
-@require_POST
+@api_view(["POST"])
 def admin_product_create(request):
     # 1. request.body에서 JSON 데이터를 읽어옵니다.
     try:
@@ -29,7 +29,7 @@ def admin_product_create(request):
 
 
 # 상품 수정 (PUT)
-@require_http_methods(["PUT", "PATCH"])
+@api_view(["PUT"])
 def admin_product_update(request, pk):
     product = get_object_or_404(Product, pk=pk)
 
@@ -50,7 +50,7 @@ def admin_product_update(request, pk):
 
 
 # 상품 삭제 (DELETE)
-@require_POST
+@api_view(["DELETE"])
 def admin_product_delete(request, pk):
     try:
         product = Product.objects.get(pk=pk)

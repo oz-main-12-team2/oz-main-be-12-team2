@@ -1,5 +1,6 @@
 from django.db.models import Sum
 from django.shortcuts import get_object_or_404, render
+from rest_framework.decorators import api_view
 
 from apps.orders.models import OrderItem  # OrderDetail 모델이 필요합니다.
 
@@ -7,6 +8,7 @@ from .models import Product
 
 
 # 책 목록을 보여주는 뷰 (랭킹 정보 추가)
+@api_view(["GET"])
 def product_list(request):
     """
     책 목록과 함께 랭킹을 메인 페이지에 보여주는 뷰
@@ -33,6 +35,7 @@ def product_list(request):
 
 
 # 책 상세 정보를 보여주는 뷰
+@api_view(["GET"])
 def product_detail(request, pk):
     """
     책 상세 정보를 보여주는 뷰
