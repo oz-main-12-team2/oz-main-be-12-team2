@@ -48,6 +48,8 @@ class CartProductUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
     authentication_classes = [TokenAuthentication]  # ✅ 토큰 인증
     permission_classes = [permissions.IsAuthenticated]
 
+    http_method_names = ["put", "delete"]
+
     def get_queryset(self):
         return CartProduct.objects.filter(cart__user=self.request.user)
 
