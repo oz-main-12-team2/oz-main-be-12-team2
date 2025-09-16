@@ -31,6 +31,8 @@ def admin_user_list(request):
 class AdminUserDetailView(APIView):
     """관리자 전용 사용자 상세 조회/수정/삭제"""
 
+    serializer_class = AdminUserUpdateSerializer
+
     permission_classes = [IsAuthenticated]
 
     def check_admin_permission(self, user):
