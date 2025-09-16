@@ -66,7 +66,7 @@ class AdminUserUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ["name", "address", "is_admin"]
+        fields = ["email", "name", "address"]
 
 
 class ChangePasswordSerializer(serializers.Serializer):

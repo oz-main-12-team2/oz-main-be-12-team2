@@ -1,4 +1,5 @@
 from django.shortcuts import get_object_or_404
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -31,8 +32,6 @@ def admin_user_list(request):
 class AdminUserDetailView(APIView):
     """관리자 전용 사용자 상세 조회/수정/삭제"""
 
-    serializer_class = AdminUserUpdateSerializer
-
     permission_classes = [IsAuthenticated]
 
     def check_admin_permission(self, user):
@@ -51,6 +50,10 @@ class AdminUserDetailView(APIView):
         serializer = AdminUserSerializer(user)
         return Response(serializer.data)
 
+    @swagger_auto_schema(
+        request_body=AdminUserUpdateSerializer,
+        responses={200: AdminUserSerializer, 400: "Bad Request", 403: "Forbidden"},
+    )
     def put(self, request, user_id):
         """특정 사용자 정보 수정"""
         admin_check = self.check_admin_permission(request.user)
