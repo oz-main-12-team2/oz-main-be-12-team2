@@ -116,16 +116,22 @@ TIME_ZONE = "UTC"
 USE_I18N = True
 USE_TZ = True
 
-# Static 파일 설정
-STATIC_URL = "/static/"
-STATIC_ROOT = BASE_DIR / "staticfiles"
+
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+
+# Static / Media 파일 설정
+STATIC_URL = os.getenv("STATIC_URL", "/static/")
+STATIC_ROOT = os.getenv("STATIC_ROOT", BASE_DIR / "staticfiles")
+
+# 개발환경에서는 정적 파일 직접 서빙할 수 있도록 DIRS 추가
 STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
 
-DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-STATIC_URL = "/static/"
-STATIC_ROOT = BASE_DIR / "staticfiles"
+MEDIA_URL = os.getenv("MEDIA_URL", "/media/")
+MEDIA_ROOT = os.getenv("MEDIA_ROOT", BASE_DIR / "media")
+
 
 # 커스텀 유저 모델
 AUTH_USER_MODEL = "users.User"
@@ -176,3 +182,10 @@ SITE_ID = 1
 # 개발환경용 사이트 도메인
 SITE_DOMAIN = "localhost:8000"
 SITE_NAME = "Local Development"
+
+
+# CORS 설정
+CORS_ALLOWED_ORIGINS = os.getenv(
+    "CORS_ALLOWED_ORIGINS",
+    "http://localhost:3000 http://127.0.0.1:3000"
+).split()
