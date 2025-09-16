@@ -190,3 +190,18 @@ SITE_NAME = "Local Development"
 
 # CORS 설정
 CORS_ALLOWED_ORIGINS = os.getenv("CORS_ALLOWED_ORIGINS", "http://localhost:3000 http://127.0.0.1:3000").split()
+
+
+# Swagger 설정
+SWAGGER_SETTINGS = {
+    "SECURITY_DEFINITIONS": {
+        "Bearer": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header",
+            "description": "JWT 인증 (예: Bearer <your_token>)",
+        }
+    },
+    "USE_SESSION_AUTH": False,  # Session 인증 버튼 숨김
+}
+
