@@ -14,6 +14,7 @@ dependencies = [
     "python-dotenv>=1.1.1",
     "django-allauth[socialaccount]>=65.0.2",
     "coverage>=7.10.6",
+    "drf-spectacular",
 ]
 
 [dependency-groups]

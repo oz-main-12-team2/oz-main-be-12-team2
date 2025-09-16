@@ -1,4 +1,6 @@
 from django.contrib.auth import authenticate
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -8,6 +10,20 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import ChangePasswordSerializer, UserProfileSerializer, UserSignUpSerializer
 
 
+@swagger_auto_schema(
+    methods=["post"],
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            "email": openapi.Schema(type=openapi.TYPE_STRING),
+            "name": openapi.Schema(type=openapi.TYPE_STRING),
+            "password": openapi.Schema(type=openapi.TYPE_STRING),
+            "password_confirm": openapi.Schema(type=openapi.TYPE_STRING),
+            "address": openapi.Schema(type=openapi.TYPE_STRING),
+        },
+        required=["email", "name", "password", "password_confirm"],
+    ),
+)
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def register(request):
@@ -21,6 +37,17 @@ def register(request):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+@swagger_auto_schema(
+    methods=["post"],
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            "email": openapi.Schema(type=openapi.TYPE_STRING),
+            "password": openapi.Schema(type=openapi.TYPE_STRING),
+        },
+        required=["email", "password"],
+    ),
+)
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def login(request):
@@ -47,6 +74,16 @@ def login(request):
     return Response({"error": "이메일 또는 비밀번호가 올바르지 않습니다."}, status=status.HTTP_400_BAD_REQUEST)
 
 
+@swagger_auto_schema(
+    methods=["post"],
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            "refresh": openapi.Schema(type=openapi.TYPE_STRING),
+        },
+        required=["refresh"],
+    ),
+)
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def logout(request):
@@ -62,6 +99,16 @@ def logout(request):
         return Response({"error": "로그아웃 처리 중 오류가 발생했습니다."}, status=status.HTTP_400_BAD_REQUEST)
 
 
+@swagger_auto_schema(
+    methods=["put"],
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            "name": openapi.Schema(type=openapi.TYPE_STRING),
+            "address": openapi.Schema(type=openapi.TYPE_STRING),
+        },
+    ),
+)
 @api_view(["GET", "PUT"])
 @permission_classes([IsAuthenticated])
 def user_profile(request):
@@ -89,6 +136,18 @@ def user_delete(request):
     return Response({"message": "회원탈퇴가 완료되었습니다."}, status=status.HTTP_200_OK)
 
 
+@swagger_auto_schema(
+    methods=["put"],
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            "old_password": openapi.Schema(type=openapi.TYPE_STRING),
+            "new_password": openapi.Schema(type=openapi.TYPE_STRING),
+            "new_password_confirm": openapi.Schema(type=openapi.TYPE_STRING),
+        },
+        required=["old_password", "new_password", "new_password_confirm"],
+    ),
+)
 @api_view(["PUT"])
 @permission_classes([IsAuthenticated])
 def change_password(request):

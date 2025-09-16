@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError
 from django.test import TestCase
 from django.urls import reverse
 from rest_framework import status
@@ -32,6 +33,92 @@ class UserModelTest(TestCase):
         self.assertEqual(user.email, "social@example.com")
         self.assertTrue(user.is_social)
         self.assertIsNone(user.password)
+
+    def test_create_user_without_email(self):
+        """이메일 없이 사용자 생성 시 ValueError"""
+        with self.assertRaises(ValueError) as context:
+            User.objects.create_user(email="", name="테스트 사용자", password="password123")
+        self.assertEqual(str(context.exception), "이메일은 필수입니다.")
+
+    def test_create_user_without_name(self):
+        """이름 없이 사용자 생성 시 ValueError"""
+        with self.assertRaises(ValueError) as context:
+            User.objects.create_user(email="test@example.com", name="", password="password123")
+        self.assertEqual(str(context.exception), "이름은 필수입니다.")
+
+    def test_create_user_without_password_for_normal_user(self):
+        """일반 사용자인데 비밀번호 없이 생성 시 ValueError"""
+        with self.assertRaises(ValueError) as context:
+            User.objects.create_user(email="test@example.com", name="테스트 사용자", password=None)
+        self.assertEqual(str(context.exception), "일반 회원가입 시 비밀번호는 필수입니다.")
+
+    def test_create_social_user_without_password(self):
+        """소셜 사용자는 비밀번호 없이 생성 가능"""
+        user = User.objects.create_user(email="social@example.com", name="소셜 사용자", password=None, is_social=True)
+        self.assertEqual(user.email, "social@example.com")
+        self.assertTrue(user.is_social)
+        self.assertIsNone(user.password)
+
+    def test_create_superuser_without_email(self):
+        """슈퍼유저 생성 시 이메일 없으면 ValueError"""
+        with self.assertRaises(ValueError) as context:
+            User.objects.create_superuser(email="superuser@example.com", name="슈퍼유저", password=None)
+        self.assertEqual(str(context.exception), "슈퍼유저는 비밀번호가 필수입니다.")
+
+    # UserModelTest 클래스에 추가할 메서드들
+
+    def test_user_str_method(self):
+        """User 모델의 __str__ 메서드 테스트"""
+        user = User.objects.create_user(email="str_test@example.com", name="문자열 테스트", password="password123")
+        self.assertEqual(str(user), "str_test@example.com")
+
+    def test_is_staff_property(self):
+        """is_staff 프로퍼티 테스트"""
+        # 일반 사용자
+        normal_user = User.objects.create_user(email="normal@example.com", name="일반 사용자", password="password123")
+        self.assertFalse(normal_user.is_staff)
+
+        # 관리자 사용자
+        admin_user = User.objects.create_user(
+            email="admin@example.com", name="관리자", password="password123", is_admin=True
+        )
+        self.assertTrue(admin_user.is_staff)
+
+    def test_save_method_social_user_password_none(self):
+        """소셜 사용자 저장 시 password가 None으로 설정되는지 테스트"""
+        user = User.objects.create_user(
+            email="social@example.com",
+            name="소셜 사용자",
+            password="temporary_password",  # 임시 패스워드 설정
+            is_social=True,
+        )
+        # save() 메서드에서 소셜 사용자는 password가 None으로 설정됨
+        self.assertIsNone(user.password)
+
+    def test_save_method_normal_user_without_password_new_user(self):
+        """신규 일반 사용자 생성 시 비밀번호 없으면 ValidationError"""
+        user = User(email="test@example.com", name="테스트 사용자")  # password 없음
+
+        with self.assertRaises(ValidationError) as context:
+            user.save()
+        self.assertEqual(str(context.exception), "['일반 회원가입 시 비밀번호는 필수입니다.']")
+
+    def test_clean_method_normal_user_without_password(self):
+        """clean 메서드에서 일반 사용자 비밀번호 검증"""
+        user = User(email="test@example.com", name="테스트 사용자")  # password 없음
+
+        with self.assertRaises(ValidationError) as context:
+            user.clean()
+        self.assertEqual(context.exception.message_dict["password"][0], "일반 회원가입 시 비밀번호는 필수입니다.")
+
+    def test_clean_method_social_user_without_password(self):
+        """소셜 사용자는 비밀번호 없어도 clean 통과"""
+        user = User(email="social@example.com", name="소셜 사용자", is_social=True)
+        # clean 호출 시 예외가 발생하지 않아야 함
+        try:
+            user.clean()
+        except ValidationError:
+            self.fail("소셜 사용자는 비밀번호 없어도 clean을 통과해야 합니다.")
 
 
 class UserAPITest(TestCase):
@@ -84,12 +171,30 @@ class UserAPITest(TestCase):
         self.assertIn("access", response.data)
         self.assertIn("refresh", response.data)
 
+    def test_user_login_missing_credentials(self):
+        """필수 정보 누락 시 에러"""
+        data = {}
+        response = self.client.post(self.login_url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data["error"], "이메일과 비밀번호를 입력해주세요.")
+
     def test_user_login_invalid_credentials(self):
         """잘못된 로그인 정보 테스트"""
         data = {"email": "nonexistent@example.com", "password": "wrongpass"}
         response = self.client.post(self.login_url, data, format="json")
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data["error"], "이메일 또는 비밀번호가 올바르지 않습니다.")
         self.assertIn("error", response.data)
+
+    def test_user_login_inactive_user(self):
+        """비활성화된 계정으로 로그인 시도 (Django 기본설정상 체크불가능)"""
+        User.objects.create_user(
+            email="inactive@example.com", name="비활성 사용자", password="password123", is_active=False
+        )
+
+        data = {"email": "inactive@example.com", "password": "password123"}
+        response = self.client.post(self.login_url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data["error"], "이메일 또는 비밀번호가 올바르지 않습니다.")
 
     def test_logout_without_refresh_token(self):
         """refresh_token 없이 호출"""
