@@ -60,8 +60,9 @@ def login(request):
 
     user = authenticate(username=email, password=password)
     if user:
-        if not user.is_active:
-            return Response({"error": "비활성화된 계정입니다."}, status=status.HTTP_400_BAD_REQUEST)
+        # 비활성계정 체크기능 , 장고기본 설정상 체크 불가능 + 보안상의 이유로 체크 안하는것을 권장
+        # if not user.is_active:
+        #     return Response({"error": "비활성화된 계정입니다."}, status=status.HTTP_400_BAD_REQUEST)
 
         refresh = RefreshToken.for_user(user)
         return Response(

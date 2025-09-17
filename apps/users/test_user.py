@@ -3,6 +3,7 @@ from django.test import TestCase
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import User
 
@@ -196,6 +197,18 @@ class UserAPITest(TestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.data["error"], "이메일 또는 비밀번호가 올바르지 않습니다.")
 
+    def test_logout_with_valid_refresh_token(self):
+        """유효한 refresh_token으로 정상 로그아웃"""
+        user = User.objects.create_user(
+            email="logouttest3@example.com", name="로그아웃 테스트3", password="logoutpass123"
+        )
+        self.client.force_authenticate(user=user)
+
+        refresh = RefreshToken.for_user(user)
+        response = self.client.post(self.logout_url, {"refresh": str(refresh)})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["message"], "로그아웃되었습니다.")
+
     def test_logout_without_refresh_token(self):
         """refresh_token 없이 호출"""
         # 사용자 생성 및 인증 설정
@@ -234,6 +247,15 @@ class UserAPITest(TestCase):
         data = {"name": "수정된 이름"}
         response = self.client.put(reverse("user_profile"), data, format="json")
         self.assertEqual(response.status_code, 200)
+
+    def test_user_profile_put_invalid_data(self):
+        """사용자 프로필 수정 실패 테스트"""
+        user = User.objects.create_user(email="profile@example.com", name="프로필 테스트", password="profilepass123")
+        self.client.force_authenticate(user=user)
+
+        data = {"name": ""}  # 잘못된 이름 형식
+        response = self.client.put(reverse("user_profile"), data, format="json")
+        self.assertEqual(response.status_code, 400)
 
     def test_user_delete(self):
         """회원 탈퇴 테스트"""
