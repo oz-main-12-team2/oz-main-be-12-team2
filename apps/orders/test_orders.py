@@ -54,9 +54,12 @@ class OrdersAPITestCase(TestCase):
         return payload
 
     def get_order_url(self, pk=None):
+        """
+        네임스페이스 포함 URL reverse
+        """
         if pk:
-            return reverse("orders-detail", kwargs={"pk": pk})
-        return reverse("orders-list")
+            return reverse("order:order-detail", kwargs={"pk": pk})
+        return reverse("order:order-list")
 
     # CRUD 테스트
     def test_list_orders(self):

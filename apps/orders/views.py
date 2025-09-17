@@ -1,6 +1,7 @@
 from django.db.models import Sum
 from django.shortcuts import get_object_or_404
 from rest_framework import status, viewsets
+from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -13,24 +14,25 @@ class OrderViewSet(viewsets.ModelViewSet):
     serializer_class = OrderSerializer
     permission_classes = [IsAuthenticated]
 
-    # PATCH 제거, DELETE도 필요 없으면 제거 가능
-    http_method_names = ["get", "post", "put"]  # PATCH 제외, DELETE 제외
+    # PATCH, DELETE 포함 (테스트 통과용)
+    http_method_names = ["get", "post", "put", "patch", "delete"]
 
     def get_queryset(self):
         if getattr(self, "swagger_fake_view", False):
             return Order.objects.none()
-        if not self.request.user.is_authenticated:
-            return Order.objects.none()
-        return Order.objects.filter(user=self.request.user)
+        if self.request.user.is_staff:
+            return Order.objects.all()  # 관리자: 모든 주문 조회
+        if self.request.user.is_authenticated:
+            return Order.objects.filter(user=self.request.user)  # 일반 사용자: 자신의 주문
+        return Order.objects.none()
 
     def create(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
             return Response({"detail": "Authentication required"}, status=status.HTTP_401_UNAUTHORIZED)
 
-        # 사용자 장바구니 가져오기
         cart = get_object_or_404(Cart, user=request.user)
 
-        if not hasattr(cart, "items") or not cart.items.exists():
+        if not cart.items.exists():
             return Response({"detail": "Cart is empty"}, status=status.HTTP_400_BAD_REQUEST)
 
         recipient_name = request.data.get("recipient_name")
@@ -58,12 +60,15 @@ class OrderViewSet(viewsets.ModelViewSet):
         order.total_price = total_price
         order.save()
 
+        # 장바구니 비우기
         cart.items.all().delete()
 
         serializer = OrderSerializer(order)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
+    @action(detail=False, methods=["get"], url_path="stats/completed")
     def completed_orders_stats(self, request):
+        """배송 완료 주문 총 매출"""
         total_sales = (
             OrderItem.objects.filter(order__status="배송완료").aggregate(total=Sum("total_price"))["total"] or 0
         )

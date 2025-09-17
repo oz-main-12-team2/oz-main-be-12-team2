@@ -18,7 +18,6 @@ schema_view = get_schema_view(
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-
     # 앱 API
     path("api/product/", include("apps.products.urls")),
     path("api/admin/product/", include(("apps.products.admin_urls", "products_admin"), namespace="products_admin")),
@@ -28,11 +27,9 @@ urlpatterns = [
     path("api/cart/", include("apps.carts.urls")),
     path("api/payment/", include("apps.payments.urls")),
     path("api/admin/payment/", include("apps.payments.admin_urls")),
-
     # Swagger 문서
     path("swagger/", schema_view.with_ui("swagger", cache_timeout=0), name="schema-swagger-ui"),
     path("redoc/", schema_view.with_ui("redoc", cache_timeout=0), name="schema-redoc"),
-
     # 인증
     path("accounts/", include("django.contrib.auth.urls")),
     path("accounts/", include("allauth.urls")),
