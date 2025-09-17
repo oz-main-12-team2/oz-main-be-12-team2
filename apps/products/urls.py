@@ -1,26 +1,16 @@
-from django.urls import path
+# apps/products/urls.py
 
-from . import views
+from django.urls import include, path
+from rest_framework.routers import DefaultRouter
+
+from .views import AdminProductViewSet, ProductViewSet
 
 app_name = "products"
 
+router = DefaultRouter()
+router.register(r"admin/products", AdminProductViewSet, basename="admin-product")
+router.register(r"products", ProductViewSet, basename="product")
+
 urlpatterns = [
-    # URL: /product/
-    path("", views.product_list, name="product_list"),
-    # URL: /product/ranking
-    path("ranking/", views.product_list, name="product_ranking"),
-    # URL: /product/123 (pk 값을 정수로 받음)
-    path("<int:pk>/", views.product_detail, name="product_detail"),
+    path("", include(router.urls)),
 ]
-
-
-# 이거는 프로젝트네임유알엘
-
-# from django.contrib import admin
-# from django.urls import path, include
-
-# urlpatterns = [
-#     path('admin/', admin.site.urls),
-#     # /product/로 시작하는 모든 요청을 products.urls로 전달
-#     path('product/', include('apps.products.urls')),
-# ]
