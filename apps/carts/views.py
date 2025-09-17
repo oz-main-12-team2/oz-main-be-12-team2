@@ -23,7 +23,9 @@ class CartProductCreateView(generics.CreateAPIView):
     def perform_create(self, serializer):
         cart, _ = Cart.objects.get_or_create(user=self.request.user)
         product = serializer.validated_data["product"]
-        quantity = serializer.validated_data.get("quantity", 1)  # 데이터가 없으면 기본값 1
+        quantity = serializer.validated_data.get(
+            "quantity", 1
+        )  # 데이터가 없으면 기본값 1
 
         cart_product, created = CartProduct.objects.get_or_create(
             cart=cart,
@@ -60,7 +62,10 @@ class CartProductUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
     def delete(self, request, *args, **kwargs):
         instance = self.get_object()
         self.perform_destroy(instance)
-        return Response({"detail": "상품이 장바구니에서 삭제되었습니다."}, status=status.HTTP_204_NO_CONTENT)
+        return Response(
+            {"detail": "상품이 장바구니에서 삭제되었습니다."},
+            status=status.HTTP_204_NO_CONTENT,
+        )
 
 
 # ✅ 장바구니 전체 비우기
@@ -70,7 +75,10 @@ class CartClearView(APIView):
     def delete(self, request):
         try:
             cart = Cart.objects.get(user=request.user)
-            cart.cart_products.all().delete()  # 해당 장바구니에 담긴 상품 전체 삭제
+            cart.items.all().delete()  # 해당 장바구니에 담긴 상품 전체 삭제
             return Response({"detail": "장바구니가 비워졌습니다."}, status=status.HTTP_204_NO_CONTENT)
         except Cart.DoesNotExist:
-            return Response({"detail": "장바구니가 존재하지 않습니다."}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"detail": "장바구니가 존재하지 않습니다."},
+                status=status.HTTP_404_NOT_FOUND,
+            )

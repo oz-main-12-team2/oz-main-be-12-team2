@@ -13,7 +13,9 @@ class UserModelTest(TestCase):
 
     def test_create_user(self):
         """일반 사용자 생성 테스트"""
-        user = User.objects.create_user(email="test@example.com", name="테스트 사용자", password="testpass123")
+        user = User.objects.create_user(
+            email="test@example.com", name="테스트 사용자", password="testpass123"
+        )
         self.assertEqual(user.email, "test@example.com")
         self.assertEqual(user.name, "테스트 사용자")
         self.assertFalse(user.is_admin)
@@ -22,7 +24,9 @@ class UserModelTest(TestCase):
 
     def test_create_superuser(self):
         """슈퍼유저 생성 테스트"""
-        user = User.objects.create_superuser(email="admin@example.com", name="관리자", password="adminpass123")
+        user = User.objects.create_superuser(
+            email="admin@example.com", name="관리자", password="adminpass123"
+        )
         self.assertEqual(user.email, "admin@example.com")
         self.assertTrue(user.is_admin)
         self.assertTrue(user.is_superuser)
@@ -30,7 +34,9 @@ class UserModelTest(TestCase):
 
     def test_create_social_user(self):
         """소셜 사용자 생성 테스트"""
-        user = User.objects.create_user(email="social@example.com", name="소셜 사용자", is_social=True)
+        user = User.objects.create_user(
+            email="social@example.com", name="소셜 사용자", is_social=True
+        )
         self.assertEqual(user.email, "social@example.com")
         self.assertTrue(user.is_social)
         self.assertIsNone(user.password)
@@ -161,7 +167,9 @@ class UserAPITest(TestCase):
         self.assertIn("password_confirm", response.data)
 
     def test_user_login(self):
-        User.objects.create_user(email="logintest@example.com", name="로그인 테스트", password="loginpass123")
+        User.objects.create_user(
+            email="logintest@example.com", name="로그인 테스트", password="loginpass123"
+        )
 
         """로그인 API 테스트"""
 
@@ -213,7 +221,9 @@ class UserAPITest(TestCase):
         """refresh_token 없이 호출"""
         # 사용자 생성 및 인증 설정
         user = User.objects.create_user(
-            email="logouttest@example.com", name="로그아웃 테스트", password="logoutpass123"
+            email="logouttest@example.com",
+            name="로그아웃 테스트",
+            password="logoutpass123",
         )
         self.client.force_authenticate(user=user)
 
@@ -224,7 +234,9 @@ class UserAPITest(TestCase):
         """잘못된 refresh_token으로 호출"""
         # 사용자 생성 및 인증 설정
         user = User.objects.create_user(
-            email="logouttest2@example.com", name="로그아웃 테스트2", password="logoutpass123"
+            email="logouttest2@example.com",
+            name="로그아웃 테스트2",
+            password="logoutpass123",
         )
         self.client.force_authenticate(user=user)
 
@@ -233,7 +245,9 @@ class UserAPITest(TestCase):
 
     def test_user_profile_get(self):
         """사용자 프로필 조회 테스트"""
-        user = User.objects.create_user(email="profile@example.com", name="프로필 테스트", password="profilepass123")
+        user = User.objects.create_user(
+            email="profile@example.com", name="프로필 테스트", password="profilepass123"
+        )
         self.client.force_authenticate(user=user)
 
         response = self.client.get(reverse("user_profile"))
@@ -241,7 +255,9 @@ class UserAPITest(TestCase):
 
     def test_user_profile_put_success(self):
         """사용자 프로필 수정 성공 테스트"""
-        user = User.objects.create_user(email="profile@example.com", name="프로필 테스트", password="profilepass123")
+        user = User.objects.create_user(
+            email="profile@example.com", name="프로필 테스트", password="profilepass123"
+        )
         self.client.force_authenticate(user=user)
 
         data = {"name": "수정된 이름"}
@@ -259,7 +275,9 @@ class UserAPITest(TestCase):
 
     def test_user_delete(self):
         """회원 탈퇴 테스트"""
-        user = User.objects.create_user(email="delete@example.com", name="탈퇴 테스트", password="deletepass123")
+        user = User.objects.create_user(
+            email="delete@example.com", name="탈퇴 테스트", password="deletepass123"
+        )
         self.client.force_authenticate(user=user)
 
         response = self.client.delete(reverse("user_delete"))
@@ -277,7 +295,10 @@ class AdminAPITest(TestCase):
         self.client = APIClient()
         # 관리자 사용자 생성
         self.admin_user = User.objects.create_user(
-            email="admin@example.com", name="관리자", password="adminpass123", is_admin=True
+            email="admin@example.com",
+            name="관리자",
+            password="adminpass123",
+            is_admin=True,
         )
         # 일반 사용자 생성
         self.normal_user = User.objects.create_user(
@@ -433,8 +454,12 @@ class ChangePasswordTest(TestCase):
 
     def setUp(self):
         self.client = APIClient()
-        self.user = User.objects.create_user(email="test@example.com", name="테스트 사용자", password="oldpassword123")
-        self.social_user = User.objects.create_user(email="social@example.com", name="소셜 사용자", is_social=True)
+        self.user = User.objects.create_user(
+            email="test@example.com", name="테스트 사용자", password="oldpassword123"
+        )
+        self.social_user = User.objects.create_user(
+            email="social@example.com", name="소셜 사용자", is_social=True
+        )
         self.change_password_url = "/api/user/change-password/"
 
     def test_change_password_success(self):

@@ -40,7 +40,9 @@ class UserManager(BaseUserManager):
 class User(AbstractBaseUser, PermissionsMixin, TimestampModel):
     email = models.EmailField(max_length=255, unique=True, verbose_name="이메일")
     name = models.CharField(max_length=100, verbose_name="이름")
-    password = models.CharField(max_length=255, null=True, blank=True, verbose_name="비밀번호")
+    password = models.CharField(
+        max_length=255, null=True, blank=True, verbose_name="비밀번호"
+    )
     address = models.CharField(max_length=100, blank=True, verbose_name="주소")
     is_admin = models.BooleanField(default=False, verbose_name="관리자 여부")
     is_social = models.BooleanField(default=False, verbose_name="소셜 회원가입 여부")
@@ -79,4 +81,6 @@ class User(AbstractBaseUser, PermissionsMixin, TimestampModel):
         super().clean()
 
         if not self.is_social and not self.password:
-            raise ValidationError({"password": "일반 회원가입 시 비밀번호는 필수입니다."})
+            raise ValidationError(
+                {"password": "일반 회원가입 시 비밀번호는 필수입니다."}
+            )

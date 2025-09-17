@@ -33,7 +33,9 @@ def register(request):
     serializer = UserSignUpSerializer(data=request.data)
     if serializer.is_valid():
         user = serializer.save()
-        return Response(UserProfileSerializer(user).data, status=status.HTTP_201_CREATED)
+        return Response(
+            UserProfileSerializer(user).data, status=status.HTTP_201_CREATED
+        )
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -56,7 +58,10 @@ def login(request):
     password = request.data.get("password")
 
     if not email or not password:
-        return Response({"error": "이메일과 비밀번호를 입력해주세요."}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {"error": "이메일과 비밀번호를 입력해주세요."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
     user = authenticate(username=email, password=password)
     if user:
@@ -74,7 +79,10 @@ def login(request):
             }
         )
 
-    return Response({"error": "이메일 또는 비밀번호가 올바르지 않습니다."}, status=status.HTTP_400_BAD_REQUEST)
+    return Response(
+        {"error": "이메일 또는 비밀번호가 올바르지 않습니다."},
+        status=status.HTTP_400_BAD_REQUEST,
+    )
 
 
 @swagger_auto_schema(
@@ -99,7 +107,10 @@ def logout(request):
 
         return Response({"message": "로그아웃되었습니다."}, status=status.HTTP_200_OK)
     except Exception:
-        return Response({"error": "로그아웃 처리 중 오류가 발생했습니다."}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {"error": "로그아웃 처리 중 오류가 발생했습니다."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
 
 @swagger_auto_schema(
@@ -136,7 +147,9 @@ def user_delete(request):
     """회원 탈퇴"""
     user = request.user
     user.delete()
-    return Response({"message": "회원탈퇴가 완료되었습니다."}, status=status.HTTP_200_OK)
+    return Response(
+        {"message": "회원탈퇴가 완료되었습니다."}, status=status.HTTP_200_OK
+    )
 
 
 @swagger_auto_schema(
@@ -160,7 +173,8 @@ def change_password(request):
     # 소셜 로그인 사용자는 비밀번호 변경 불가
     if user.is_social:
         return Response(
-            {"error": "소셜 로그인 사용자는 비밀번호를 변경할 수 없습니다."}, status=status.HTTP_400_BAD_REQUEST
+            {"error": "소셜 로그인 사용자는 비밀번호를 변경할 수 없습니다."},
+            status=status.HTTP_400_BAD_REQUEST,
         )
 
     serializer = ChangePasswordSerializer(data=request.data)
@@ -170,12 +184,18 @@ def change_password(request):
 
         # 기존 비밀번호 확인
         if not user.check_password(old_password):
-            return Response({"error": "기존 비밀번호가 올바르지 않습니다."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "기존 비밀번호가 올바르지 않습니다."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         # 새 비밀번호 설정
         user.set_password(new_password)
         user.save()
 
-        return Response({"message": "비밀번호가 성공적으로 변경되었습니다."}, status=status.HTTP_200_OK)
+        return Response(
+            {"message": "비밀번호가 성공적으로 변경되었습니다."},
+            status=status.HTTP_200_OK,
+        )
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
