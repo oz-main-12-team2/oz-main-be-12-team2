@@ -1,5 +1,4 @@
 from rest_framework import generics, permissions
-from rest_framework.authentication import TokenAuthentication
 
 from .models import Payment
 from .serializers import PaymentSerializer
@@ -9,7 +8,6 @@ from .serializers import PaymentSerializer
 class AdminPaymentListView(generics.ListAPIView):
     queryset = Payment.objects.all().order_by("-created_at")
     serializer_class = PaymentSerializer
-    authentication_classes = [TokenAuthentication]
     permission_classes = [permissions.IsAdminUser]
 
 
@@ -17,5 +15,4 @@ class AdminPaymentListView(generics.ListAPIView):
 class AdminPaymentDetailView(generics.RetrieveAPIView):
     queryset = Payment.objects.all()
     serializer_class = PaymentSerializer
-    authentication_classes = [TokenAuthentication]
     permission_classes = [permissions.IsAdminUser]
