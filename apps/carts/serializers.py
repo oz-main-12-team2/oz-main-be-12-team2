@@ -9,7 +9,7 @@ class CartProductSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CartProduct
-        fields = ["id", "product", "product_name", "product_price", "quantity"]
+        fields = ["id", "product_name", "product_price", "quantity"]
 
     def validate_quantity(self, value):
         if value < 1:
@@ -18,9 +18,9 @@ class CartProductSerializer(serializers.ModelSerializer):
 
 
 class CartSerializer(serializers.ModelSerializer):
-    cart_products = CartProductSerializer(many=True, read_only=True)
+    items = CartProductSerializer(many=True, read_only=True)
 
     class Meta:
         model = Cart
-        fields = ["id", "user", "created_at", "updated_at", "cart_products"]
-        read_only_fields = ["id", "created_at", "updated_at", "user"]
+        fields = ["items"]
+        # read_only_fields = ["user", "id", "created_at", "updated_at"]
