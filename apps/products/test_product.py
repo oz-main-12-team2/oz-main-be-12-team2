@@ -22,7 +22,9 @@ class ProductModelTest(APITestCase):
 
     def test_product_creation(self):
         """상품 모델이 정상적으로 생성되는지 테스트합니다."""
-        product = Product.objects.create(name="테스트 상품", description="테스트 설명", author="테스트 작가", price="19.99", stock=100)
+        product = Product.objects.create(
+            name="테스트 상품", description="테스트 설명", author="테스트 작가", price="19.99", stock=100
+        )
         self.assertEqual(product.name, "테스트 상품")
 
     def test_product_string_representation(self):
@@ -75,13 +77,21 @@ class AdminViewTest(APITestCase):
 
         # 테스트용 주문 데이터 생성
         mock_today = timezone.make_aware(datetime(2025, 9, 15, 10, 0, 0))
-        order_today = Order.objects.create(user=cls.normal_user, status='배송완료', total_price=0) #order관련 에러 토탈값 우선 0설정
-        OrderItem.objects.create(order=order_today, product=product_for_stats1, quantity=2, unit_price=product_for_stats1.price)
+        order_today = Order.objects.create(
+            user=cls.normal_user, status="배송완료", total_price=0
+        )  # order관련 에러 토탈값 우선 0설정
+        OrderItem.objects.create(
+            order=order_today, product=product_for_stats1, quantity=2, unit_price=product_for_stats1.price
+        )
         order_today.created_at = mock_today
         order_today.save()
 
-        order_5_days_ago = Order.objects.create(user=cls.normal_user, status='배송완료', total_price=0) #order관련 에러 토탈값 우선 0설정
-        OrderItem.objects.create(order=order_5_days_ago, product=product_for_stats1, quantity=3, unit_price=product_for_stats1.price)
+        order_5_days_ago = Order.objects.create(
+            user=cls.normal_user, status="배송완료", total_price=0
+        )  # order관련 에러 토탈값 우선 0설정
+        OrderItem.objects.create(
+            order=order_5_days_ago, product=product_for_stats1, quantity=3, unit_price=product_for_stats1.price
+        )
         order_5_days_ago.created_at = mock_today - timedelta(days=5)
         order_5_days_ago.save()
 
@@ -100,14 +110,14 @@ class AdminViewTest(APITestCase):
     def test_admin_product_create_success(self):
         """관리자가 상품을 성공적으로 생성하는지 테스트합니다."""
         data = {"name": "새 상품", "price": "20000", "stock": 10, "author": "새 작가"}
-        response = self.client.post(self.create_url, data, format='json')
+        response = self.client.post(self.create_url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertTrue(Product.objects.filter(name="새 상품").exists())
 
     def test_admin_product_update_success(self):
         """관리자가 상품 정보를 성공적으로 수정하는지 테스트합니다."""
         data = {"name": "수정된 상품", "price": "9999"}
-        response = self.client.patch(self.update_url, data, format='json')
+        response = self.client.patch(self.update_url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.product_for_crud.refresh_from_db()
         self.assertEqual(self.product_for_crud.name, "수정된 상품")

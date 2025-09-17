@@ -23,9 +23,7 @@ class CartProductCreateView(generics.CreateAPIView):
     def perform_create(self, serializer):
         cart, _ = Cart.objects.get_or_create(user=self.request.user)
         product = serializer.validated_data["product"]
-        quantity = serializer.validated_data.get(
-            "quantity", 1
-        )  # 데이터가 없으면 기본값 1
+        quantity = serializer.validated_data.get("quantity", 1)  # 데이터가 없으면 기본값 1
 
         cart_product, created = CartProduct.objects.get_or_create(
             cart=cart,

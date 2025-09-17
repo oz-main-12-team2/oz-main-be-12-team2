@@ -33,9 +33,7 @@ def register(request):
     serializer = UserSignUpSerializer(data=request.data)
     if serializer.is_valid():
         user = serializer.save()
-        return Response(
-            UserProfileSerializer(user).data, status=status.HTTP_201_CREATED
-        )
+        return Response(UserProfileSerializer(user).data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -145,9 +143,7 @@ def user_delete(request):
     """회원 탈퇴"""
     user = request.user
     user.delete()
-    return Response(
-        {"message": "회원탈퇴가 완료되었습니다."}, status=status.HTTP_200_OK
-    )
+    return Response({"message": "회원탈퇴가 완료되었습니다."}, status=status.HTTP_200_OK)
 
 
 @swagger_auto_schema(

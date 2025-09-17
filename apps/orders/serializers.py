@@ -16,7 +16,6 @@ class OrderItemSerializer(serializers.ModelSerializer):
             "quantity",
             "unit_price",
             "total_price",
-            "created_at",
         ]
 
 
