@@ -65,8 +65,10 @@ def login(request):
         #     return Response({"error": "비활성화된 계정입니다."}, status=status.HTTP_400_BAD_REQUEST)
 
         refresh = RefreshToken.for_user(user)
+        serializer = UserProfileSerializer(user)
         return Response(
             {
+                "user": serializer.data,
                 "access": str(refresh.access_token),
                 "refresh": str(refresh),
             }
