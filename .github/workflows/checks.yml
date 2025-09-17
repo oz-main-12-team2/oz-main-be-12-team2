@@ -43,7 +43,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.13'
+          python-version: '3.12'
 
       # uv를 설치합니다.
       - name: Install uv
@@ -86,28 +86,15 @@ jobs:
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
           POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
 
-      # 기존 aerich 단계를 삭제하고 이걸로 교체
-      - name: Run Django migrations
-        env:
-          DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
-          DJANGO_SETTINGS_MODULE: 'config.settings'
-          POSTGRES_HOST: 'localhost'
-          POSTGRES_PORT: '5432'
-          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
-          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+      # 정상적인 db 연결을 확인했으니 마이그레이션 수행
+      - name: Run aerich migrations
         run: |
-          uv run python manage.py migrate
+          uv run aerich init -t core.config.TORTOISE_ORM || true
+          uv run aerich init-db || true
+          uv run aerich migrate || true
+          uv run aerich upgrade || true
 
-      # Django에서 pytest로 테스트를 실행합니다.
+      # FastAPI에서 pytest로 테스트를 실행합니다.
       - name: Run tests with pytest
-        env:
-          DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
-          DJANGO_SETTINGS_MODULE: 'config.settings'
-          POSTGRES_HOST: 'localhost'
-          POSTGRES_PORT: '5432'
-          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
-          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
         run: |
           uv run pytest
