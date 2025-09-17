@@ -1,5 +1,4 @@
 from rest_framework import generics, permissions, serializers, status
-from rest_framework.authentication import TokenAuthentication
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -10,7 +9,6 @@ from .serializers import CartProductSerializer, CartSerializer
 # ✅ 장바구니 조회
 class CartListView(generics.ListAPIView):
     serializer_class = CartSerializer
-    authentication_classes = [TokenAuthentication]  # ✅ 토큰 인증
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
@@ -20,7 +18,6 @@ class CartListView(generics.ListAPIView):
 # ✅ 장바구니 상품 추가
 class CartProductCreateView(generics.CreateAPIView):
     serializer_class = CartProductSerializer
-    authentication_classes = [TokenAuthentication]  # ✅ 토큰 인증
     permission_classes = [permissions.IsAuthenticated]
 
     def perform_create(self, serializer):
@@ -45,7 +42,6 @@ class CartProductCreateView(generics.CreateAPIView):
 # ✅ 장바구니 상품 수정(수량 변경) + 삭제
 class CartProductUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = CartProductSerializer
-    authentication_classes = [TokenAuthentication]  # ✅ 토큰 인증
     permission_classes = [permissions.IsAuthenticated]
 
     http_method_names = ["put", "delete"]
@@ -69,7 +65,6 @@ class CartProductUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
 
 # ✅ 장바구니 전체 비우기
 class CartClearView(APIView):
-    authentication_classes = [TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
 
     def delete(self, request):

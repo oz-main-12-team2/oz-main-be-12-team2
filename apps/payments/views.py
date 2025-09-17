@@ -1,5 +1,4 @@
 from rest_framework import generics, permissions
-from rest_framework.authentication import TokenAuthentication
 from rest_framework.exceptions import PermissionDenied
 
 from .models import Payment
@@ -9,7 +8,6 @@ from .serializers import PaymentSerializer
 # ✅ 결제 내역 생성
 class PaymentCreateView(generics.CreateAPIView):
     serializer_class = PaymentSerializer
-    authentication_classes = [TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
 
     def perform_create(self, serializer):
@@ -22,7 +20,6 @@ class PaymentCreateView(generics.CreateAPIView):
 # ✅ 본인 결제 내역 조회 (리스트)
 class UserPaymentListView(generics.ListAPIView):
     serializer_class = PaymentSerializer
-    authentication_classes = [TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
@@ -32,7 +29,6 @@ class UserPaymentListView(generics.ListAPIView):
 # ✅ 본인 결제 상세 조회
 class UserPaymentDetailView(generics.RetrieveAPIView):
     serializer_class = PaymentSerializer
-    authentication_classes = [TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
