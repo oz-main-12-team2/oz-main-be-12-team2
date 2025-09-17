@@ -15,8 +15,8 @@ class Cart(TimestampModel):
 
 
 class CartProduct(models.Model):
-    cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name="cart_products")
-    product = models.ForeignKey("products.Product", on_delete=models.CASCADE, related_name="cart_products")
+    cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name="items")
+    product = models.ForeignKey("products.Product", on_delete=models.CASCADE, related_name="items")
     quantity = models.PositiveIntegerField(default=1, validators=[MinValueValidator(1)])  # 기본값 & 최솟값 1로 지정
 
     class Meta:

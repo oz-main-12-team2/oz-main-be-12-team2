@@ -70,7 +70,7 @@ class CartClearView(APIView):
     def delete(self, request):
         try:
             cart = Cart.objects.get(user=request.user)
-            cart.cart_products.all().delete()  # 해당 장바구니에 담긴 상품 전체 삭제
+            cart.items.all().delete()  # 해당 장바구니에 담긴 상품 전체 삭제
             return Response({"detail": "장바구니가 비워졌습니다."}, status=status.HTTP_204_NO_CONTENT)
         except Cart.DoesNotExist:
             return Response({"detail": "장바구니가 존재하지 않습니다."}, status=status.HTTP_404_NOT_FOUND)
