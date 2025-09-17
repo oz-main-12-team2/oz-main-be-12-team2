@@ -11,6 +11,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase  # TestCase 대신 APITestCase를 기본으로 사용
 
 from apps.orders.models import Order, OrderItem
+
 from .models import Product
 
 User = get_user_model()
