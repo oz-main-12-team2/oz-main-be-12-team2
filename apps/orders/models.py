@@ -19,9 +19,7 @@ class Order(TimestampModel):
     recipient_name = models.CharField(max_length=10, blank=False)
     recipient_phone = models.CharField(max_length=20, blank=False)
     recipient_address = models.TextField(blank=False)
-    status = models.CharField(
-        max_length=20, choices=STATUS_CHOICES, default="결제 완료"
-    )
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="결제 완료")
 
     def save(self, *args, **kwargs):
         if not self.order_number:
@@ -38,7 +36,6 @@ class OrderItem(models.Model):
     quantity = models.PositiveIntegerField(default=1)
     unit_price = models.DecimalField(max_digits=10, decimal_places=2)
     total_price = models.DecimalField(max_digits=10, decimal_places=2, editable=False)
-    created_at = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
         self.total_price = self.unit_price * self.quantity
