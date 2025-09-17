@@ -11,6 +11,7 @@ from apps.users.models import User
 class CartAPITest(TestCase):
     """장바구니 API 테스트"""
 
+    # TODO : 한번만 실행하는 방법으로 바꾸기
     def setUp(self):
         self.client = APIClient()
         self.user = User.objects.create_user(email="test@example.com", name="테스트 사용자", password="testpass123")
