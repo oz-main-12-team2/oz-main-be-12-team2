@@ -13,7 +13,9 @@ class CartAPITest(TestCase):
 
     def setUp(self):
         self.client = APIClient()
-        self.user = User.objects.create_user(email="test@example.com", name="테스트 사용자", password="testpass123")
+        self.user = User.objects.create_user(
+            email="test@example.com", name="테스트 사용자", password="testpass123"
+        )
         self.client.force_authenticate(user=self.user)
 
         self.product = Product.objects.create(
@@ -46,7 +48,9 @@ class CartAPITest(TestCase):
     def test_update_cart_product_quantity(self):
         """상품 수량 변경"""
         cart, _ = Cart.objects.get_or_create(user=self.user)
-        cart_product = CartProduct.objects.create(cart=cart, product=self.product, quantity=1)
+        cart_product = CartProduct.objects.create(
+            cart=cart, product=self.product, quantity=1
+        )
 
         url = reverse("cart-update", args=[cart_product.id])
         data = {"product": self.product.id, "quantity": 5}
@@ -57,7 +61,9 @@ class CartAPITest(TestCase):
     def test_delete_cart_product(self):
         """장바구니 상품 삭제"""
         cart, _ = Cart.objects.get_or_create(user=self.user)
-        cart_product = CartProduct.objects.create(cart=cart, product=self.product, quantity=1)
+        cart_product = CartProduct.objects.create(
+            cart=cart, product=self.product, quantity=1
+        )
 
         url = reverse("cart-update", args=[cart_product.id])
         response = self.client.delete(url)

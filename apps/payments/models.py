@@ -14,7 +14,9 @@ class PaymentStatus(models.TextChoices):
 
 
 class Payment(models.Model):
-    order = models.ForeignKey("orders.Order", on_delete=models.CASCADE, related_name="payments")
+    order = models.ForeignKey(
+        "orders.Order", on_delete=models.CASCADE, related_name="payments"
+    )
     method = models.CharField(max_length=20, choices=PaymentMethod.choices)
     total_price = models.DecimalField(max_digits=10, decimal_places=2)
     status = models.CharField(max_length=10, choices=PaymentStatus.choices)

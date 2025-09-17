@@ -26,7 +26,9 @@ class UserPaymentListView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return Payment.objects.filter(order__user=self.request.user).order_by("-created_at")
+        return Payment.objects.filter(order__user=self.request.user).order_by(
+            "-created_at"
+        )
 
 
 # ✅ 본인 결제 상세 조회

@@ -22,7 +22,10 @@ class OrderViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
-            return Response({"detail": "Authentication required"}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response(
+                {"detail": "Authentication required"},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
 
         # 사용자 장바구니 가져오기
         cart = get_object_or_404(Cart, user=request.user)
@@ -66,6 +69,9 @@ class OrderViewSet(viewsets.ModelViewSet):
 
     def completed_orders_stats(self, request):
         total_sales = (
-            OrderItem.objects.filter(order__status="배송완료").aggregate(total=Sum("total_price"))["total"] or 0
+            OrderItem.objects.filter(order__status="배송완료").aggregate(
+                total=Sum("total_price")
+            )["total"]
+            or 0
         )
         return Response({"total_sales": total_sales})
