@@ -87,7 +87,10 @@ class TestUserPaymentAPI:
 
     def test_user_can_list_own_payments(self):
         Payment.objects.create(
-            order=self.order, method=PaymentMethod.CARD, total_price=10000, status=PaymentStatus.SUCCESS
+            order=self.order,
+            method=PaymentMethod.CARD,
+            total_price=10000,
+            status=PaymentStatus.SUCCESS,
         )
 
         self.client.force_authenticate(user=self.user)
@@ -99,7 +102,10 @@ class TestUserPaymentAPI:
 
     def test_user_can_retrieve_own_payment(self):
         payment = Payment.objects.create(
-            order=self.order, method=PaymentMethod.CARD, total_price=10000, status=PaymentStatus.SUCCESS
+            order=self.order,
+            method=PaymentMethod.CARD,
+            total_price=10000,
+            status=PaymentStatus.SUCCESS,
         )
 
         self.client.force_authenticate(user=self.user)
@@ -122,7 +128,10 @@ class TestUserPaymentAPI:
             recipient_address="부산시 테스트구",
         )
         other_payment = Payment.objects.create(
-            order=other_order, method=PaymentMethod.CARD, total_price=20000, status=PaymentStatus.SUCCESS
+            order=other_order,
+            method=PaymentMethod.CARD,
+            total_price=20000,
+            status=PaymentStatus.SUCCESS,
         )
 
         self.client.force_authenticate(user=self.user)

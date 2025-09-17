@@ -19,7 +19,9 @@ class Order(TimestampModel):
     recipient_name = models.CharField(max_length=10, blank=False)
     recipient_phone = models.CharField(max_length=20, blank=False)
     recipient_address = models.TextField(blank=False)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="결제 완료")
+    status = models.CharField(
+        max_length=20, choices=STATUS_CHOICES, default="결제 완료"
+    )
 
     def save(self, *args, **kwargs):
         if not self.order_number:
