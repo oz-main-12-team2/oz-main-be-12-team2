@@ -5,6 +5,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.pagination import PageNumberPagination
 
 from .models import User
 from .serializers import AdminUserSerializer, AdminUserUpdateSerializer
@@ -25,8 +26,10 @@ def admin_user_list(request):
         return Response({"error": "관리자만 접근 가능합니다."}, status=status.HTTP_403_FORBIDDEN)
 
     users = User.objects.all().order_by("-created_at")
-    serializer = AdminUserSerializer(users, many=True)
-    return Response(serializer.data)
+    paginator = PageNumberPagination()
+    paginated_users = paginator.paginate_queryset(users, request)
+    serializer = AdminUserSerializer(paginated_users, many=True)
+    return paginator.get_paginated_response(serializer.data)
 
 
 class AdminUserDetailView(APIView):
