@@ -100,7 +100,7 @@ jobs:
           uv run python manage.py migrate
 
       # Django에서 pytest로 테스트를 실행합니다.
-      - name: Run tests with pytest
+      - name: Run tests with Django Test
         env:
           DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
           DJANGO_SETTINGS_MODULE: 'config.settings'
@@ -110,4 +110,4 @@ jobs:
           POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
         run: |
-          uv run pytest
+          uv run manage.py test
