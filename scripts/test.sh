@@ -32,7 +32,7 @@ echo "OK"
 #echo "OK"
 
 # -----------------------------------------------------------
-# pytest + coverage: 단위 테스트 실행 및 커버리지 리포트 생성
+# Django test + coverage: 단위 테스트 실행 및 커버리지 리포트 생성
 # -----------------------------------------------------------
 echo "Starting pytest with coverage"
 uv run coverage run manage.py test
