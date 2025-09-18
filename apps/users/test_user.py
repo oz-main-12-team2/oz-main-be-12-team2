@@ -357,7 +357,6 @@ class AdminAPITest(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-
     def test_admin_user_detail_put_not_found(self):
         """존재하지 않는 사용자 수정 시도 시 404"""
         self.client.force_authenticate(user=self.admin_user)
