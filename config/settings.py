@@ -46,11 +46,6 @@ INSTALLED_APPS = [
     "drf_yasg",
     # 소셜로그인 서드파티
     "django.contrib.sites",
-    "allauth",
-    "allauth.account",
-    "allauth.socialaccount",
-    "allauth.socialaccount.providers.google",
-    "allauth.socialaccount.providers.naver",
 ]
 
 # REST Framework 설정
@@ -72,7 +67,6 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "allauth.account.middleware.AccountMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -149,38 +143,6 @@ if DEBUG:
     mimetypes.add_type("application/javascript", ".js", True)
     mimetypes.add_type("text/css", ".css", True)
 
-# allauth 설정
-ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_USERNAME_REQUIRED = False
-ACCOUNT_AUTHENTICATION_METHOD = "email"
-ACCOUNT_EMAIL_VERIFICATION = "none"
-SOCIALACCOUNT_AUTO_SIGNUP = True
-
-# 커스텀 User 모델 호환 설정 추가
-ACCOUNT_USER_MODEL_USERNAME_FIELD = None
-ACCOUNT_USER_MODEL_EMAIL_FIELD = "email"
-SOCIALACCOUNT_QUERY_EMAIL = True
-SOCIALACCOUNT_EMAIL_REQUIRED = True
-SOCIALACCOUNT_ADAPTER = "apps.users.adapters.CustomSocialAccountAdapter"
-
-SOCIALACCOUNT_PROVIDERS = {
-    "google": {
-        "APP": {
-            "client_id": os.getenv("GOOGLE_CLIENT_ID"),
-            "secret": os.getenv("GOOGLE_CLIENT_SECRET"),
-        },
-        "SCOPE": ["profile", "email"],
-        "AUTH_PARAMS": {"access_type": "online"},
-    },
-    "naver": {
-        "APP": {
-            "client_id": os.getenv("NAVER_CLIENT_ID"),
-            "secret": os.getenv("NAVER_CLIENT_SECRET"),
-        },
-        "SCOPE": ["profile"],
-    },
-}
-
 SITE_ID = 1
 
 # 개발환경용 사이트 도메인
@@ -204,3 +166,14 @@ SWAGGER_SETTINGS = {
     },
     "USE_SESSION_AUTH": False,  # Session 인증 버튼 숨김
 }
+
+# OAuth 콜백 URL
+GOOGLE_CALLBACK_URL = "http://localhost:8000/api/user/google/callback/"
+NAVER_CALLBACK_URL = "http://localhost:8000/api/user/naver/callback/"
+
+NAVER_CLIENT_ID = os.getenv("NAVER_CLIENT_ID")
+NAVER_CLIENT_SECRET = os.getenv("NAVER_CLIENT_SECRET")
+NAVER_REDIRECT_URI = os.getenv("NAVER_REDIRECT_URI")
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
+GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
+GOOGLE_REDIRECT_URI = os.getenv("GOOGLE_REDIRECT_URI")

@@ -1,4 +1,4 @@
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, get_user_model
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
@@ -8,6 +8,8 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from .serializers import ChangePasswordSerializer, UserProfileSerializer, UserSignUpSerializer
+
+User = get_user_model()
 
 
 @swagger_auto_schema(
@@ -28,8 +30,6 @@ from .serializers import ChangePasswordSerializer, UserProfileSerializer, UserSi
 @permission_classes([AllowAny])
 def register(request):
     """일반 회원가입"""
-    print(f"Request data: {request.data}")
-    print(f"Content type: {request.content_type}")
     serializer = UserSignUpSerializer(data=request.data)
     if serializer.is_valid():
         user = serializer.save()
