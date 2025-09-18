@@ -28,6 +28,7 @@ urlpatterns = [
     path("api/cart/", include("apps.carts.urls")),
     path("api/payments/", include("apps.payments.urls")),
     path("api/admin/payments/", include("apps.payments.admin_urls")),
+    path("api/admin/stats/", include("apps.stats.urls")),
     # Swagger 문서
     path("swagger/", schema_view.with_ui("swagger", cache_timeout=0), name="schema-swagger-ui"),
     path("redoc/", schema_view.with_ui("redoc", cache_timeout=0), name="schema-redoc"),
