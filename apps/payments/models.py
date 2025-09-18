@@ -8,6 +8,7 @@ class PaymentMethod(models.TextChoices):
 
 
 class PaymentStatus(models.TextChoices):
+    PENDING = "대기", "대기"  # 실제 결제 서비스 구현시 사용 예정
     SUCCESS = "성공", "성공"
     FAIL = "실패", "실패"
     CANCEL = "취소", "취소"
