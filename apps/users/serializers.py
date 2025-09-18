@@ -29,22 +29,6 @@ class UserSignUpSerializer(serializers.ModelSerializer):
         return user
 
 
-# django-allauth 사용시 불필요
-# class SocialSignUpSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = User
-#         fields = ["email", "name", "address"]
-#         extra_kwargs = {
-#             "address": {"required": False},
-#         }
-#
-#     def create(self, validated_data):
-#         validated_data["is_social"] = True
-#         user = User(**validated_data)
-#         user.save()
-#         return user
-
-
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
