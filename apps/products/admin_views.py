@@ -1,7 +1,8 @@
 from django.shortcuts import get_object_or_404
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 
 from .models import Product
@@ -11,6 +12,7 @@ from .serializers import ProductSerializer
 # 상품 등록 (POST)
 @swagger_auto_schema(method="post", request_body=ProductSerializer)
 @api_view(["POST"])
+@permission_classes([IsAdminUser])
 def admin_product_create(request):
     serializer = ProductSerializer(data=request.data)
     if serializer.is_valid():
@@ -28,6 +30,7 @@ def admin_product_create(request):
     request_body=ProductSerializer,
 )
 @api_view(["GET", "PUT", "DELETE"])
+@permission_classes([IsAdminUser])
 def admin_product_detail_update_delete(request, pk):
     product = get_object_or_404(Product, pk=pk)
 
