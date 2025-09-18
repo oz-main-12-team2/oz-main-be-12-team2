@@ -10,5 +10,9 @@ urlpatterns = [
     # 상품 통계
     path("statistics/", stats_views.ProductSalesStatisticsAPIView.as_view(), name="product_sales_statistics"),
     # 재고 총량
-    path("stocks", stats_views.ProductStockAPIView.as_view(), name="product-stocks",),
+    path(
+        "stocks",
+        stats_views.ProductStockAPIView.as_view(),
+        name="product-stocks",
+    ),
 ]

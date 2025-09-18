@@ -107,7 +107,8 @@ class ProductStockAPIView(APIView):
 
             data = {"total_stock": total_stock}
 
-            return Response(data,
+            return Response(
+                data,
                 status=status.HTTP_200_OK,
             )
 
