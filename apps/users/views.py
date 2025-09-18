@@ -24,7 +24,7 @@ def register(request):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@swagger_auto_schema(methods=["post"],request_body=UserSignUpSerializer)
+@swagger_auto_schema(methods=["post"], request_body=UserSignUpSerializer)
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def login(request):
@@ -125,7 +125,7 @@ def user_delete(request):
     return Response({"message": "회원탈퇴가 완료되었습니다."}, status=status.HTTP_200_OK)
 
 
-@swagger_auto_schema(methods=["put"],request_body=ChangePasswordSerializer)
+@swagger_auto_schema(methods=["put"], request_body=ChangePasswordSerializer)
 @api_view(["PUT"])
 @permission_classes([IsAuthenticated])
 def change_password(request):
