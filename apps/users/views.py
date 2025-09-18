@@ -12,20 +12,7 @@ from .serializers import ChangePasswordSerializer, UserProfileSerializer, UserSi
 User = get_user_model()
 
 
-@swagger_auto_schema(
-    methods=["post"],
-    request_body=openapi.Schema(
-        type=openapi.TYPE_OBJECT,
-        properties={
-            "email": openapi.Schema(type=openapi.TYPE_STRING),
-            "name": openapi.Schema(type=openapi.TYPE_STRING),
-            "password": openapi.Schema(type=openapi.TYPE_STRING),
-            "password_confirm": openapi.Schema(type=openapi.TYPE_STRING),
-            "address": openapi.Schema(type=openapi.TYPE_STRING),
-        },
-        required=["email", "name", "password", "password_confirm"],
-    ),
-)
+@swagger_auto_schema(methods=["post"], equest_body=UserSignUpSerializer)
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def register(request):
@@ -37,17 +24,7 @@ def register(request):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@swagger_auto_schema(
-    methods=["post"],
-    request_body=openapi.Schema(
-        type=openapi.TYPE_OBJECT,
-        properties={
-            "email": openapi.Schema(type=openapi.TYPE_STRING),
-            "password": openapi.Schema(type=openapi.TYPE_STRING),
-        },
-        required=["email", "password"],
-    ),
-)
+@swagger_auto_schema(methods=["post"],request_body=UserSignUpSerializer)
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def login(request):
@@ -148,18 +125,7 @@ def user_delete(request):
     return Response({"message": "회원탈퇴가 완료되었습니다."}, status=status.HTTP_200_OK)
 
 
-@swagger_auto_schema(
-    methods=["put"],
-    request_body=openapi.Schema(
-        type=openapi.TYPE_OBJECT,
-        properties={
-            "old_password": openapi.Schema(type=openapi.TYPE_STRING),
-            "new_password": openapi.Schema(type=openapi.TYPE_STRING),
-            "new_password_confirm": openapi.Schema(type=openapi.TYPE_STRING),
-        },
-        required=["old_password", "new_password", "new_password_confirm"],
-    ),
-)
+@swagger_auto_schema(methods=["put"],request_body=ChangePasswordSerializer)
 @api_view(["PUT"])
 @permission_classes([IsAuthenticated])
 def change_password(request):
