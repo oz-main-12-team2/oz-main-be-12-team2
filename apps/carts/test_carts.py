@@ -38,11 +38,11 @@ class CartAPITest(TestCase):
     def test_add_product_to_cart(self):
         """장바구니에 상품 추가"""
         url = reverse("cart-add")
-        data = {"product": self.product.id, "quantity": 2}
+        data = {"product_id": self.product.id, "quantity": 2}
         response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data["quantity"], 2)
-        self.assertEqual(response.data["product"], self.product.id)
+        self.assertEqual(response.data["product_id"], self.product.id)
 
     def test_update_cart_product_quantity(self):
         """상품 수량 변경"""
@@ -50,7 +50,7 @@ class CartAPITest(TestCase):
         cart_product = CartProduct.objects.create(cart=cart, product=self.product, quantity=1)
 
         url = reverse("cart-update", args=[cart_product.id])
-        data = {"product": self.product.id, "quantity": 5}
+        data = {"product_id": self.product.id, "quantity": 5}
         response = self.client.put(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["quantity"], 5)
@@ -73,4 +73,4 @@ class CartAPITest(TestCase):
         url = reverse("cart-clear")
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertEqual(cart.cart_products.count(), 0)
+        self.assertEqual(cart.items.count(), 0)

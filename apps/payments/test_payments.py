@@ -1,5 +1,6 @@
 import pytest
 from django.contrib.auth import get_user_model
+from django.urls import reverse
 from rest_framework.test import APIClient
 
 from apps.orders.models import Order, OrderItem
@@ -41,8 +42,9 @@ class TestUserPaymentAPI:
     def test_create_payment_success(self):
         self.client.force_authenticate(user=self.user)
 
+        url = reverse("payment-create")
         response = self.client.post(
-            "/api/payment/",
+            url,
             {
                 "order_id": self.order.id,
                 "method": PaymentMethod.CARD,
@@ -72,8 +74,9 @@ class TestUserPaymentAPI:
 
         self.client.force_authenticate(user=self.user)
 
+        url = reverse("payment-create")
         response = self.client.post(
-            "/api/payment/",
+            url,
             {
                 "order_id": other_order.id,
                 "method": PaymentMethod.CARD,
@@ -94,7 +97,9 @@ class TestUserPaymentAPI:
         )
 
         self.client.force_authenticate(user=self.user)
-        response = self.client.get("/api/payment/my/")
+
+        url = reverse("user-payment-list")
+        response = self.client.get(url)
 
         assert response.status_code == 200
         assert len(response.data) == 1
@@ -109,7 +114,9 @@ class TestUserPaymentAPI:
         )
 
         self.client.force_authenticate(user=self.user)
-        response = self.client.get(f"/api/payment/{payment.id}/")
+
+        url = reverse("user-payment-detail", kwargs={"pk": payment.id})
+        response = self.client.get(url)
 
         assert response.status_code == 200
         assert response.data["id"] == payment.id
@@ -135,7 +142,9 @@ class TestUserPaymentAPI:
         )
 
         self.client.force_authenticate(user=self.user)
-        response = self.client.get(f"/api/payment/{other_payment.id}/")
+
+        url = reverse("user-payment-detail", kwargs={"pk": other_payment.id})
+        response = self.client.get(url)
 
         assert response.status_code == 404
 
@@ -170,20 +179,26 @@ class TestAdminPaymentAPI:
 
     def test_admin_can_list_all_payments(self):
         self.client.force_authenticate(user=self.admin)
-        response = self.client.get("/api/admin/payment/")
+
+        url = reverse("admin-payment-list")
+        response = self.client.get(url)
 
         assert response.status_code == 200
         assert len(response.data) >= 1
 
     def test_admin_can_retrieve_payment(self):
         self.client.force_authenticate(user=self.admin)
-        response = self.client.get(f"/api/admin/payment/{self.payment.id}/")
+
+        url = reverse("admin-payment-detail", kwargs={"pk": self.payment.id})
+        response = self.client.get(url)
 
         assert response.status_code == 200
         assert response.data["id"] == self.payment.id
 
     def test_non_admin_cannot_access_admin_endpoints(self):
         self.client.force_authenticate(user=self.user)
-        response = self.client.get("/api/admin/payment/")
+
+        url = reverse("admin-payment-list")
+        response = self.client.get(url)
 
         assert response.status_code == 403
