@@ -19,24 +19,32 @@ def admin_product_create(request):
     return Response({"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 
-# 상품 수정 (PUT)
-@swagger_auto_schema(method="put", request_body=ProductSerializer)
-@api_view(["PUT"])
-def admin_product_update(request, pk):
+@swagger_auto_schema(
+    method="get",
+    responses={200: ProductSerializer},
+)
+@swagger_auto_schema(
+    method="put",
+    request_body=ProductSerializer,
+)
+@api_view(["GET", "PUT", "DELETE"])
+def admin_product_detail_update_delete(request, pk):
     product = get_object_or_404(Product, pk=pk)
-    serializer = ProductSerializer(product, data=request.data, partial=False)
-    if serializer.is_valid():
-        serializer.save()
-        return Response({"message": "상품이 수정되었습니다."}, status=status.HTTP_200_OK)
-    return Response({"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
+    # 상세 조회
+    if request.method == "GET":
+        serializer = ProductSerializer(product)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
-# 상품 삭제 (DELETE)
-@api_view(["DELETE"])
-def admin_product_delete(request, pk):
-    try:
-        product = Product.objects.get(pk=pk)
+    # 수정
+    elif request.method == "PUT":
+        serializer = ProductSerializer(product, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "상품이 수정되었습니다."}, status=status.HTTP_200_OK)
+        return Response({"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+    # 삭제
+    elif request.method == "DELETE":
         product.delete()
-        return Response({"message": "상품이 삭제되었습니다"}, status=200)
-    except Product.DoesNotExist:
-        return Response({"message": "상품을 찾을 수 없습니다"}, status=404)
+        return Response({"message": "상품이 삭제되었습니다."}, status=status.HTTP_200_OK)
