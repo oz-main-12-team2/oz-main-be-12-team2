@@ -110,8 +110,10 @@ class UserPaymentAPITest(BasePaymentTestCase):
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]["order_id"], self.order.id)
+
+        results = response.data.get("results", response.data)  # pagination 대응
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0]["order_id"], self.order.id)
 
     def test_user_can_retrieve_own_payment(self):
         payment = Payment.objects.create(
