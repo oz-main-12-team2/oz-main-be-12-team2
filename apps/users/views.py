@@ -29,10 +29,21 @@ def register(request):
     request_body=openapi.Schema(
         type=openapi.TYPE_OBJECT,
         properties={
-            "refresh": openapi.Schema(type=openapi.TYPE_STRING),
+            "email": openapi.Schema(type=openapi.TYPE_STRING),
+            "password": openapi.Schema(type=openapi.TYPE_STRING),
         },
-        required=["refresh"],
+        required=["email", "password"],
     ),
+    responses={
+        200: openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                "access": openapi.Schema(type=openapi.TYPE_STRING),
+                "refresh": openapi.Schema(type=openapi.TYPE_STRING),
+            },
+        required=["access","refresh"],
+        )
+    }
 )
 @api_view(["POST"])
 @permission_classes([AllowAny])
@@ -54,10 +65,8 @@ def login(request):
         #     return Response({"error": "비활성화된 계정입니다."}, status=status.HTTP_400_BAD_REQUEST)
 
         refresh = RefreshToken.for_user(user)
-        serializer = UserProfileSerializer(user)
         return Response(
             {
-                "user": serializer.data,
                 "access": str(refresh.access_token),
                 "refresh": str(refresh),
             }
