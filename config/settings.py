@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     "apps.carts.apps.CartsConfig",
     "apps.payments.apps.PaymentsConfig",
     "apps.stats.apps.StatsConfig",
+    "apps.support.apps.SupportConfig",
     # 서드파티 앱
     "rest_framework",
     "rest_framework_simplejwt",
