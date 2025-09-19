@@ -58,8 +58,8 @@ class OrdersAPITestCase(TestCase):
         네임스페이스 포함 URL reverse
         """
         if pk:
-            return reverse("order:order-detail", kwargs={"pk": pk})
-        return reverse("order:order-list")
+            return reverse("orders:order-detail", kwargs={"pk": pk})
+        return reverse("orders:order-list")
 
     # CRUD 테스트
     def test_list_orders(self):
