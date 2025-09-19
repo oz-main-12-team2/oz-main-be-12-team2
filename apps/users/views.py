@@ -41,9 +41,9 @@ def register(request):
                 "access": openapi.Schema(type=openapi.TYPE_STRING),
                 "refresh": openapi.Schema(type=openapi.TYPE_STRING),
             },
-        required=["access","refresh"],
+            required=["access", "refresh"],
         )
-    }
+    },
 )
 @api_view(["POST"])
 @permission_classes([AllowAny])
