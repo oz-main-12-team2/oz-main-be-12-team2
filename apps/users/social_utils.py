@@ -83,7 +83,7 @@ class SocialAuthService:
             user = User.objects.get(email=email)
         except User.DoesNotExist:
             # 새 사용자 생성
-            user = User.objects.create_user(email=email, name=name, is_social=True)
+            user = User.objects.create_user(email=email, name=name, is_social=True, is_active=True)
 
         return user
 
