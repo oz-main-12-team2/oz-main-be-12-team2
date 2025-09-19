@@ -221,10 +221,14 @@ def change_password(request):
 
 @swagger_auto_schema(
     method="post",
-    request_body=PasswordResetRequestSerializer,   # ✅ 기존 serializer 사용
+    request_body=PasswordResetRequestSerializer,  # ✅ 기존 serializer 사용
     responses={
-        200: openapi.Response("성공", examples={"application/json": {"message": "비밀번호 재설정 메일이 발송되었습니다."}}),
-        404: openapi.Response("사용자 없음", examples={"application/json": {"error": "해당 이메일의 사용자가 없습니다."}}),
+        200: openapi.Response(
+            "성공", examples={"application/json": {"message": "비밀번호 재설정 메일이 발송되었습니다."}}
+        ),
+        404: openapi.Response(
+            "사용자 없음", examples={"application/json": {"error": "해당 이메일의 사용자가 없습니다."}}
+        ),
         400: "유효성 검사 실패",
     },
 )
@@ -258,13 +262,15 @@ def password_reset_request(request):
 
 @swagger_auto_schema(
     method="post",
-    request_body=PasswordResetConfirmSerializer,   # ✅ 기존 serializer 사용
+    request_body=PasswordResetConfirmSerializer,  # ✅ 기존 serializer 사용
     manual_parameters=[
         openapi.Parameter("uidb64", openapi.IN_PATH, description="사용자 ID Base64", type=openapi.TYPE_STRING),
         openapi.Parameter("token", openapi.IN_PATH, description="토큰", type=openapi.TYPE_STRING),
     ],
     responses={
-        200: openapi.Response("성공", examples={"application/json": {"message": "비밀번호가 성공적으로 재설정되었습니다."}}),
+        200: openapi.Response(
+            "성공", examples={"application/json": {"message": "비밀번호가 성공적으로 재설정되었습니다."}}
+        ),
         400: "잘못된 링크 또는 유효하지 않은 토큰",
     },
 )
