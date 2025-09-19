@@ -12,7 +12,7 @@ from .serializers import ChangePasswordSerializer, UserProfileSerializer, UserSi
 User = get_user_model()
 
 
-@swagger_auto_schema(methods=["post"], equest_body=UserSignUpSerializer)
+@swagger_auto_schema(methods=["post"], request_body=UserSignUpSerializer)
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def register(request):
@@ -24,7 +24,16 @@ def register(request):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@swagger_auto_schema(methods=["post"], request_body=UserSignUpSerializer)
+@swagger_auto_schema(
+    methods=["post"],
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            "refresh": openapi.Schema(type=openapi.TYPE_STRING),
+        },
+        required=["refresh"],
+    ),
+)
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def login(request):
