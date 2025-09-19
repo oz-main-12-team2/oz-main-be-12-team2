@@ -73,11 +73,11 @@ class NaverLoginCallbackView(APIView):
                 {
                     "message": "네이버 로그인 성공",
                     "tokens": tokens,
-                    "user": {
-                        "id": user.id,
-                        "email": user.email,
-                        "name": user.name,
-                    },
+                    # "user": {
+                    #     "id": user.id,
+                    #     "email": user.email,
+                    #     "name": user.name,
+                    # },
                 },
                 status=status.HTTP_200_OK,
             )
@@ -89,6 +89,7 @@ class NaverLoginCallbackView(APIView):
         finally:
             # state 정리
             request.session.pop("naver_oauth_state", None)
+            request.session.save()
 
 
 class GoogleLoginStartView(APIView):
@@ -149,23 +150,26 @@ class GoogleLoginCallbackView(APIView):
             # 4. JWT 토큰 생성
             tokens = SocialAuthService.generate_jwt_tokens(user)
 
-            return Response(
+            response = Response(
                 {
                     "message": "구글 로그인 성공",
                     "tokens": tokens,
-                    "user": {
-                        "id": user.id,
-                        "email": user.email,
-                        "name": user.name,
-                    },
+                    # "user": {
+                    #     "id": user.id,
+                    #     "email": user.email,
+                    #     "name": user.name,
+                    # },
                 },
                 status=status.HTTP_200_OK,
             )
 
         except Exception:
-            return Response(
+            response = Response(
                 {"error": "구글 로그인 처리 중 오류가 발생했습니다."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
         finally:
             # state 정리
             request.session.pop("google_oauth_state", None)
+            request.session.save()
+
+        return response

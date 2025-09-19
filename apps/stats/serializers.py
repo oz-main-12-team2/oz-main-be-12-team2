@@ -16,12 +16,7 @@ class DashboardSerializer(serializers.Serializer):
     weekly_sales = SalesSummarySerializer()
     monthly_sales = SalesSummarySerializer()
 
-    trend = serializers.ListField(
-        child=serializers.DictField(
-            child=serializers.CharField()
-        ),
-        required=False
-    )
+    trend = serializers.ListField(child=serializers.DictField(child=serializers.CharField()), required=False)
 
 
 class ProductRankingSerializer(serializers.Serializer):
