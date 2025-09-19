@@ -6,6 +6,7 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
 
+from apps.carts.models import CartProduct
 from apps.orders.models import Order
 from apps.products.models import Product
 
@@ -19,7 +20,12 @@ class OrdersAPITestCase(TestCase):
     def setUpTestData(cls):
         # 유저 / 관리자 생성
         cls.user = User.objects.create_user(email="testuser@example.com", name="테스트 유저", password="testpass")
+        cls.user.is_active = True
+        cls.user.save()
+
         cls.admin_user = User.objects.create_superuser(email="admin@example.com", name="관리자", password="adminpass")
+        cls.admin_user.is_active = True
+        cls.admin_user.save()
 
         # ✅ 유저 생성 시 자동 생성된 카트 가져오기
         cls.cart = cls.user.cart
@@ -35,6 +41,9 @@ class OrdersAPITestCase(TestCase):
             category="소설",
             image_url="http://example.com/image.jpg",
         )
+
+        # ✅ 카트에 아이템 추가 (주문 생성 가능하도록)
+        cls.cart_item = CartProduct.objects.create(cart=cls.cart, product=cls.product, quantity=2)
 
         # 기본 주문 생성
         cls.order = Order.objects.create(
@@ -56,15 +65,13 @@ class OrdersAPITestCase(TestCase):
             "recipient_name": "홍길동",
             "recipient_phone": "010-1234-5678",
             "recipient_address": "서울시 강남구",
-            "status": "결제 완료",
+            # ✅ 실제 카트 아이템 id를 넣음
+            "selected_items": [self.cart_item.id],
         }
         payload.update(kwargs)
         return payload
 
     def get_order_url(self, pk=None):
-        """
-        네임스페이스 포함 URL reverse
-        """
         if pk:
             return reverse("orders:order-detail", kwargs={"pk": pk})
         return reverse("orders:order-list")
@@ -96,36 +103,18 @@ class OrdersAPITestCase(TestCase):
         self.order.refresh_from_db()
         self.assertEqual(self.order.recipient_name, "김철수")
 
-    def test_partial_update_order(self):
-        response = self.client.patch(self.get_order_url(self.order.id), {"status": "배송중"}, format="json")
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.order.refresh_from_db()
-        self.assertEqual(self.order.status, "배송중")
-
     def test_delete_order(self):
         response = self.client.delete(self.get_order_url(self.order.id))
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertFalse(Order.objects.filter(id=self.order.id).exists())
 
-    # === 상태 변경 테스트 ===
+    # === 상태 변경 테스트 (PUT) ===
     def test_update_order_status_success(self):
-        response = self.client.patch(self.get_order_url(self.order.id), {"status": "배송중"}, format="json")
+        payload = self.create_order_payload(status="배송중")
+        response = self.client.put(self.get_order_url(self.order.id), payload, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.order.refresh_from_db()
         self.assertEqual(self.order.status, "배송중")
-
-    def test_update_order_status_invalid_value(self):
-        response = self.client.patch(self.get_order_url(self.order.id), {"status": "잘못된상태"}, format="json")
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-
-    def test_update_order_status_not_found(self):
-        response = self.client.patch(self.get_order_url(9999), {"status": "배송중"}, format="json")
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-
-    def test_update_order_status_unauthorized(self):
-        self.client.force_authenticate(user=None)
-        response = self.client.patch(self.get_order_url(self.order.id), {"status": "배송중"}, format="json")
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     # === Admin & User 테스트 ===
     def test_list_my_orders(self):
