@@ -1,48 +1,47 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import status, viewsets
-from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from ..carts.models import Cart
 from .models import Order, OrderItem
-from .serializers import OrderSerializer
+from .serializers import OrderCreateSerializer, OrderSerializer
 
 
 class OrderViewSet(viewsets.ModelViewSet):
-    serializer_class = OrderSerializer
     permission_classes = [IsAuthenticated]
-    http_method_names = ["get", "post", "put", "patch", "delete"]
+    http_method_names = ["get", "post", "put", "delete"]
 
     def get_queryset(self):
-        if getattr(self, "swagger_fake_view", False):
-            return Order.objects.none()
-        return Order.objects.filter(user=self.request.user)
+        return Order.objects.filter(user=self.request.user).order_by("-created_at")
+
+    # 액션에 따라 serializer 선택
+    def get_serializer_class(self):
+        if self.action == "create":
+            return OrderCreateSerializer
+        return OrderSerializer
 
     def create(self, request, *args, **kwargs):
-        if not request.user.is_authenticated:
-            return Response(
-                {"detail": "Authentication required"},
-                status=status.HTTP_401_UNAUTHORIZED,
-            )
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
 
         cart = get_object_or_404(Cart, user=request.user)
 
         if not cart.items.exists():
             return Response({"detail": "Cart is empty"}, status=status.HTTP_400_BAD_REQUEST)
 
-        item_ids = request.data.get("items", None)
-        if item_ids:
-            cart_items = cart.items.filter(id__in=item_ids)
+        selected_items = serializer.validated_data.get("selected_items")
+        if selected_items:
+            cart_items = cart.items.filter(id__in=selected_items)
         else:
             cart_items = cart.items.all()
 
         if not cart_items.exists():
             return Response({"detail": "No valid items in cart"}, status=status.HTTP_400_BAD_REQUEST)
 
-        recipient_name = request.data.get("recipient_name")
-        recipient_phone = request.data.get("recipient_phone")
-        recipient_address = request.data.get("recipient_address")
+        recipient_name = serializer.validated_data.get("recipient_name")
+        recipient_phone = serializer.validated_data.get("recipient_phone")
+        recipient_address = serializer.validated_data.get("recipient_address")
 
         order = Order.objects.create(
             user=request.user,
@@ -67,19 +66,10 @@ class OrderViewSet(viewsets.ModelViewSet):
 
         cart_items.delete()
 
-        serializer = OrderSerializer(order)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        read_serializer = OrderSerializer(order)
+        return Response(read_serializer.data, status=status.HTTP_201_CREATED)
 
-    @action(detail=False, methods=["get"], url_path="my-orders")
-    def my_orders(self, request):
-        """사용자 자신의 주문 목록 조회"""
-        orders = Order.objects.filter(user=request.user)
-        serializer = OrderSerializer(orders, many=True)
-        return Response(serializer.data)
-
-    @action(detail=True, methods=["get"], url_path="my-orders")
     def my_order_detail(self, request, pk=None):
-        """사용자 자신의 주문 상세 조회"""
         order = get_object_or_404(Order, pk=pk, user=request.user)
         serializer = OrderSerializer(order)
         return Response(serializer.data)
