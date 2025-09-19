@@ -1,4 +1,8 @@
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, get_user_model
+from django.contrib.auth.tokens import default_token_generator
+from django.core.mail import send_mail
+from django.utils.encoding import force_bytes, force_str
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
@@ -7,34 +11,54 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .serializers import ChangePasswordSerializer, UserProfileSerializer, UserSignUpSerializer
-
-
-@swagger_auto_schema(
-    methods=["post"],
-    request_body=openapi.Schema(
-        type=openapi.TYPE_OBJECT,
-        properties={
-            "email": openapi.Schema(type=openapi.TYPE_STRING),
-            "name": openapi.Schema(type=openapi.TYPE_STRING),
-            "password": openapi.Schema(type=openapi.TYPE_STRING),
-            "password_confirm": openapi.Schema(type=openapi.TYPE_STRING),
-            "address": openapi.Schema(type=openapi.TYPE_STRING),
-        },
-        required=["email", "name", "password", "password_confirm"],
-    ),
+from .serializers import (
+    ChangePasswordSerializer,
+    PasswordResetConfirmSerializer,
+    PasswordResetRequestSerializer,
+    UserProfileSerializer,
+    UserSignUpSerializer,
 )
+
+User = get_user_model()
+
+
+@swagger_auto_schema(methods=["post"], request_body=UserSignUpSerializer)
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def register(request):
     """일반 회원가입"""
-    print(f"Request data: {request.data}")
-    print(f"Content type: {request.content_type}")
     serializer = UserSignUpSerializer(data=request.data)
     if serializer.is_valid():
         user = serializer.save()
-        return Response(UserProfileSerializer(user).data, status=status.HTTP_201_CREATED)
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+        token = default_token_generator.make_token(user)
+        activation_link = f"http://example.com/activate/{uid}/{token}/"  # TODO: 추후 프론트엔드 도메인으로 수정
+
+        send_mail(
+            "회원가입 이메일 인증",
+            f"다음 링크를 눌러 계정을 활성화하세요: {activation_link}",
+            "no-reply@example.com",
+            [user.email],
+        )
+        return Response({"message": "인증 메일이 발송되었습니다."}, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def activate_user(request, uidb64, token):
+    """이메일 인증"""
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        return Response({"error": "잘못된 링크입니다."}, status=status.HTTP_400_BAD_REQUEST)
+
+    if default_token_generator.check_token(user, token):
+        user.is_active = True
+        user.save()
+        return Response({"message": "계정이 활성화되었습니다."}, status=status.HTTP_200_OK)
+    return Response({"error": "유효하지 않은 토큰입니다."}, status=status.HTTP_400_BAD_REQUEST)
 
 
 @swagger_auto_schema(
@@ -47,6 +71,16 @@ def register(request):
         },
         required=["email", "password"],
     ),
+    responses={
+        200: openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                "access": openapi.Schema(type=openapi.TYPE_STRING),
+                "refresh": openapi.Schema(type=openapi.TYPE_STRING),
+            },
+            required=["access", "refresh"],
+        )
+    },
 )
 @api_view(["POST"])
 @permission_classes([AllowAny])
@@ -68,10 +102,8 @@ def login(request):
         #     return Response({"error": "비활성화된 계정입니다."}, status=status.HTTP_400_BAD_REQUEST)
 
         refresh = RefreshToken.for_user(user)
-        serializer = UserProfileSerializer(user)
         return Response(
             {
-                "user": serializer.data,
                 "access": str(refresh.access_token),
                 "refresh": str(refresh),
             }
@@ -148,18 +180,7 @@ def user_delete(request):
     return Response({"message": "회원탈퇴가 완료되었습니다."}, status=status.HTTP_200_OK)
 
 
-@swagger_auto_schema(
-    methods=["put"],
-    request_body=openapi.Schema(
-        type=openapi.TYPE_OBJECT,
-        properties={
-            "old_password": openapi.Schema(type=openapi.TYPE_STRING),
-            "new_password": openapi.Schema(type=openapi.TYPE_STRING),
-            "new_password_confirm": openapi.Schema(type=openapi.TYPE_STRING),
-        },
-        required=["old_password", "new_password", "new_password_confirm"],
-    ),
-)
+@swagger_auto_schema(methods=["put"], request_body=ChangePasswordSerializer)
 @api_view(["PUT"])
 @permission_classes([IsAuthenticated])
 def change_password(request):
@@ -194,4 +215,54 @@ def change_password(request):
             status=status.HTTP_200_OK,
         )
 
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def password_reset_request(request):
+    """비밀번호 재설정 메일 발송"""
+    serializer = PasswordResetRequestSerializer(data=request.data)
+    if serializer.is_valid():
+        email = serializer.validated_data["email"]
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return Response({"error": "해당 이메일의 사용자가 없습니다."}, status=status.HTTP_404_NOT_FOUND)
+
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+        token = default_token_generator.make_token(user)
+        reset_link = (
+            f"http://example.com/password-reset/confirm/{uid}/{token}/"  # TODO: 추후 프론트엔드 도메인으로 수정
+        )
+
+        send_mail(
+            "비밀번호 재설정",
+            f"다음 링크에서 비밀번호를 재설정하세요: {reset_link}",
+            "no-reply@example.com",
+            [user.email],
+        )
+        return Response({"message": "비밀번호 재설정 메일이 발송되었습니다."})
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def password_reset_confirm(request, uidb64, token):
+    """비밀번호 재설정"""
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        return Response({"error": "잘못된 링크입니다."}, status=status.HTTP_400_BAD_REQUEST)
+
+    if not default_token_generator.check_token(user, token):
+        return Response({"error": "유효하지 않은 토큰입니다."}, status=status.HTTP_400_BAD_REQUEST)
+
+    serializer = PasswordResetConfirmSerializer(data=request.data)
+    if serializer.is_valid():
+        new_password = serializer.validated_data["new_password"]
+        user.set_password(new_password)
+        user.save()
+        return Response({"message": "비밀번호가 성공적으로 재설정되었습니다."})
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

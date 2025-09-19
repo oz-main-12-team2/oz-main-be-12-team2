@@ -44,7 +44,7 @@ class User(AbstractBaseUser, PermissionsMixin, TimestampModel):
     address = models.CharField(max_length=100, blank=True, verbose_name="주소")
     is_admin = models.BooleanField(default=False, verbose_name="관리자 여부")
     is_social = models.BooleanField(default=False, verbose_name="소셜 회원가입 여부")
-    is_active = models.BooleanField(default=True, verbose_name="활성 상태")
+    is_active = models.BooleanField(default=False, verbose_name="활성 상태")
 
     objects = UserManager()
 

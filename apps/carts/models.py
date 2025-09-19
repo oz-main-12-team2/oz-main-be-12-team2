@@ -8,7 +8,7 @@ User = settings.AUTH_USER_MODEL
 
 
 class Cart(TimestampModel):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="carts")
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="cart")
 
     def __str__(self):
         return f"{self.user}의 장바구니"

@@ -1,48 +1,68 @@
-import pytest
 from django.contrib.auth import get_user_model
-from rest_framework.test import APIClient
+from django.urls import reverse
+from rest_framework import status
+from rest_framework.test import APITestCase
 
 from apps.orders.models import Order, OrderItem
 from apps.payments.models import Payment, PaymentMethod, PaymentStatus
-from apps.products.models import Product  # 상품 모델 있다고 가정
+from apps.products.models import Product
 
 User = get_user_model()
 
 
-@pytest.mark.django_db
-class TestUserPaymentAPI:
-    def setup_method(self):
-        self.client = APIClient()
-        self.user = User.objects.create_user(
+class BasePaymentTestCase(APITestCase):
+    """공통 데이터와 헬퍼 메서드 정의"""
+
+    @classmethod
+    def setUpTestData(cls):
+        # 관리자 / 일반 유저 생성
+        cls.admin = User.objects.create_superuser(
+            email="admin@test.com",
+            password="admin123",
+            name="관리자",
+        )
+        cls.user = User.objects.create_user(
             email="user@test.com",
             password="password123",
             name="테스트유저",
         )
 
-        # 주문 생성
-        self.order = Order.objects.create(
-            user=self.user,
-            total_price=10000,
+        # 상품 생성
+        cls.product = Product.objects.create(name="테스트상품", price=10000, stock=10)
+
+    def create_order(self, user=None, total_price=10000):
+        """주문 + 주문상품 생성 헬퍼"""
+        if user is None:
+            user = self.user
+
+        order = Order.objects.create(
+            user=user,
+            total_price=total_price,
             recipient_name="홍길동",
             recipient_phone="010-1234-5678",
             recipient_address="서울시 테스트구 테스트동",
         )
-
-        # 주문 상세 생성 (상품 가정)
-        product = Product.objects.create(name="테스트상품", price=10000, stock=10)
         OrderItem.objects.create(
-            order=self.order,
-            product=product,
+            order=order,
+            product=self.product,
             quantity=1,
-            unit_price=10000,
-            total_price=10000,
+            unit_price=self.product.price,
+            total_price=total_price,
         )
+        return order
+
+
+class UserPaymentAPITest(BasePaymentTestCase):
+    def setUp(self):
+        # 로그인 기본값 = 일반 사용자
+        self.client.force_authenticate(user=self.user)
+        # 기본 주문 생성
+        self.order = self.create_order(user=self.user, total_price=10000)
 
     def test_create_payment_success(self):
-        self.client.force_authenticate(user=self.user)
-
+        url = reverse("payment-create")
         response = self.client.post(
-            "/api/payment/",
+            url,
             {
                 "order_id": self.order.id,
                 "method": PaymentMethod.CARD,
@@ -52,9 +72,9 @@ class TestUserPaymentAPI:
             format="json",
         )
 
-        assert response.status_code == 201
-        assert response.data["method"] == PaymentMethod.CARD
-        assert Payment.objects.count() == 1
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data["method"], PaymentMethod.CARD)
+        self.assertEqual(Payment.objects.count(), 1)
 
     def test_create_payment_other_user_order(self):
         other_user = User.objects.create_user(
@@ -62,18 +82,11 @@ class TestUserPaymentAPI:
             password="password123",
             name="다른유저",
         )
-        other_order = Order.objects.create(
-            user=other_user,
-            total_price=20000,
-            recipient_name="김철수",
-            recipient_phone="010-2222-3333",
-            recipient_address="부산시 테스트구",
-        )
+        other_order = self.create_order(user=other_user, total_price=20000)
 
-        self.client.force_authenticate(user=self.user)
-
+        url = reverse("payment-create")
         response = self.client.post(
-            "/api/payment/",
+            url,
             {
                 "order_id": other_order.id,
                 "method": PaymentMethod.CARD,
@@ -83,7 +96,7 @@ class TestUserPaymentAPI:
             format="json",
         )
 
-        assert response.status_code in (400, 403)
+        self.assertIn(response.status_code, [status.HTTP_400_BAD_REQUEST, status.HTTP_403_FORBIDDEN])
 
     def test_user_can_list_own_payments(self):
         Payment.objects.create(
@@ -93,12 +106,14 @@ class TestUserPaymentAPI:
             status=PaymentStatus.SUCCESS,
         )
 
-        self.client.force_authenticate(user=self.user)
-        response = self.client.get("/api/payment/my/")
+        url = reverse("user-payment-list")
+        response = self.client.get(url)
 
-        assert response.status_code == 200
-        assert len(response.data) == 1
-        assert response.data[0]["order_id"] == self.order.id
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        results = response.data.get("results", response.data)  # pagination 대응
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0]["order_id"], self.order.id)
 
     def test_user_can_retrieve_own_payment(self):
         payment = Payment.objects.create(
@@ -108,11 +123,11 @@ class TestUserPaymentAPI:
             status=PaymentStatus.SUCCESS,
         )
 
-        self.client.force_authenticate(user=self.user)
-        response = self.client.get(f"/api/payment/{payment.id}/")
+        url = reverse("user-payment-detail", kwargs={"pk": payment.id})
+        response = self.client.get(url)
 
-        assert response.status_code == 200
-        assert response.data["id"] == payment.id
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["id"], payment.id)
 
     def test_user_cannot_access_others_payment(self):
         other_user = User.objects.create_user(
@@ -120,13 +135,7 @@ class TestUserPaymentAPI:
             password="password123",
             name="다른유저",
         )
-        other_order = Order.objects.create(
-            user=other_user,
-            total_price=20000,
-            recipient_name="김철수",
-            recipient_phone="010-2222-3333",
-            recipient_address="부산시 테스트구",
-        )
+        other_order = self.create_order(user=other_user, total_price=20000)
         other_payment = Payment.objects.create(
             order=other_order,
             method=PaymentMethod.CARD,
@@ -134,33 +143,17 @@ class TestUserPaymentAPI:
             status=PaymentStatus.SUCCESS,
         )
 
-        self.client.force_authenticate(user=self.user)
-        response = self.client.get(f"/api/payment/{other_payment.id}/")
+        url = reverse("user-payment-detail", kwargs={"pk": other_payment.id})
+        response = self.client.get(url)
 
-        assert response.status_code == 404
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
 
-@pytest.mark.django_db
-class TestAdminPaymentAPI:
-    def setup_method(self):
-        self.client = APIClient()
-        self.admin = User.objects.create_superuser(
-            email="admin@test.com",
-            password="admin123",
-            name="관리자",
-        )
-        self.user = User.objects.create_user(
-            email="user2@test.com",
-            password="password123",
-            name="테스트유저2",
-        )
-        self.order = Order.objects.create(
-            user=self.user,
-            total_price=15000,
-            recipient_name="홍길동",
-            recipient_phone="010-4444-5555",
-            recipient_address="인천시 테스트구",
-        )
+class AdminPaymentAPITest(BasePaymentTestCase):
+    def setUp(self):
+        # 로그인 기본값 = 관리자
+        self.client.force_authenticate(user=self.admin)
+        self.order = self.create_order(user=self.user, total_price=15000)
         self.payment = Payment.objects.create(
             order=self.order,
             method=PaymentMethod.CARD,
@@ -169,21 +162,22 @@ class TestAdminPaymentAPI:
         )
 
     def test_admin_can_list_all_payments(self):
-        self.client.force_authenticate(user=self.admin)
-        response = self.client.get("/api/admin/payment/")
+        url = reverse("admin-payment-list")
+        response = self.client.get(url)
 
-        assert response.status_code == 200
-        assert len(response.data) >= 1
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertGreaterEqual(len(response.data), 1)
 
     def test_admin_can_retrieve_payment(self):
-        self.client.force_authenticate(user=self.admin)
-        response = self.client.get(f"/api/admin/payment/{self.payment.id}/")
+        url = reverse("admin-payment-detail", kwargs={"pk": self.payment.id})
+        response = self.client.get(url)
 
-        assert response.status_code == 200
-        assert response.data["id"] == self.payment.id
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["id"], self.payment.id)
 
     def test_non_admin_cannot_access_admin_endpoints(self):
-        self.client.force_authenticate(user=self.user)
-        response = self.client.get("/api/admin/payment/")
+        self.client.force_authenticate(user=self.user)  # 일반 유저로 로그인
+        url = reverse("admin-payment-list")
+        response = self.client.get(url)
 
-        assert response.status_code == 403
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)

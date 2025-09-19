@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django.test import TestCase
 from django.urls import reverse
 from rest_framework import status
@@ -11,38 +13,50 @@ from apps.users.models import User
 class CartAPITest(TestCase):
     """장바구니 API 테스트"""
 
-    # TODO : 한번만 실행하는 방법으로 바꾸기
-    def setUp(self):
-        self.client = APIClient()
-        self.user = User.objects.create_user(email="test@example.com", name="테스트 사용자", password="testpass123")
-        self.client.force_authenticate(user=self.user)
-
-        self.product = Product.objects.create(
+    @classmethod
+    def setUpTestData(cls):
+        """테스트에 필요한 공통 데이터는 한 번만 생성"""
+        cls.user = User.objects.create_user(email="test@example.com", name="테스트 사용자", password="testpass123")
+        cls.product = Product.objects.create(
             name="테스트 상품",
             description="테스트 설명",
             author="테스트 작가",
             publisher="테스트 출판사",
-            price="10000.00",
+            price=Decimal("10000.00"),  # ✅ Decimal로 저장
             stock=10,
             category="소설",
             image_url="http://example.com/image.jpg",
         )
+
+    def setUp(self):
+        """각 테스트마다 인증 클라이언트만 준비"""
+        self.client = APIClient()
+        self.client.force_authenticate(user=self.user)
 
     def test_cart_list(self):
         """장바구니 조회"""
         url = reverse("cart-list")
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIsInstance(response.json(), list)
+
+        data = response.json()
+
+        # 최상위 구조 검증
+        self.assertIsInstance(data, dict)
+        self.assertIn("results", data)
+        self.assertIsInstance(data["results"], list)
+
+        # 결과값 세부 검증 - 길이로 체크
+        self.assertEqual(data["count"], len(data["results"]))
 
     def test_add_product_to_cart(self):
         """장바구니에 상품 추가"""
         url = reverse("cart-add")
-        data = {"product": self.product.id, "quantity": 2}
+        data = {"product_id": self.product.id, "quantity": 2}
         response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data["quantity"], 2)
-        self.assertEqual(response.data["product"], self.product.id)
+        self.assertEqual(response.data["product_id"], self.product.id)
 
     def test_update_cart_product_quantity(self):
         """상품 수량 변경"""
@@ -50,7 +64,7 @@ class CartAPITest(TestCase):
         cart_product = CartProduct.objects.create(cart=cart, product=self.product, quantity=1)
 
         url = reverse("cart-update", args=[cart_product.id])
-        data = {"product": self.product.id, "quantity": 5}
+        data = {"product_id": self.product.id, "quantity": 5}
         response = self.client.put(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["quantity"], 5)
@@ -73,4 +87,4 @@ class CartAPITest(TestCase):
         url = reverse("cart-clear")
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertEqual(cart.cart_products.count(), 0)
+        self.assertEqual(cart.items.count(), 0)

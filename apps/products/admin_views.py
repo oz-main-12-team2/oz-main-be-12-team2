@@ -1,60 +1,53 @@
-import json
-
-from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
-from rest_framework.decorators import api_view
+from drf_yasg.utils import swagger_auto_schema
+from rest_framework import status
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAdminUser
+from rest_framework.response import Response
 
-from .forms import ProductForm
 from .models import Product
+from .serializers import ProductSerializer
 
 
 # 상품 등록 (POST)
+@swagger_auto_schema(method="post", request_body=ProductSerializer)
 @api_view(["POST"])
+@permission_classes([IsAdminUser])
 def admin_product_create(request):
-    # 1. request.body에서 JSON 데이터를 읽어옵니다.
-    try:
-        data = json.loads(request.body)
-    except json.JSONDecodeError:
-        return JsonResponse({"success": False, "message": "잘못된 JSON 형식입니다."}, status=400)
-
-    # 2. 읽어온 data로 Form을 초기화합니다.
-    form = ProductForm(data)
-    if form.is_valid():
-        form.save()
-        return JsonResponse({"success": True, "message": "상품이 생성되었습니다."}, status=201)
-    else:
-        # 유효성 검사 실패 시 에러 내용을 터미널에 출력
-        print("CREATE FORM ERRORS:", form.errors.as_json())
-        return JsonResponse({"success": False, "errors": form.errors}, status=400)
+    serializer = ProductSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response({"message": "상품이 생성되었습니다."}, status=status.HTTP_201_CREATED)
+    return Response({"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 
-# 상품 수정 (PUT)
-@api_view(["PUT"])
-def admin_product_update(request, pk):
+@swagger_auto_schema(
+    method="get",
+    responses={200: ProductSerializer},
+)
+@swagger_auto_schema(
+    method="put",
+    request_body=ProductSerializer,
+)
+@api_view(["GET", "PUT", "DELETE"])
+@permission_classes([IsAdminUser])
+def admin_product_detail_update_delete(request, pk):
     product = get_object_or_404(Product, pk=pk)
 
-    try:
-        data = json.loads(request.body)
-    except json.JSONDecodeError:
-        return JsonResponse({"success": False, "message": "잘못된 JSON 형식입니다."}, status=400)
+    # 상세 조회
+    if request.method == "GET":
+        serializer = ProductSerializer(product)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
-    form = ProductForm(data, instance=product)
+    # 수정
+    elif request.method == "PUT":
+        serializer = ProductSerializer(product, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "상품이 수정되었습니다."}, status=status.HTTP_200_OK)
+        return Response({"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
-    if form.is_valid():
-        form.save()
-        return JsonResponse({"success": True, "message": "상품이 수정되었습니다."}, status=200)
-    else:
-        # 유효성 검사 실패 시 에러 내용을 터미널에 출력
-        print("CREATE FORM ERRORS:", form.errors.as_json())
-        return JsonResponse({"success": False, "errors": form.errors}, status=400)
-
-
-# 상품 삭제 (DELETE)
-@api_view(["DELETE"])
-def admin_product_delete(request, pk):
-    try:
-        product = Product.objects.get(pk=pk)
+    # 삭제
+    elif request.method == "DELETE":
         product.delete()
-        return JsonResponse({"success": True, "message": "상품이 삭제되었습니다"}, status=200)
-    except Product.DoesNotExist:
-        return JsonResponse({"success": False, "message": "상품을 찾을 수 없습니다"}, status=404)
+        return Response({"message": "상품이 삭제되었습니다."}, status=status.HTTP_200_OK)

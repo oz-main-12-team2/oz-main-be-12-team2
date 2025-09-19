@@ -12,17 +12,15 @@ dependencies = [
     "gunicorn>=23.0.0",
     "psycopg[binary]>=3.2.10",
     "python-dotenv>=1.1.1",
-    "django-allauth[socialaccount]>=65.0.2",
     "coverage>=7.10.6",
     "drf-spectacular",
+    "requests>=2.31.0",
 ]
 
 [dependency-groups]
 dev = [
     "ruff>=0.12.12",
     "mypy>=1.17.1",
-    "pytest>=8.0.0",
-    "pytest-django>=4.0.0",
     "coverage>=7.10.6",
 ]
 

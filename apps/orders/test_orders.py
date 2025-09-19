@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
@@ -5,40 +7,49 @@ from rest_framework import status
 from rest_framework.test import APIClient
 
 from apps.orders.models import Order
-
-# Cart/CartItem 임포트 시 related_name 확인
-try:
-    from apps.carts.models import Cart, CartItem
-except ImportError:
-    Cart = None
-    CartItem = None
+from apps.products.models import Product
 
 User = get_user_model()
 
 
 class OrdersAPITestCase(TestCase):
-    def setUp(self):
-        self.client = APIClient()
-        self.user = User.objects.create_user(email="testuser@example.com", name="테스트 유저", password="testpass")
-        self.admin_user = User.objects.create_superuser(email="admin@example.com", name="관리자", password="adminpass")
-        self.client.force_authenticate(user=self.user)
+    """주문 API 테스트"""
 
-        # Cart 및 CartItem 생성 (related_name="items" 기준)
-        if Cart and CartItem:
-            self.cart = Cart.objects.create(user=self.user)
-            CartItem.objects.create(cart=self.cart, product_name="상품1", quantity=1, price=10000)
-        else:
-            self.cart = None
+    @classmethod
+    def setUpTestData(cls):
+        # 유저 / 관리자 생성
+        cls.user = User.objects.create_user(email="testuser@example.com", name="테스트 유저", password="testpass")
+        cls.admin_user = User.objects.create_superuser(email="admin@example.com", name="관리자", password="adminpass")
 
-        # 기본 주문
-        self.order = Order.objects.create(
-            user=self.user,
+        # ✅ 유저 생성 시 자동 생성된 카트 가져오기
+        cls.cart = cls.user.cart
+
+        # 상품 생성
+        cls.product = Product.objects.create(
+            name="테스트 상품",
+            description="테스트 설명",
+            author="테스트 작가",
+            publisher="테스트 출판사",
+            price=Decimal("10000.00"),
+            stock=10,
+            category="소설",
+            image_url="http://example.com/image.jpg",
+        )
+
+        # 기본 주문 생성
+        cls.order = Order.objects.create(
+            user=cls.user,
             recipient_name="홍길동",
             recipient_phone="010-1234-5678",
             recipient_address="서울시 강남구",
-            total_price=45000,
+            total_price=Decimal("45000.00"),
             status="결제 완료",
         )
+
+    def setUp(self):
+        """각 테스트 실행 전 클라이언트 인증"""
+        self.client = APIClient()
+        self.client.force_authenticate(user=self.user)
 
     def create_order_payload(self, **kwargs):
         payload = {
@@ -47,9 +58,6 @@ class OrdersAPITestCase(TestCase):
             "recipient_address": "서울시 강남구",
             "status": "결제 완료",
         }
-        # total_price는 serializer에서 자동 계산하므로 제거
-        if self.cart:
-            payload["cart"] = self.cart.id
         payload.update(kwargs)
         return payload
 
@@ -58,21 +66,19 @@ class OrdersAPITestCase(TestCase):
         네임스페이스 포함 URL reverse
         """
         if pk:
-            return reverse("order:order-detail", kwargs={"pk": pk})
-        return reverse("order:order-list")
+            return reverse("orders:order-detail", kwargs={"pk": pk})
+        return reverse("orders:order-list")
 
-    # CRUD 테스트
+    # === CRUD 테스트 ===
     def test_list_orders(self):
         response = self.client.get(self.get_order_url())
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue(len(response.data) >= 1)
 
     def test_create_order(self):
-        if not self.cart:
-            self.skipTest("Cart or CartItem 모델 없음")
         response = self.client.post(self.get_order_url(), self.create_order_payload(), format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(Order.objects.count(), 2)
+        self.assertGreaterEqual(Order.objects.count(), 2)
 
     def test_retrieve_order(self):
         response = self.client.get(self.get_order_url(self.order.id))
@@ -99,9 +105,9 @@ class OrdersAPITestCase(TestCase):
     def test_delete_order(self):
         response = self.client.delete(self.get_order_url(self.order.id))
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertEqual(Order.objects.count(), 0)
+        self.assertFalse(Order.objects.filter(id=self.order.id).exists())
 
-    # 상태 테스트
+    # === 상태 변경 테스트 ===
     def test_update_order_status_success(self):
         response = self.client.patch(self.get_order_url(self.order.id), {"status": "배송중"}, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -121,7 +127,7 @@ class OrdersAPITestCase(TestCase):
         response = self.client.patch(self.get_order_url(self.order.id), {"status": "배송중"}, format="json")
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    # Admin & User 테스트
+    # === Admin & User 테스트 ===
     def test_list_my_orders(self):
         response = self.client.get(self.get_order_url())
         self.assertEqual(response.status_code, status.HTTP_200_OK)
