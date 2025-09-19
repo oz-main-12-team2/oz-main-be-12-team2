@@ -22,9 +22,7 @@ class IsAdmin:
 def admin_user_list(request):
     """전체 사용자 조회 - 관리자 전용"""
     if not request.user.is_admin:
-        return Response(
-            {"error": "관리자만 접근 가능합니다."}, status=status.HTTP_403_FORBIDDEN
-        )
+        return Response({"error": "관리자만 접근 가능합니다."}, status=status.HTTP_403_FORBIDDEN)
 
     users = User.objects.all().order_by("-created_at")
     serializer = AdminUserSerializer(users, many=True)
@@ -39,9 +37,7 @@ class AdminUserDetailView(APIView):
     def check_admin_permission(self, user):
         """관리자 권한 체크"""
         if not user.is_admin:
-            return Response(
-                {"error": "관리자만 접근 가능합니다."}, status=status.HTTP_403_FORBIDDEN
-            )
+            return Response({"error": "관리자만 접근 가능합니다."}, status=status.HTTP_403_FORBIDDEN)
         return None
 
     def get(self, request, user_id):

@@ -16,7 +16,7 @@ from apps.products.models import Product
 @require_GET
 def admin_sales_stats(request):
     # --- 이 부분을 추가하여 뷰를 더 안전하게 만듭니다 --- #
-     # --- 디버깅 코드 추가 ---
+    # --- 디버깅 코드 추가 ---
     print(f"[VIEW] request.user: {request.user}")
     print(f"[VIEW] request.user.is_authenticated: {request.user.is_authenticated}")
     print(f"[VIEW] request.user.is_admin: {request.user.is_admin}")
@@ -39,12 +39,10 @@ def admin_sales_stats(request):
     # ExpressionWrapper를 사용하여 계산 타입을 명확히 지정
     total_stock_value = Product.objects.aggregate(
         total_value=Coalesce(
-            Sum(
-                ExpressionWrapper(F('price') * F('stock'), output_field=DecimalField())
-            ),
-            Value(0, output_field=DecimalField())
+            Sum(ExpressionWrapper(F("price") * F("stock"), output_field=DecimalField())),
+            Value(0, output_field=DecimalField()),
         )
-    )['total_value']
+    )["total_value"]
 
     # 판매 중인 상품 개수 (재고가 1개 이상인 상품)
     products_on_sale_count = Product.objects.filter(stock__gt=0).count()
@@ -53,16 +51,16 @@ def admin_sales_stats(request):
     today = timezone.now().date()
     start_of_this_month = today.replace(day=1)
     completed_orders = OrderItem.objects.filter(order__status="배송완료")
-    sales_today = completed_orders.filter(order__created_at__date=today).aggregate(
+    sales_today = completed_orders.filter(order__created_at__date=today).aggregate(total=Coalesce(Sum("quantity"), 0))[
+        "total"
+    ]
+    thirty_days_ago = today - timedelta(days=30)
+    sales_last_30_days = completed_orders.filter(order__created_at__date__gte=thirty_days_ago).aggregate(
         total=Coalesce(Sum("quantity"), 0)
     )["total"]
-    thirty_days_ago = today - timedelta(days=30)
-    sales_last_30_days = completed_orders.filter(
-        order__created_at__date__gte=thirty_days_ago
-    ).aggregate(total=Coalesce(Sum("quantity"), 0))["total"]
-    sales_this_month = completed_orders.filter(
-        order__created_at__date__gte=start_of_this_month
-    ).aggregate(total=Coalesce(Sum("quantity"), 0))["total"]
+    sales_this_month = completed_orders.filter(order__created_at__date__gte=start_of_this_month).aggregate(
+        total=Coalesce(Sum("quantity"), 0)
+    )["total"]
 
     # --- 3. JSON 데이터 구성 ---
     data = {

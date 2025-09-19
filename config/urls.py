@@ -23,7 +23,7 @@ urlpatterns = [
     path("api/admin/product/", include(("apps.products.admin_urls", "products_admin"), namespace="products_admin")),
     path("api/user/", include("apps.users.urls")),
     path("api/admin/user/", include("apps.users.admin_urls")),
-    path("api/order/", include("apps.orders.urls")),  # ✅ config에서 api/order/로 감싸기
+    path("api/order/", include(("apps.orders.urls", "order"), namespace="order")),  # namespace 추가
     path("api/cart/", include("apps.carts.urls")),
     path("api/payment/", include("apps.payments.urls")),
     path("api/admin/payment/", include("apps.payments.admin_urls")),
