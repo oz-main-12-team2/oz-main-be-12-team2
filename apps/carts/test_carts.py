@@ -1,4 +1,5 @@
 from decimal import Decimal
+
 from django.test import TestCase
 from django.urls import reverse
 from rest_framework import status
@@ -15,9 +16,7 @@ class CartAPITest(TestCase):
     @classmethod
     def setUpTestData(cls):
         """테스트에 필요한 공통 데이터는 한 번만 생성"""
-        cls.user = User.objects.create_user(
-            email="test@example.com", name="테스트 사용자", password="testpass123"
-        )
+        cls.user = User.objects.create_user(email="test@example.com", name="테스트 사용자", password="testpass123")
         cls.product = Product.objects.create(
             name="테스트 상품",
             description="테스트 설명",

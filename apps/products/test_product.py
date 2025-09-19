@@ -1,6 +1,7 @@
 # apps/products/test_products.py
 
 from decimal import Decimal
+
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from rest_framework import status
@@ -17,26 +18,18 @@ class BaseProductTestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
         # 사용자
-        cls.admin_user = User.objects.create_superuser(
-            email="admin@example.com", name="관리자", password="adminpass"
-        )
-        cls.normal_user = User.objects.create_user(
-            email="user@example.com", name="일반사용자", password="userpass"
-        )
+        cls.admin_user = User.objects.create_superuser(email="admin@example.com", name="관리자", password="adminpass")
+        cls.normal_user = User.objects.create_user(email="user@example.com", name="일반사용자", password="userpass")
 
         # 상품
-        cls.product = Product.objects.create(
-            name="테스트 상품", price=Decimal("10000.00"), stock=10, author="작가"
-        )
+        cls.product = Product.objects.create(name="테스트 상품", price=Decimal("10000.00"), stock=10, author="작가")
 
         # URL
         cls.list_url = reverse("products:product-list")
         cls.detail_url = reverse("products:product-detail", args=[cls.product.pk])
 
         cls.admin_create_url = reverse("products_admin:admin_product_create")
-        cls.admin_detail_url = reverse(
-            "products_admin:admin_product_detail_update_delete", args=[cls.product.pk]
-        )
+        cls.admin_detail_url = reverse("products_admin:admin_product_detail_update_delete", args=[cls.product.pk])
 
 
 class ProductPublicViewTest(BaseProductTestCase):
