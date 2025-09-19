@@ -13,7 +13,7 @@ class OrderViewSet(viewsets.ModelViewSet):
     http_method_names = ["get", "post", "put", "delete"]
 
     def get_queryset(self):
-        return Order.objects.filter(user=self.request.user).order_by('-created_at')
+        return Order.objects.filter(user=self.request.user).order_by("-created_at")
 
     # 액션에 따라 serializer 선택
     def get_serializer_class(self):

@@ -19,12 +19,11 @@ class OrderItemSerializer(serializers.ModelSerializer):
             "created_at",
         ]
 
+
 # 주문 생성용 serializer (Swagger 입력용)
 class OrderCreateSerializer(serializers.ModelSerializer):
     selected_items = serializers.ListField(
-        child=serializers.IntegerField(),
-        required=False,
-        help_text="장바구니에서 선택한 아이템 ID 리스트"
+        child=serializers.IntegerField(), required=False, help_text="장바구니에서 선택한 아이템 ID 리스트"
     )
 
     class Meta:
@@ -35,6 +34,7 @@ class OrderCreateSerializer(serializers.ModelSerializer):
             "recipient_address",
             "selected_items",
         ]
+
 
 # 조회/수정용 serializer
 class OrderSerializer(serializers.ModelSerializer):
