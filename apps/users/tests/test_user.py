@@ -142,11 +142,10 @@ class UserAPITest(TestCase):
         }
         response = self.client.post(self.register_url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data["email"], "newuser@example.com")
-        self.assertEqual(response.data["name"], "신규 사용자")
 
         # 비밀번호는 응답에 포함되지 않아야 함
         self.assertNotIn("password", response.data)
+        self.assertEqual(response.data["message"], "인증 메일이 발송되었습니다.")
 
     def test_user_registration_password_mismatch(self):
         """비밀번호 불일치 테스트"""
@@ -161,9 +160,13 @@ class UserAPITest(TestCase):
         self.assertIn("password_confirm", response.data)
 
     def test_user_login(self):
-        User.objects.create_user(email="logintest@example.com", name="로그인 테스트", password="loginpass123")
+        user = User.objects.create_user(email="logintest@example.com", name="로그인 테스트", password="loginpass123")
 
         """로그인 API 테스트"""
+
+        # ✅ 로그인 전에 강제로 활성화
+        user.is_active = True
+        user.save()
 
         # 로그인 시도
         data = {"email": "logintest@example.com", "password": "loginpass123"}
