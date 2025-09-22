@@ -1,6 +1,9 @@
+from django.contrib.auth.tokens import default_token_generator
 from django.core.exceptions import ValidationError
 from django.test import TestCase
 from django.urls import reverse
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
 from rest_framework import status
 from rest_framework.test import APIClient
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -203,7 +206,7 @@ class UserAPITest(TestCase):
     def test_logout_with_valid_refresh_token(self):
         """유효한 refresh_token으로 정상 로그아웃"""
         user = User.objects.create_user(
-            email="logouttest3@example.com", name="로그아웃 테스트3", password="logoutpass123"
+            email="logouttest3@example.com", name="로그아웃 테스트3", password="logoutpass123", is_active=True
         )
         self.client.force_authenticate(user=user)
 
@@ -275,6 +278,146 @@ class UserAPITest(TestCase):
 
         # 사용자가 실제로 삭제되었는지 확인
         self.assertFalse(User.objects.filter(email="delete@example.com").exists())
+
+    def test_activate_user_success(self):
+        """정상적인 활성화"""
+        user = User.objects.create_user(
+            email="test@example.com", name="활성화 테스트", password="testpass123", is_active=False
+        )
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+        token = default_token_generator.make_token(user)
+
+        response = self.client.get(reverse("user_activate", kwargs={"uidb64": uid, "token": token}))
+        self.assertEqual(response.status_code, 200)
+        user.refresh_from_db()
+        self.assertTrue(user.is_active)
+
+    def test_activate_user_invalid_uid(self):
+        """잘못된 UID"""
+        user = User.objects.create_user(email="test@example.com", name="잘못된 활성화 테스트", password="testpass123")
+        token = default_token_generator.make_token(user)
+
+        response = self.client.get(reverse("user_activate", kwargs={"uidb64": "invalid_uid", "token": token}))
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data["error"], "잘못된 링크입니다.")
+
+    def test_activate_user_nonexistent_user(self):
+        """존재하지 않는 사용자 ID"""
+        fake_uid = urlsafe_base64_encode(force_bytes(99999))
+        response = self.client.get(reverse("user_activate", kwargs={"uidb64": fake_uid, "token": "fake_token"}))
+        self.assertEqual(response.status_code, 400)
+
+    def test_activate_user_invalid_token(self):
+        """잘못된 토큰"""
+        user = User.objects.create_user(email="test@example.com", name="토큰 테스트", password="testpass123")
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+
+        response = self.client.get(reverse("user_activate", kwargs={"uidb64": uid, "token": "invalid_token"}))
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data["error"], "유효하지 않은 토큰입니다.")
+
+    def test_password_reset_request_success(self):
+        """비밀번호 재설정 요청 성공"""
+        User.objects.create_user(email="reset@example.com", name="재설정 테스트", password="testpass123")
+
+        data = {"email": "reset@example.com"}
+        response = self.client.post(reverse("password_reset_request"), data, format="json")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["message"], "비밀번호 재설정 메일이 발송되었습니다.")
+
+    def test_password_reset_request_user_not_found(self):
+        """존재하지 않는 이메일로 재설정 요청"""
+        data = {"email": "nonexistent@example.com"}
+        response = self.client.post(reverse("password_reset_request"), data, format="json")
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.data["error"], "해당 이메일의 사용자가 없습니다.")
+
+    def test_password_reset_request_invalid_data(self):
+        """잘못된 데이터로 재설정 요청"""
+        data = {"email": "invalid-email"}  # 잘못된 이메일 형식
+        response = self.client.post(reverse("password_reset_request"), data, format="json")
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("email", response.data)
+
+    def test_password_reset_request_missing_email(self):
+        """이메일 누락"""
+        data = {}
+        response = self.client.post(reverse("password_reset_request"), data, format="json")
+        self.assertEqual(response.status_code, 400)
+
+    def test_password_reset_confirm_success(self):
+        """비밀번호 재설정 확인 성공"""
+        user = User.objects.create_user(
+            email="resetconfirm@example.com", name="재설정확인 테스트", password="oldpass123"
+        )
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+        token = default_token_generator.make_token(user)
+
+        data = {"new_password": "newpass123", "new_password_confirm": "newpass123"}
+        response = self.client.post(
+            reverse("user_password_reset_confirm", kwargs={"uidb64": uid, "token": token}), data, format="json"
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["message"], "비밀번호가 성공적으로 재설정되었습니다.")
+
+    def test_password_reset_confirm_invalid_uid(self):
+        """잘못된 UID"""
+        data = {"new_password": "newpass123", "new_password_confirm": "newpass123"}
+        response = self.client.post(
+            reverse("user_password_reset_confirm", kwargs={"uidb64": "invalid_uid", "token": "fake_token"}),
+            data,
+            format="json",
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data["error"], "잘못된 링크입니다.")
+
+    def test_password_reset_confirm_nonexistent_user(self):
+        """존재하지 않는 사용자 ID"""
+        fake_uid = urlsafe_base64_encode(force_bytes(99999))
+        data = {"new_password": "newpass123", "new_password_confirm": "newpass123"}
+        response = self.client.post(
+            reverse("user_password_reset_confirm", kwargs={"uidb64": fake_uid, "token": "fake_token"}),
+            data,
+            format="json",
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data["error"], "잘못된 링크입니다.")
+
+    def test_password_reset_confirm_invalid_token(self):
+        """잘못된 토큰"""
+        user = User.objects.create_user(email="resettoken@example.com", name="토큰테스트", password="oldpass123")
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+
+        data = {"new_password": "newpass123", "new_password_confirm": "newpass123"}
+        response = self.client.post(
+            reverse("user_password_reset_confirm", kwargs={"uidb64": uid, "token": "invalid_token"}),
+            data,
+            format="json",
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data["error"], "유효하지 않은 토큰입니다.")
+
+    def test_password_reset_confirm_invalid_data(self):
+        """잘못된 데이터"""
+        user = User.objects.create_user(email="resetdata@example.com", name="데이터테스트", password="oldpass123")
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+        token = default_token_generator.make_token(user)
+
+        data = {"new_password": "short"}  # 잘못된 비밀번호
+        response = self.client.post(
+            reverse("user_password_reset_confirm", kwargs={"uidb64": uid, "token": token}), data, format="json"
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_password_reset_confirm_serializer_password_mismatch(self):
+        """비밀번호 불일치 - ValidationError 발생"""
+        from apps.users.serializers import PasswordResetConfirmSerializer
+
+        data = {"new_password": "newpassword123!", "new_password_confirm": "differentpassword123!"}
+        serializer = PasswordResetConfirmSerializer(data=data)
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("new_password_confirm", serializer.errors)
+        self.assertEqual(serializer.errors["new_password_confirm"][0], "비밀번호가 일치하지 않습니다.")
 
 
 class AdminAPITest(TestCase):
@@ -361,7 +504,7 @@ class AdminAPITest(TestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_admin_user_detail_put_user_success(self):
-        """사용자 정보 수정 성공"""
+        """관리자가 사용자 정보 수정 성공"""
         self.client.force_authenticate(user=self.admin_user)
 
         target_user = User.objects.create(
@@ -374,7 +517,7 @@ class AdminAPITest(TestCase):
         self.assertFalse(target_user.is_active)
 
     def test_admin_user_detail_put_not_found(self):
-        """존재하지 않는 사용자 수정 시도 시 404"""
+        """관리자가 존재하지 않는 사용자 수정 시도 시 404"""
         self.client.force_authenticate(user=self.admin_user)
         url = reverse("admin_user_detail", args=[9999])
         data = {"name": "존재하지 않음"}
@@ -427,6 +570,21 @@ class AdminAPITest(TestCase):
         # 일반 사용자 테스트
         normal_request = MockRequest(self.normal_user)
         self.assertFalse(permission.has_permission(normal_request, None))
+
+    def test_admin_user_detail_put_invalid_data(self):
+        """관리자가 잘못된 데이터로 사용자 수정 시도"""
+        self.client.force_authenticate(user=self.admin_user)
+
+        target_user = User.objects.create(
+            email="target@example.com", name="Target User", is_active=True, is_social=True
+        )
+
+        # is_active에 잘못된 타입 전송 (문자열 대신 불린이어야 함)
+        invalid_data = {"is_active": "invalid_boolean_value"}
+
+        response = self.client.put(f"/api/admin/users/{target_user.id}/", invalid_data, format="json")
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("is_active", response.data)
 
 
 class ChangePasswordTest(TestCase):

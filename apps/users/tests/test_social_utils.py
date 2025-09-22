@@ -185,7 +185,7 @@ class SocialAuthServiceTest(TestCase):
 
     def test_generate_jwt_tokens(self):
         # 사용자 생성 (소셜 사용자)
-        user = User.objects.create(email="test@example.com", name="Test User", is_social=True)
+        user = User.objects.create(email="test@example.com", name="Test User", is_social=True, is_active=True)
 
         # 테스트 실행
         tokens = SocialAuthService.generate_jwt_tokens(user)
