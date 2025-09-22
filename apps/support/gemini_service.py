@@ -27,12 +27,9 @@ class GeminiService:
         """
 
         try:
-            print(f"API 키 존재: {bool(settings.GEMINI_API_KEY)}")
             response = self.model.generate_content(prompt)
-            print(f"API 응답: {response.text}")
             return response.text
         except Exception as e:
-            print(f"Gemini API 오류: {e}")
             return "문의해 주셔서 감사합니다. 빠른 시일 내에 답변드리겠습니다."
 
 
