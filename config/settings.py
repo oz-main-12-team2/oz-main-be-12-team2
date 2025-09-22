@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     "apps.carts.apps.CartsConfig",
     "apps.payments.apps.PaymentsConfig",
     "apps.stats.apps.StatsConfig",
+    "apps.support.apps.SupportConfig",
     # 서드파티 앱
     "rest_framework",
     "rest_framework_simplejwt",
@@ -189,3 +190,6 @@ EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "True").lower() in ("true", "1", "yes")
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", EMAIL_HOST_USER)
+
+# 제미나이 API
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
