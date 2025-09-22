@@ -1,9 +1,8 @@
-# 관리자용 뷰들
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 
 from .models import FAQ, Inquiry
-from .serializers import FAQSerializer, InquiryDetailSerializer, InquiryListSerializer
+from .serializers import FAQSerializer, InquiryDetailSerializer, InquiryListSerializer, AdminInquiryUpdateSerializer
 
 
 class AdminInquiryListAPIView(generics.ListAPIView):
@@ -25,7 +24,7 @@ class AdminInquiryListAPIView(generics.ListAPIView):
 
     def get_queryset(self):
         queryset = Inquiry.objects.all()
-        status_filter = self.request.query_params.get('status')
+        status_filter = self.request.query_params.get("status")
         if status_filter:
             queryset = queryset.filter(status=status_filter)
         return queryset
@@ -33,8 +32,12 @@ class AdminInquiryListAPIView(generics.ListAPIView):
 
 class AdminInquiryDetailUpdateAPIView(generics.RetrieveUpdateAPIView):
     permission_classes = [permissions.IsAuthenticated]
-    serializer_class = InquiryDetailSerializer
     queryset = Inquiry.objects.all()
+
+    def get_serializer_class(self):
+        if self.request.method in ["PUT", "PATCH"]:
+            return AdminInquiryUpdateSerializer  # 수정 시
+        return InquiryDetailSerializer # 조회 시
 
     def check_admin_permission(self, user):
         """관리자 권한 체크"""
