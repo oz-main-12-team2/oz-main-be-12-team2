@@ -29,7 +29,7 @@ class GeminiService:
         try:
             response = self.model.generate_content(prompt)
             return response.text
-        except Exception as e:
+        except Exception:
             return "문의해 주셔서 감사합니다. 빠른 시일 내에 답변드리겠습니다."
 
 
