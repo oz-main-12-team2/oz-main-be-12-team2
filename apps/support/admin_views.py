@@ -2,7 +2,7 @@ from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 
 from .models import FAQ, Inquiry
-from .serializers import FAQSerializer, InquiryDetailSerializer, InquiryListSerializer, AdminInquiryUpdateSerializer
+from .serializers import AdminInquiryUpdateSerializer, FAQSerializer, InquiryDetailSerializer, InquiryListSerializer
 
 
 class AdminInquiryListAPIView(generics.ListAPIView):
@@ -37,7 +37,7 @@ class AdminInquiryDetailUpdateAPIView(generics.RetrieveUpdateAPIView):
     def get_serializer_class(self):
         if self.request.method in ["PUT", "PATCH"]:
             return AdminInquiryUpdateSerializer  # 수정 시
-        return InquiryDetailSerializer # 조회 시
+        return InquiryDetailSerializer  # 조회 시
 
     def check_admin_permission(self, user):
         """관리자 권한 체크"""

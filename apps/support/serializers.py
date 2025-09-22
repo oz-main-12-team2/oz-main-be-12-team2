@@ -68,17 +68,9 @@ class InquiryCreateSerializer(serializers.ModelSerializer):
         inquiry = super().create(validated_data)
 
         # 문의 생성 즉시 AI 자동응답 생성
-        ai_reply_content = gemini_service.generate_auto_reply(
-            inquiry.content,
-            inquiry.category
-        )
+        ai_reply_content = gemini_service.generate_auto_reply(inquiry.content, inquiry.category)
 
-        InquiryReply.objects.create(
-            inquiry=inquiry,
-            content=ai_reply_content,
-            is_admin_reply=True,
-            author=None
-        )
+        InquiryReply.objects.create(inquiry=inquiry, content=ai_reply_content, is_admin_reply=True, author=None)
 
         inquiry.status = "completed"
         inquiry.save()

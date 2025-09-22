@@ -1,5 +1,4 @@
 # 일반 사용자용 뷰들
-from django.shortcuts import get_object_or_404
 from rest_framework import generics, permissions
 
 from .models import FAQ, Inquiry
