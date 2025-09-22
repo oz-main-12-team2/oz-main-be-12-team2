@@ -1,7 +1,6 @@
-from django.contrib.auth import get_user_model
 from django.db import models
 
-User = get_user_model()
+from apps.users.models import User
 
 
 class Inquiry(models.Model):
@@ -33,7 +32,7 @@ class Inquiry(models.Model):
         ordering = ["-created_at"]
 
     def __str__(self):
-        return f"{self.title} - {self.user.username}"
+        return f"{self.title} - {self.user.email}"
 
 
 class InquiryReply(models.Model):
@@ -47,7 +46,7 @@ class InquiryReply(models.Model):
         ordering = ["created_at"]
 
     def __str__(self):
-        author_name = self.author.username if self.author else "상담원 제미나이"
+        author_name = self.author.email if self.author else "상담원 제미나이"
         return f"{self.inquiry.title} 답변 - {author_name}"
 
 

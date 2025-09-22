@@ -80,10 +80,11 @@ class InquiryCreateSerializer(serializers.ModelSerializer):
 
 class FAQSerializer(serializers.ModelSerializer):
     category_display = serializers.CharField(source="get_category_display", read_only=True)
+    is_active = serializers.BooleanField(default=True)
 
     class Meta:
         model = FAQ
-        fields = ["id", "category", "category_display", "question", "answer", "order"]
+        fields = ["id", "category", "category_display", "question", "answer", "order", "is_active"]
         read_only_fields = ["id"]
 
 

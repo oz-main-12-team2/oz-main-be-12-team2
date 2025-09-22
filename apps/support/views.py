@@ -1,4 +1,3 @@
-# 일반 사용자용 뷰들
 from rest_framework import generics, permissions
 
 from .models import FAQ, Inquiry
@@ -30,16 +29,6 @@ class InquiryDetailAPIView(generics.RetrieveAPIView):
         return Inquiry.objects.filter(user=self.request.user)
 
 
-# class InquiryReplyCreateAPIView(generics.CreateAPIView):
-#     permission_classes = [permissions.IsAuthenticated]
-#     serializer_class = InquiryReplyCreateSerializer
-#
-#     def perform_create(self, serializer):
-#         inquiry_id = self.kwargs["inquiry_id"]
-#         inquiry = get_object_or_404(Inquiry, id=inquiry_id, user=self.request.user)
-#         serializer.save(author=self.request.user, inquiry=inquiry, is_admin_reply=self.request.user.is_staff)
-
-
 class FAQListAPIView(generics.ListAPIView):
     serializer_class = FAQSerializer
     permission_classes = [permissions.AllowAny]
@@ -50,3 +39,13 @@ class FAQListAPIView(generics.ListAPIView):
         if category:
             queryset = queryset.filter(category=category)
         return queryset
+
+
+# class InquiryReplyCreateAPIView(generics.CreateAPIView):
+#     permission_classes = [permissions.IsAuthenticated]
+#     serializer_class = InquiryReplyCreateSerializer
+#
+#     def perform_create(self, serializer):
+#         inquiry_id = self.kwargs["inquiry_id"]
+#         inquiry = get_object_or_404(Inquiry, id=inquiry_id, user=self.request.user)
+#         serializer.save(author=self.request.user, inquiry=inquiry, is_admin_reply=self.request.user.is_staff)
