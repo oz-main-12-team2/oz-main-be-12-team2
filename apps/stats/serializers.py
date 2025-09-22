@@ -6,6 +6,12 @@ class SalesSummarySerializer(serializers.Serializer):
     revenue = serializers.DecimalField(max_digits=12, decimal_places=2)
 
 
+class TrendSerializer(serializers.Serializer):
+    date = serializers.DateField()
+    quantity = serializers.IntegerField()
+    revenue = serializers.DecimalField(max_digits=12, decimal_places=2)
+
+
 class DashboardSerializer(serializers.Serializer):
     total_users = serializers.IntegerField()
     total_revenue = serializers.DecimalField(max_digits=15, decimal_places=2)
@@ -16,7 +22,7 @@ class DashboardSerializer(serializers.Serializer):
     weekly_sales = SalesSummarySerializer()
     monthly_sales = SalesSummarySerializer()
 
-    trend = serializers.ListField(child=serializers.DictField(child=serializers.CharField()), required=False)
+    trend = TrendSerializer(many=True)  # ✅ DictField 대신 전용 Serializer
 
 
 class ProductRankingSerializer(serializers.Serializer):
@@ -25,3 +31,8 @@ class ProductRankingSerializer(serializers.Serializer):
     name = serializers.CharField()
     quantity = serializers.IntegerField()
     revenue = serializers.DecimalField(max_digits=12, decimal_places=2)
+
+
+class ProductRankingResponseSerializer(serializers.Serializer):
+    period = serializers.CharField()
+    rankings = ProductRankingSerializer(many=True)

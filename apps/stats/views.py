@@ -1,47 +1,40 @@
 from datetime import datetime, timedelta
 
 from django.db.models import Sum
-from rest_framework import permissions, status
+from rest_framework import status
+from rest_framework.generics import GenericAPIView
+from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
 from apps.orders.models import Order, OrderItem
 from apps.products.models import Product
-from apps.stats.serializers import DashboardSerializer, ProductRankingSerializer
+from apps.stats.serializers import DashboardSerializer, ProductRankingResponseSerializer
 from apps.users.models import User
 
 
-class DashboardAPIView(APIView):
+class DashboardAPIView(GenericAPIView):
     """
     관리자 대시보드 통계 조회
     GET /api/admin/stats/dashboard
     """
 
-    permission_classes = [permissions.IsAdminUser]
+    permission_classes = [IsAdminUser]
+    serializer_class = DashboardSerializer  # ✅ 지정 가능
 
-    def get(self, request):
+    def get(self, request, *args, **kwargs):
         base_date = datetime.today().date()
 
-        # 총 회원수
         total_users = User.objects.count()
-
-        # 총 매출
         total_revenue = OrderItem.objects.aggregate(total=Sum("total_price"))["total"] or 0
-
-        # 총 남은 재고
         total_stock = Product.objects.aggregate(total=Sum("stock"))["total"] or 0
-
-        # 오늘 주문 수
         today_orders = Order.objects.filter(created_at__date=base_date).count()
 
-        # 오늘 판매량
         today_qs = OrderItem.objects.filter(order__created_at__date=base_date)
         daily_sales = {
             "quantity": today_qs.aggregate(q=Sum("quantity"))["q"] or 0,
             "revenue": today_qs.aggregate(r=Sum("total_price"))["r"] or 0,
         }
 
-        # 이번 주 판매량
         week_start = base_date - timedelta(days=base_date.weekday())
         week_end = week_start + timedelta(days=6)
         week_qs = OrderItem.objects.filter(order__created_at__date__range=[week_start, week_end])
@@ -50,7 +43,6 @@ class DashboardAPIView(APIView):
             "revenue": week_qs.aggregate(r=Sum("total_price"))["r"] or 0,
         }
 
-        # 이번 달 판매량
         month_qs = OrderItem.objects.filter(
             order__created_at__year=base_date.year,
             order__created_at__month=base_date.month,
@@ -60,7 +52,6 @@ class DashboardAPIView(APIView):
             "revenue": month_qs.aggregate(r=Sum("total_price"))["r"] or 0,
         }
 
-        # 최근 30일 일별 추이
         daily_trend = []
         for i in range(30):
             d = base_date - timedelta(days=i)
@@ -85,19 +76,20 @@ class DashboardAPIView(APIView):
             "trend": daily_trend,
         }
 
-        serializer = DashboardSerializer(data)
+        serializer = self.get_serializer(data)  # ✅ GenericAPIView 제공
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class ProductRankingAPIView(APIView):
+class ProductRankingAPIView(GenericAPIView):
     """
     관리자 상품 판매 랭킹 (일간 판매량 기준 Top 10)
     GET /api/admin/stats/rankings/products
     """
 
-    permission_classes = [permissions.IsAdminUser]
+    permission_classes = [IsAdminUser]
+    serializer_class = ProductRankingResponseSerializer  # ✅ 전체 응답 구조를 반영
 
-    def get(self, request):
+    def get(self, request, *args, **kwargs):
         today = datetime.today().date()
 
         qs = (
@@ -118,9 +110,7 @@ class ProductRankingAPIView(APIView):
             for idx, item in enumerate(qs)
         ]
 
-        serializer = ProductRankingSerializer(rankings, many=True)
+        data = {"period": str(today), "rankings": rankings}
 
-        return Response(
-            {"period": str(today), "rankings": serializer.data},
-            status=status.HTTP_200_OK,
-        )
+        serializer = self.get_serializer(data)  # ✅ ResponseSerializer 사용
+        return Response(serializer.data, status=status.HTTP_200_OK)
