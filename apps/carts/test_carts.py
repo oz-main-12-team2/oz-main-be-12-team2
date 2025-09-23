@@ -63,7 +63,7 @@ class CartAPITest(TestCase):
         cart, _ = Cart.objects.get_or_create(user=self.user)
         cart_product = CartProduct.objects.create(cart=cart, product=self.product, quantity=1)
 
-        url = reverse("cart-update", args=[cart_product.id])
+        url = reverse("cart-update", args=[self.product.id])
         data = {"product_id": self.product.id, "quantity": 5}
         response = self.client.put(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -74,7 +74,7 @@ class CartAPITest(TestCase):
         cart, _ = Cart.objects.get_or_create(user=self.user)
         cart_product = CartProduct.objects.create(cart=cart, product=self.product, quantity=1)
 
-        url = reverse("cart-update", args=[cart_product.id])
+        url = reverse("cart-update", args=[self.product.id])
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertFalse(CartProduct.objects.filter(id=cart_product.id).exists())
