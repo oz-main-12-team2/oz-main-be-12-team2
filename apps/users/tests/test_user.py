@@ -2,7 +2,7 @@ import json
 
 from django.contrib.auth.tokens import default_token_generator
 from django.core.exceptions import ValidationError
-from django.test import TestCase, RequestFactory
+from django.test import RequestFactory, TestCase
 from django.urls import reverse
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
@@ -780,16 +780,11 @@ class ChangePasswordTest(TestCase):
         self.assertIn("new_password", response.data)
 
 
-
 class CookieJWTAuthenticationTest(TestCase):
     def setUp(self):
         self.factory = RequestFactory()
         self.auth = CookieJWTAuthentication()
-        self.user = User.objects.create_user(
-            email="test@example.com",
-            name="Test User",
-            password="testpass123"
-        )
+        self.user = User.objects.create_user(email="test@example.com", name="Test User", password="testpass123")
         self.user.is_active = True
         self.user.save()
 
@@ -798,9 +793,9 @@ class CookieJWTAuthenticationTest(TestCase):
         self.access_token = str(self.refresh.access_token)
 
     def test_authenticate_with_valid_token(self):
-        """유효한 토큰으로 인증 성공 테스트 """
-        request = self.factory.get('/')
-        request.COOKIES = {'access_token': self.access_token}
+        """유효한 토큰으로 인증 성공 테스트"""
+        request = self.factory.get("/")
+        request.COOKIES = {"access_token": self.access_token}
 
         result = self.auth.authenticate(request)
 
