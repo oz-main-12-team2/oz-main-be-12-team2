@@ -108,10 +108,10 @@ def login(request):
 
         response = JsonResponse({"success": True})
         response.set_cookie(
-            "access_token", str(access_token), max_age=int(access_lifetime), httponly=True, secure=True, samesite="Lax"
+            "access_token", str(access_token), max_age=int(access_lifetime), httponly=True, secure=False, samesite="Lax"
         )
         response.set_cookie(
-            "refresh_token", str(refresh), max_age=int(refresh_lifetime), httponly=True, secure=True, samesite="Lax"
+            "refresh_token", str(refresh), max_age=int(refresh_lifetime), httponly=True, secure=False, samesite="Lax"
         )
         return response
 

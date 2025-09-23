@@ -80,7 +80,7 @@ class NaverLoginCallbackView(APIView):
                 tokens["access"],
                 max_age=int(access_lifetime),
                 httponly=True,
-                secure=True,
+                secure=False,
                 samesite="Lax",
             )
             response.set_cookie(
@@ -88,7 +88,7 @@ class NaverLoginCallbackView(APIView):
                 tokens["refresh"],
                 max_age=int(refresh_lifetime),
                 httponly=True,
-                secure=True,
+                secure=False,
                 samesite="Lax",
             )
             return response
@@ -171,7 +171,7 @@ class GoogleLoginCallbackView(APIView):
                 tokens["access"],
                 max_age=int(access_lifetime),
                 httponly=True,
-                secure=True,
+                secure=False,
                 samesite="Lax",
             )
             response.set_cookie(
@@ -179,7 +179,7 @@ class GoogleLoginCallbackView(APIView):
                 tokens["refresh"],
                 max_age=int(refresh_lifetime),
                 httponly=True,
-                secure=True,
+                secure=False,
                 samesite="Lax",
             )
             return response
