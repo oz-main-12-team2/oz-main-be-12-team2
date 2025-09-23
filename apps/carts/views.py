@@ -1,11 +1,9 @@
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
 from rest_framework import generics, permissions, serializers, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import Cart, CartProduct
-from .serializers import CartProductSerializer, CartSerializer, CartProductUpdateSerializer
+from .serializers import CartProductSerializer, CartProductUpdateSerializer, CartSerializer
 
 
 # ✅ 장바구니 조회
@@ -80,7 +78,7 @@ class CartProductUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
     def get_serializer_class(self):
         if self.request.method == "PUT":
             return CartProductUpdateSerializer  # ✅ 수량만
-        return CartProductSerializer           # ✅ 삭제 시 응답에는 전체 정보
+        return CartProductSerializer  # ✅ 삭제 시 응답에는 전체 정보
 
 
 # ✅ 장바구니 전체 비우기
