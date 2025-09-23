@@ -1,11 +1,10 @@
-import google.generativeai as genai
 from django.conf import settings
+from google import genai
 
 
 class GeminiService:
     def __init__(self):
-        genai.configure(api_key=settings.GEMINI_API_KEY)
-        self.model = genai.GenerativeModel("gemini-1.5-flash")
+        self.client = genai.Client(api_key=settings.GEMINI_API_KEY)
 
     def generate_auto_reply(self, question, category):
         category_map = {
@@ -27,7 +26,7 @@ class GeminiService:
         """
 
         try:
-            response = self.model.generate_content(prompt)
+            response = self.client.models.generate_content(model="gemini-2.0-flash", contents=prompt)
             return response.text
         except Exception:
             return "문의해 주셔서 감사합니다. 빠른 시일 내에 답변드리겠습니다."
