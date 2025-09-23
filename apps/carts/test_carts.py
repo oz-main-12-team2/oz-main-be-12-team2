@@ -61,10 +61,10 @@ class CartAPITest(TestCase):
     def test_update_cart_product_quantity(self):
         """상품 수량 변경"""
         cart, _ = Cart.objects.get_or_create(user=self.user)
-        cart_product = CartProduct.objects.create(cart=cart, product=self.product, quantity=1)
+        CartProduct.objects.create(cart=cart, product=self.product, quantity=1)
 
-        url = reverse("cart-update", args=[cart_product.id])
-        data = {"product_id": self.product.id, "quantity": 5}
+        url = reverse("cart-update", args=[self.product.id])
+        data = {"quantity": 5}
         response = self.client.put(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["quantity"], 5)
@@ -72,12 +72,12 @@ class CartAPITest(TestCase):
     def test_delete_cart_product(self):
         """장바구니 상품 삭제"""
         cart, _ = Cart.objects.get_or_create(user=self.user)
-        cart_product = CartProduct.objects.create(cart=cart, product=self.product, quantity=1)
+        CartProduct.objects.create(cart=cart, product=self.product, quantity=1)
 
-        url = reverse("cart-update", args=[cart_product.id])
+        url = reverse("cart-update", args=[self.product.id])
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertFalse(CartProduct.objects.filter(id=cart_product.id).exists())
+        self.assertFalse(CartProduct.objects.filter(product=self.product, cart=cart).exists())
 
     def test_clear_cart(self):
         """장바구니 전체 비우기"""

@@ -5,14 +5,13 @@ from .models import Cart, CartProduct
 
 
 class CartProductSerializer(serializers.ModelSerializer):
-    cart_id = serializers.IntegerField(source="cart.id", read_only=True)
     product_id = serializers.PrimaryKeyRelatedField(source="product", queryset=Product.objects.all())
     product_name = serializers.CharField(source="product.name", read_only=True)
     product_price = serializers.DecimalField(source="product.price", max_digits=10, decimal_places=2, read_only=True)
 
     class Meta:
         model = CartProduct
-        fields = ["cart_id", "product_id", "product_name", "product_price", "quantity"]
+        fields = ["product_id", "product_name", "product_price", "quantity"]
 
     def validate_quantity(self, value):
         if value < 1:
@@ -27,3 +26,9 @@ class CartSerializer(serializers.ModelSerializer):
         model = Cart
         fields = ["items"]
         # read_only_fields = ["user", "id", "created_at", "updated_at"]
+
+
+class CartProductUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CartProduct
+        fields = ["quantity"]  # ✅ 수량만 업데이트 허용
