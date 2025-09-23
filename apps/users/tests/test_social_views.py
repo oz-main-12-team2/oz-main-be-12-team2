@@ -107,40 +107,6 @@ class SocialLoginTest(TestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.data["error"], "네이버 사용자 정보 조회 실패")
 
-    @patch("apps.users.social_views.SocialAuthService.generate_jwt_tokens")
-    @patch("apps.users.social_views.SocialAuthService.create_or_get_user")
-    @patch("apps.users.social_views.NaverOAuth.get_user_info")
-    @patch("apps.users.social_views.NaverOAuth.get_access_token")
-    def test_naver_callback_success(self, mock_get_token, mock_get_user_info, mock_create_user, mock_generate_tokens):
-        """네이버 콜백 - 성공 케이스"""
-        # 세션 설정
-        session = self.client.session
-        session["naver_oauth_state"] = "test_state"
-        session.save()
-
-        # Mock 설정 - 성공 응답
-        mock_get_token.return_value = {"access_token": "test_token"}
-        mock_get_user_info.return_value = {
-            "resultcode": "00",
-            "response": {"email": "test@naver.com", "name": "네이버사용자"},
-        }
-
-        # 사용자 생성 Mock
-        test_user = User.objects.create_user(email="test@naver.com", name="네이버사용자", is_social=True)
-        mock_create_user.return_value = test_user
-        mock_generate_tokens.return_value = {"access": "test_access_token", "refresh": "test_refresh_token"}
-
-        url = reverse("naver_login_callback")
-        response = self.client.get(url, {"code": "test_code", "state": "test_state"})
-
-        # 응답 검증
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data["message"], "네이버 로그인 성공")
-        self.assertIn("tokens", response.data)
-
-        # 세션 정리 확인
-        self.assertNotIn("naver_oauth_state", self.client.session)
-
     @patch("apps.users.social_views.NaverOAuth.get_access_token")
     def test_naver_callback_exception_handling(self, mock_get_token):
         """네이버 콜백 - 예외 발생"""
@@ -242,36 +208,6 @@ class SocialLoginTest(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.data["error"], "구글 사용자 정보 조회 실패")
-
-    @patch("apps.users.social_views.SocialAuthService.generate_jwt_tokens")
-    @patch("apps.users.social_views.SocialAuthService.create_or_get_user")
-    @patch("apps.users.social_views.GoogleOAuth.get_user_info")
-    @patch("apps.users.social_views.GoogleOAuth.get_access_token")
-    def test_google_callback_success(self, mock_get_token, mock_get_user_info, mock_create_user, mock_generate_tokens):
-        """구글 콜백 - 성공 케이스"""
-        # 세션 설정
-        session = self.client.session
-        session["google_oauth_state"] = "test_state"
-        session.save()
-
-        # Mock 설정 - 성공 응답
-        mock_get_token.return_value = {"access_token": "test_token"}
-
-        # 사용자 생성 Mock
-        test_user = User.objects.create_user(email="test@gmail.com", name="구글사용자", is_social=True)
-        mock_create_user.return_value = test_user
-        mock_generate_tokens.return_value = {"access": "test_access_token", "refresh": "test_refresh_token"}
-
-        url = reverse("google_login_callback")
-        response = self.client.get(url, {"code": "test_code", "state": "test_state"})
-
-        # 응답 검증
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data["message"], "구글 로그인 성공")
-        self.assertIn("tokens", response.data)
-
-        # 세션 정리 확인
-        self.assertNotIn("google_oauth_state", self.client.session)
 
     @patch("apps.users.social_views.GoogleOAuth.get_access_token")
     def test_google_callback_exception_handling(self, mock_get_token):

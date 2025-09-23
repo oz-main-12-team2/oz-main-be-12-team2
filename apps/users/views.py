@@ -2,6 +2,7 @@ from django.conf import settings
 from django.contrib.auth import authenticate, get_user_model
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
+from django.http import JsonResponse
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from drf_yasg import openapi
@@ -98,17 +99,21 @@ def login(request):
 
     user = authenticate(username=email, password=password)
     if user:
-        # 비활성계정 체크기능 , 장고기본 설정상 체크 불가능 + 보안상의 이유로 체크 안하는것을 권장
-        # if not user.is_active:
-        #     return Response({"error": "비활성화된 계정입니다."}, status=status.HTTP_400_BAD_REQUEST)
-
         refresh = RefreshToken.for_user(user)
-        return Response(
-            {
-                "access": str(refresh.access_token),
-                "refresh": str(refresh),
-            }
+        access_token = refresh.access_token
+
+        # settings에서 설정된 시간 사용
+        access_lifetime = settings.SIMPLE_JWT["ACCESS_TOKEN_LIFETIME"].total_seconds()
+        refresh_lifetime = settings.SIMPLE_JWT["REFRESH_TOKEN_LIFETIME"].total_seconds()
+
+        response = JsonResponse({"success": True})
+        response.set_cookie(
+            "access_token", str(access_token), max_age=int(access_lifetime), httponly=True, secure=True, samesite="Lax"
         )
+        response.set_cookie(
+            "refresh_token", str(refresh), max_age=int(refresh_lifetime), httponly=True, secure=True, samesite="Lax"
+        )
+        return response
 
     return Response(
         {"error": "이메일 또는 비밀번호가 올바르지 않습니다."},
@@ -116,32 +121,27 @@ def login(request):
     )
 
 
-@swagger_auto_schema(
-    methods=["post"],
-    request_body=openapi.Schema(
-        type=openapi.TYPE_OBJECT,
-        properties={
-            "refresh": openapi.Schema(type=openapi.TYPE_STRING),
-        },
-        required=["refresh"],
-    ),
-)
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def logout(request):
-    """로그아웃 - 리프레시 토큰 블랙리스트 처리"""
+    """로그아웃 - 쿠키 삭제 및 리프레시 토큰 블랙리스트 처리"""
     try:
-        refresh_token = request.data.get("refresh")
+        # 쿠키에서 refresh_token 가져오기
+        refresh_token = request.COOKIES.get("refresh_token")
         if refresh_token:
             token = RefreshToken(refresh_token)
             token.blacklist()
 
-        return Response({"message": "로그아웃되었습니다."}, status=status.HTTP_200_OK)
+        response = JsonResponse({"message": "로그아웃되었습니다."})
+        response.delete_cookie("access_token")
+        response.delete_cookie("refresh_token")
+        return response
+
     except Exception:
-        return Response(
-            {"error": "로그아웃 처리 중 오류가 발생했습니다."},
-            status=status.HTTP_400_BAD_REQUEST,
-        )
+        response = JsonResponse({"error": "로그아웃 처리 중 오류가 발생했습니다."}, status=400)
+        response.delete_cookie("access_token")
+        response.delete_cookie("refresh_token")
+        return response
 
 
 @swagger_auto_schema(

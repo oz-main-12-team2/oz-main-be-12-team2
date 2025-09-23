@@ -2,6 +2,7 @@ import secrets
 
 from django.conf import settings
 from django.http import HttpResponseRedirect
+from django.shortcuts import redirect
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -69,18 +70,28 @@ class NaverLoginCallbackView(APIView):
             # 4. JWT 토큰 생성
             tokens = SocialAuthService.generate_jwt_tokens(user)
 
-            return Response(
-                {
-                    "message": "네이버 로그인 성공",
-                    "tokens": tokens,
-                    # "user": {
-                    #     "id": user.id,
-                    #     "email": user.email,
-                    #     "name": user.name,
-                    # },
-                },
-                status=status.HTTP_200_OK,
+            # 쿠키로 토큰 설정
+            access_lifetime = settings.SIMPLE_JWT["ACCESS_TOKEN_LIFETIME"].total_seconds()
+            refresh_lifetime = settings.SIMPLE_JWT["REFRESH_TOKEN_LIFETIME"].total_seconds()
+
+            response = redirect("/")
+            response.set_cookie(
+                "access_token",
+                tokens["access"],
+                max_age=int(access_lifetime),
+                httponly=True,
+                secure=True,
+                samesite="Lax",
             )
+            response.set_cookie(
+                "refresh_token",
+                tokens["refresh"],
+                max_age=int(refresh_lifetime),
+                httponly=True,
+                secure=True,
+                samesite="Lax",
+            )
+            return response
 
         except Exception:
             return Response(
@@ -150,18 +161,28 @@ class GoogleLoginCallbackView(APIView):
             # 4. JWT 토큰 생성
             tokens = SocialAuthService.generate_jwt_tokens(user)
 
-            response = Response(
-                {
-                    "message": "구글 로그인 성공",
-                    "tokens": tokens,
-                    # "user": {
-                    #     "id": user.id,
-                    #     "email": user.email,
-                    #     "name": user.name,
-                    # },
-                },
-                status=status.HTTP_200_OK,
+            # 쿠키로 토큰 설정
+            access_lifetime = settings.SIMPLE_JWT["ACCESS_TOKEN_LIFETIME"].total_seconds()
+            refresh_lifetime = settings.SIMPLE_JWT["REFRESH_TOKEN_LIFETIME"].total_seconds()
+
+            response = redirect("/")
+            response.set_cookie(
+                "access_token",
+                tokens["access"],
+                max_age=int(access_lifetime),
+                httponly=True,
+                secure=True,
+                samesite="Lax",
             )
+            response.set_cookie(
+                "refresh_token",
+                tokens["refresh"],
+                max_age=int(refresh_lifetime),
+                httponly=True,
+                secure=True,
+                samesite="Lax",
+            )
+            return response
 
         except Exception:
             response = Response(
