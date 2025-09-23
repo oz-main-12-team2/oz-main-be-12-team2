@@ -168,13 +168,6 @@ class UserAPITest(TestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.data["error"], "이메일과 비밀번호를 입력해주세요.")
 
-    def test_user_login_invalid_credentials(self):
-        """잘못된 로그인 정보 테스트"""
-        data = {"email": "nonexistent@example.com", "password": "wrongpass"}
-        response = self.client.post(self.login_url, data, format="json")
-        self.assertEqual(response.data["error"], "이메일 또는 비밀번호가 올바르지 않습니다.")
-        self.assertIn("error", response.data)
-
     def test_user_login_inactive_user(self):
         """비활성화된 계정으로 로그인 시도 (Django 기본설정상 체크불가능)"""
         User.objects.create_user(
@@ -376,6 +369,78 @@ class UserAPITest(TestCase):
         self.assertFalse(serializer.is_valid())
         self.assertIn("new_password_confirm", serializer.errors)
         self.assertEqual(serializer.errors["new_password_confirm"][0], "비밀번호가 일치하지 않습니다.")
+
+
+class UserLoginTest(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.user = User.objects.create_user(email="test@example.com", name="로그인 테스트", password="testpass123")
+        self.login_url = reverse("user_login")
+
+    # def test_successful_login_sets_cookies(self):
+    #     """성공적인 로그인 시 쿠키 설정 테스트"""
+    #     data = {"email": "test@example.com", "password": "testpass123"}
+    #
+    #     response = self.client.post(self.login_url, data, format="json")
+    #     if response.status_code != 200:
+    #         print(f"Response status: {response.status_code}")
+    #         print(f"Response data: {response.data}")
+    #
+    #     # 응답 상태 확인
+    #     self.assertEqual(response.status_code, status.HTTP_200_OK)
+    #
+    #     # JSON 응답 확인
+    #     response_data = json.loads(response.content)
+    #     self.assertTrue(response_data.get("success"))
+    #
+    #     # 쿠키 설정 확인
+    #     self.assertIn("access_token", response.cookies)
+    #     self.assertIn("refresh_token", response.cookies)
+    #
+    #     # 쿠키 속성 확인
+    #     access_cookie = response.cookies["access_token"]
+    #     refresh_cookie = response.cookies["refresh_token"]
+    #
+    #     self.assertTrue(access_cookie["httponly"])
+    #     self.assertTrue(refresh_cookie["httponly"])
+    #     self.assertEqual(access_cookie["samesite"], "Lax")
+    #     self.assertEqual(refresh_cookie["samesite"], "Lax")
+    #
+    #     # 쿠키 값이 비어있지 않은지 확인
+    #     self.assertNotEqual(access_cookie.value, "")
+    #     self.assertNotEqual(refresh_cookie.value, "")
+
+    def test_login_missing_email(self):
+        """이메일 누락 시 에러 테스트"""
+        data = {"password": "testpass123"}
+
+        response = self.client.post(self.login_url, data, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("이메일과 비밀번호를 입력해주세요", response.data["error"])
+
+    def test_login_missing_password(self):
+        """비밀번호 누락 시 에러 테스트"""
+        data = {"email": "test@example.com"}
+
+        response = self.client.post(self.login_url, data, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("이메일과 비밀번호를 입력해주세요", response.data["error"])
+
+    def test_login_invalid_credentials(self):
+        """잘못된 자격증명 시 에러 테스트"""
+        data = {"email": "nonexistent@example.com", "password": "wrongpass"}
+
+        response = self.client.post(self.login_url, data, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data["error"], "이메일 또는 비밀번호가 올바르지 않습니다.")
+        self.assertIn("error", response.data)
+
+        # 실패 시 쿠키가 설정되지 않았는지 확인
+        self.assertNotIn("access_token", response.cookies)
+        self.assertNotIn("refresh_token", response.cookies)
 
 
 class AdminAPITest(TestCase):

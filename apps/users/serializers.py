@@ -42,7 +42,7 @@ class AdminUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ["email", "name", "address", "is_admin", "is_social", "is_active", "created_at", "updated_at"]
+        fields = ["id", "email", "name", "address", "is_admin", "is_social", "is_active", "created_at", "updated_at"]
         read_only_fields = ["email", "created_at", "updated_at"]
 
 
