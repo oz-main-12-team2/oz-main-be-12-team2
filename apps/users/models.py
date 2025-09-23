@@ -27,6 +27,7 @@ class UserManager(BaseUserManager):
         return user
 
     def create_superuser(self, email, name, password=None, **extra_fields):
+        extra_fields.setdefault("is_active", True)
         extra_fields.setdefault("is_admin", True)
         extra_fields.setdefault("is_superuser", True)
         extra_fields.setdefault("is_social", False)  # superuser는 소셜 로그인 불가

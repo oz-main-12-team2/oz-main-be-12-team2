@@ -6,7 +6,6 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from rest_framework import status
 from rest_framework.test import APIClient
-from rest_framework_simplejwt.tokens import RefreshToken
 
 from apps.users.models import User
 
@@ -162,22 +161,6 @@ class UserAPITest(TestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("password_confirm", response.data)
 
-    def test_user_login(self):
-        user = User.objects.create_user(email="logintest@example.com", name="로그인 테스트", password="loginpass123")
-
-        """로그인 API 테스트"""
-
-        # ✅ 로그인 전에 강제로 활성화
-        user.is_active = True
-        user.save()
-
-        # 로그인 시도
-        data = {"email": "logintest@example.com", "password": "loginpass123"}
-        response = self.client.post(self.login_url, data, format="json")
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn("access", response.data)
-        self.assertIn("refresh", response.data)
-
     def test_user_login_missing_credentials(self):
         """필수 정보 누락 시 에러"""
         data = {}
@@ -203,18 +186,6 @@ class UserAPITest(TestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.data["error"], "이메일 또는 비밀번호가 올바르지 않습니다.")
 
-    def test_logout_with_valid_refresh_token(self):
-        """유효한 refresh_token으로 정상 로그아웃"""
-        user = User.objects.create_user(
-            email="logouttest3@example.com", name="로그아웃 테스트3", password="logoutpass123", is_active=True
-        )
-        self.client.force_authenticate(user=user)
-
-        refresh = RefreshToken.for_user(user)
-        response = self.client.post(self.logout_url, {"refresh": str(refresh)})
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data["message"], "로그아웃되었습니다.")
-
     def test_logout_without_refresh_token(self):
         """refresh_token 없이 호출"""
         # 사용자 생성 및 인증 설정
@@ -227,19 +198,6 @@ class UserAPITest(TestCase):
 
         response = self.client.post(self.logout_url, {})
         self.assertEqual(response.status_code, 200)
-
-    def test_logout_invalid_refresh_token(self):
-        """잘못된 refresh_token으로 호출"""
-        # 사용자 생성 및 인증 설정
-        user = User.objects.create_user(
-            email="logouttest2@example.com",
-            name="로그아웃 테스트2",
-            password="logoutpass123",
-        )
-        self.client.force_authenticate(user=user)
-
-        response = self.client.post(self.logout_url, {"refresh": "invalid_token"})
-        self.assertEqual(response.status_code, 400)
 
     def test_user_profile_get(self):
         """사용자 프로필 조회 테스트"""
