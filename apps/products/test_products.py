@@ -98,3 +98,81 @@ class ProductPermissionTest(BaseProductTestCase):
             format="json",
         )
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+
+class ProductSearchAndOrderingTest(BaseProductTestCase):
+    """상품 검색 및 정렬 테스트"""
+
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+
+        # 추가 상품 데이터 생성
+        cls.product1 = Product.objects.create(
+            name="해리포터",
+            description="마법사 이야기",
+            author="조앤 롤링",
+            category="소설",
+            price=Decimal("15000.00"),
+            stock=3,
+        )
+        cls.product2 = Product.objects.create(
+            name="데이터베이스 설계",
+            description="DB 교재",
+            author="홍길동",
+            category="IT",
+            price=Decimal("30000.00"),
+            stock=7,
+        )
+        cls.product3 = Product.objects.create(
+            name="철학 입문",
+            description="고대 철학자들",
+            author="아리스토텔레스",
+            category="인문",
+            price=Decimal("10000.00"),
+            stock=2,
+        )
+
+    def test_search_by_query_name(self):
+        """query 파라미터로 상품명 검색"""
+        response = self.client.get(self.list_url, {"query": "해리포터"})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data["results"]), 1)
+        self.assertEqual(response.data["results"][0]["name"], "해리포터")
+
+    def test_search_by_query_author(self):
+        """query 파라미터로 저자 검색"""
+        response = self.client.get(self.list_url, {"query": "홍길동"})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data["results"]), 1)
+        self.assertEqual(response.data["results"][0]["author"], "홍길동")
+
+    def test_filter_by_category(self):
+        """카테고리 필터"""
+        response = self.client.get(self.list_url, {"category": "인문"})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data["results"]), 1)
+        self.assertEqual(response.data["results"][0]["category"], "인문")
+
+    def test_filter_by_price_range(self):
+        """가격 범위 필터"""
+        response = self.client.get(self.list_url, {"min_price": "12000", "max_price": "20000"})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data["results"]), 1)
+        self.assertEqual(response.data["results"][0]["name"], "해리포터")
+
+    def test_ordering_by_price_asc(self):
+        """가격 오름차순 정렬"""
+        response = self.client.get(self.list_url, {"ordering": "price"})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        prices = [Decimal(item["price"]) for item in response.data["results"]]
+        self.assertEqual(prices, sorted(prices))
+
+    def test_ordering_by_price_desc(self):
+        """가격 내림차순 정렬"""
+        response = self.client.get(self.list_url, {"ordering": "-price"})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        prices = [Decimal(item["price"]) for item in response.data["results"]]
+        self.assertEqual(prices, sorted(prices, reverse=True))
