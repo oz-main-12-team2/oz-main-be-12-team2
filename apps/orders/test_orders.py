@@ -19,11 +19,15 @@ class OrdersAPITestCase(TestCase):
     @classmethod
     def setUpTestData(cls):
         # 유저 / 관리자 생성
-        cls.user = User.objects.create_user(email="testuser@example.com", name="테스트 유저", password="testpass")
+        cls.user = User.objects.create_user(
+            email="testuser@example.com", name="테스트 유저", password="testpass"
+        )
         cls.user.is_active = True
         cls.user.save()
 
-        cls.admin_user = User.objects.create_superuser(email="admin@example.com", name="관리자", password="adminpass")
+        cls.admin_user = User.objects.create_superuser(
+            email="admin@example.com", name="관리자", password="adminpass"
+        )
         cls.admin_user.is_active = True
         cls.admin_user.save()
 
@@ -43,7 +47,9 @@ class OrdersAPITestCase(TestCase):
         )
 
         # ✅ 카트에 아이템 추가 (주문 생성 가능하도록)
-        cls.cart_item = CartProduct.objects.create(cart=cls.cart, product=cls.product, quantity=2)
+        cls.cart_item = CartProduct.objects.create(
+            cart=cls.cart, product=cls.product, quantity=2
+        )
 
         # 기본 주문 생성
         cls.order = Order.objects.create(
@@ -51,7 +57,7 @@ class OrdersAPITestCase(TestCase):
             recipient_name="홍길동",
             recipient_phone="010-1234-5678",
             recipient_address="서울시 강남구",
-            total_price=Decimal("45000.00"),
+            total_price=Decimal("20000.00"),
             status="결제 완료",
         )
 
@@ -61,12 +67,18 @@ class OrdersAPITestCase(TestCase):
         self.client.force_authenticate(user=self.user)
 
     def create_order_payload(self, **kwargs):
+        """
+        주문 생성 시 payload
+        - selected_items: list of dicts with id and quantity
+        - total_price는 서버에서 계산하도록 하지 않음
+        """
         payload = {
             "recipient_name": "홍길동",
             "recipient_phone": "010-1234-5678",
             "recipient_address": "서울시 강남구",
-            # ✅ 실제 카트 아이템 id를 넣음
-            "selected_items": [self.cart_item.id],
+            "selected_items": [
+                {"id": self.cart_item.id, "quantity": self.cart_item.quantity}
+            ],
         }
         payload.update(kwargs)
         return payload
@@ -83,7 +95,10 @@ class OrdersAPITestCase(TestCase):
         self.assertTrue(len(response.data) >= 1)
 
     def test_create_order(self):
-        response = self.client.post(self.get_order_url(), self.create_order_payload(), format="json")
+        payload = self.create_order_payload()
+        response = self.client.post(self.get_order_url(), payload, format="json")
+        if response.status_code != status.HTTP_201_CREATED:
+            print(response.data)  # 실패 시 에러 확인
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertGreaterEqual(Order.objects.count(), 2)
 
