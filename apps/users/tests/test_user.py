@@ -1,12 +1,16 @@
+import json
+
 from django.contrib.auth.tokens import default_token_generator
 from django.core.exceptions import ValidationError
-from django.test import TestCase
+from django.test import TestCase, RequestFactory
 from django.urls import reverse
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from rest_framework import status
 from rest_framework.test import APIClient
+from rest_framework_simplejwt.tokens import RefreshToken
 
+from apps.users.middleware import CookieJWTAuthentication
 from apps.users.models import User
 
 
@@ -375,40 +379,42 @@ class UserLoginTest(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.user = User.objects.create_user(email="test@example.com", name="로그인 테스트", password="testpass123")
+        self.user.is_active = True
+        self.user.save()
         self.login_url = reverse("user_login")
 
-    # def test_successful_login_sets_cookies(self):
-    #     """성공적인 로그인 시 쿠키 설정 테스트"""
-    #     data = {"email": "test@example.com", "password": "testpass123"}
-    #
-    #     response = self.client.post(self.login_url, data, format="json")
-    #     if response.status_code != 200:
-    #         print(f"Response status: {response.status_code}")
-    #         print(f"Response data: {response.data}")
-    #
-    #     # 응답 상태 확인
-    #     self.assertEqual(response.status_code, status.HTTP_200_OK)
-    #
-    #     # JSON 응답 확인
-    #     response_data = json.loads(response.content)
-    #     self.assertTrue(response_data.get("success"))
-    #
-    #     # 쿠키 설정 확인
-    #     self.assertIn("access_token", response.cookies)
-    #     self.assertIn("refresh_token", response.cookies)
-    #
-    #     # 쿠키 속성 확인
-    #     access_cookie = response.cookies["access_token"]
-    #     refresh_cookie = response.cookies["refresh_token"]
-    #
-    #     self.assertTrue(access_cookie["httponly"])
-    #     self.assertTrue(refresh_cookie["httponly"])
-    #     self.assertEqual(access_cookie["samesite"], "Lax")
-    #     self.assertEqual(refresh_cookie["samesite"], "Lax")
-    #
-    #     # 쿠키 값이 비어있지 않은지 확인
-    #     self.assertNotEqual(access_cookie.value, "")
-    #     self.assertNotEqual(refresh_cookie.value, "")
+    def test_successful_login_sets_cookies(self):
+        """성공적인 로그인 시 쿠키 설정 테스트"""
+        data = {"email": "test@example.com", "password": "testpass123"}
+
+        response = self.client.post(self.login_url, data, format="json")
+        if response.status_code != 200:
+            print(f"Response status: {response.status_code}")
+            print(f"Response data: {response.data}")
+
+        # 응답 상태 확인
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # JSON 응답 확인
+        response_data = json.loads(response.content)
+        self.assertTrue(response_data.get("success"))
+
+        # 쿠키 설정 확인
+        self.assertIn("access_token", response.cookies)
+        self.assertIn("refresh_token", response.cookies)
+
+        # 쿠키 속성 확인
+        access_cookie = response.cookies["access_token"]
+        refresh_cookie = response.cookies["refresh_token"]
+
+        self.assertTrue(access_cookie["httponly"])
+        self.assertTrue(refresh_cookie["httponly"])
+        self.assertEqual(access_cookie["samesite"], "Lax")
+        self.assertEqual(refresh_cookie["samesite"], "Lax")
+
+        # 쿠키 값이 비어있지 않은지 확인
+        self.assertNotEqual(access_cookie.value, "")
+        self.assertNotEqual(refresh_cookie.value, "")
 
     def test_login_missing_email(self):
         """이메일 누락 시 에러 테스트"""
@@ -441,6 +447,70 @@ class UserLoginTest(TestCase):
         # 실패 시 쿠키가 설정되지 않았는지 확인
         self.assertNotIn("access_token", response.cookies)
         self.assertNotIn("refresh_token", response.cookies)
+
+
+class UserLogoutTest(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.user = User.objects.create_user(email="test@example.com", password="testpass123", name="Test User")
+        self.user.is_active = True
+        self.user.save()
+        self.logout_url = reverse("user_logout")
+
+    def test_logout_with_valid_refresh_token(self):
+        """유효한 리프레시 토큰으로 로그아웃 테스트"""
+        # 먼저 로그인해서 토큰 생성
+        from rest_framework_simplejwt.tokens import RefreshToken
+
+        refresh = RefreshToken.for_user(self.user)
+
+        # 쿠키 설정
+        self.client.cookies["refresh_token"] = str(refresh)
+        self.client.cookies["access_token"] = str(refresh.access_token)
+
+        # 인증된 사용자로 요청
+        self.client.force_authenticate(user=self.user)
+
+        response = self.client.post(self.logout_url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response_data = json.loads(response.content)
+        self.assertEqual(response_data["message"], "로그아웃되었습니다.")
+
+        # 쿠키 삭제 확인
+        self.assertIn("access_token", response.cookies)
+        self.assertIn("refresh_token", response.cookies)
+        self.assertEqual(response.cookies["access_token"].value, "")
+        self.assertEqual(response.cookies["refresh_token"].value, "")
+
+    def test_logout_without_refresh_token(self):
+        """리프레시 토큰 없이 로그아웃 테스트"""
+        # 인증된 사용자로 요청 (쿠키는 없음)
+        self.client.force_authenticate(user=self.user)
+
+        response = self.client.post(self.logout_url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response_data = json.loads(response.content)
+        self.assertEqual(response_data["message"], "로그아웃되었습니다.")
+
+    def test_logout_with_invalid_refresh_token(self):
+        """유효하지 않은 리프레시 토큰으로 로그아웃 테스트 (Exception 발생)"""
+        # 잘못된 토큰 설정
+        self.client.cookies["refresh_token"] = "invalid_token"
+
+        # 인증된 사용자로 요청
+        self.client.force_authenticate(user=self.user)
+
+        response = self.client.post(self.logout_url)
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        response_data = json.loads(response.content)
+        self.assertEqual(response_data["error"], "로그아웃 처리 중 오류가 발생했습니다.")
+
+        # 쿠키 삭제는 여전히 수행됨
+        self.assertIn("access_token", response.cookies)
+        self.assertIn("refresh_token", response.cookies)
 
 
 class AdminAPITest(TestCase):
@@ -708,3 +778,33 @@ class ChangePasswordTest(TestCase):
         response = self.client.put(self.change_password_url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("new_password", response.data)
+
+
+
+class CookieJWTAuthenticationTest(TestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.auth = CookieJWTAuthentication()
+        self.user = User.objects.create_user(
+            email="test@example.com",
+            name="Test User",
+            password="testpass123"
+        )
+        self.user.is_active = True
+        self.user.save()
+
+        # JWT 토큰 생성
+        self.refresh = RefreshToken.for_user(self.user)
+        self.access_token = str(self.refresh.access_token)
+
+    def test_authenticate_with_valid_token(self):
+        """유효한 토큰으로 인증 성공 테스트 """
+        request = self.factory.get('/')
+        request.COOKIES = {'access_token': self.access_token}
+
+        result = self.auth.authenticate(request)
+
+        self.assertIsNotNone(result)
+        user, validated_token = result
+        self.assertEqual(user, self.user)
+        self.assertEqual(str(validated_token), self.access_token)

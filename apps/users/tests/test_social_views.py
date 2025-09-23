@@ -27,6 +27,59 @@ class SocialLoginTest(TestCase):
         self.assertIn(f"client_id={settings.NAVER_CLIENT_ID}", response.url)
         self.assertIn("naver_oauth_state", self.client.session)
 
+    @patch("apps.users.social_views.SocialAuthService.generate_jwt_tokens")
+    @patch("apps.users.social_views.SocialAuthService.create_or_get_user")
+    @patch("apps.users.social_views.NaverOAuth.get_user_info")
+    @patch("apps.users.social_views.NaverOAuth.get_access_token")
+    def test_naver_callback_success(self, mock_get_token, mock_get_user_info, mock_create_user, mock_generate_tokens):
+        """네이버 콜백 - 성공적인 로그인"""
+        # 세션 설정
+        session = self.client.session
+        session["naver_oauth_state"] = "test_state"
+        session.save()
+
+        # Mock 설정
+        mock_get_token.return_value = {"access_token": "test_access_token"}
+        mock_get_user_info.return_value = {
+            "resultcode": "00",
+            "response": {"email": "test@example.com", "name": "테스트 사용자"},
+        }
+
+        # 사용자 객체 생성
+        test_user = User.objects.create_user(email="test@example.com", name="테스트 사용자", is_social=True)
+
+        mock_create_user.return_value = test_user
+        mock_generate_tokens.return_value = {"access": "mock_access_token", "refresh": "mock_refresh_token"}
+
+        url = reverse("naver_login_callback")
+        response = self.client.get(url, {"code": "test_code", "state": "test_state"})
+
+        # 리다이렉트 응답 확인
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, "/")
+
+        # 쿠키 설정 확인
+        self.assertIn("access_token", response.cookies)
+        self.assertIn("refresh_token", response.cookies)
+
+        # 쿠키 값 확인
+        access_cookie = response.cookies["access_token"]
+        refresh_cookie = response.cookies["refresh_token"]
+
+        self.assertEqual(access_cookie.value, "mock_access_token")
+        self.assertEqual(refresh_cookie.value, "mock_refresh_token")
+        self.assertTrue(access_cookie["httponly"])
+        self.assertTrue(refresh_cookie["httponly"])
+        self.assertEqual(access_cookie["samesite"], "Lax")
+        self.assertEqual(refresh_cookie["samesite"], "Lax")
+
+        # 세션 정리 확인
+        self.assertNotIn("naver_oauth_state", self.client.session)
+
+        # Mock 호출 확인
+        mock_create_user.assert_called_once_with(email="test@example.com", name="테스트 사용자")
+        mock_generate_tokens.assert_called_once_with(test_user)
+
     # NaverLoginCallbackView 테스트 (라인 30-91)
     def test_naver_callback_missing_code_and_state(self):
         """네이버 콜백 - 코드와 상태값 누락"""
@@ -150,6 +203,56 @@ class SocialLoginTest(TestCase):
         # state 파라미터가 URL에 포함되었는지 확인
         self.assertIn("state", params)
         self.assertEqual(params["state"][0], self.client.session["google_oauth_state"])
+
+    @patch("apps.users.social_views.SocialAuthService.generate_jwt_tokens")
+    @patch("apps.users.social_views.SocialAuthService.create_or_get_user")
+    @patch("apps.users.social_views.GoogleOAuth.get_user_info")
+    @patch("apps.users.social_views.GoogleOAuth.get_access_token")
+    def test_google_callback_success(self, mock_get_token, mock_get_user_info, mock_create_user, mock_generate_tokens):
+        """구글 콜백 - 성공적인 로그인"""
+        # 세션 설정
+        session = self.client.session
+        session["google_oauth_state"] = "test_state"
+        session.save()
+
+        # Mock 설정
+        mock_get_token.return_value = {"access_token": "test_access_token"}
+        mock_get_user_info.return_value = {"email": "test@example.com", "name": "테스트 사용자"}
+
+        # 사용자 객체 생성
+        test_user = User.objects.create_user(email="test@example.com", name="테스트 사용자", is_social=True)
+
+        mock_create_user.return_value = test_user
+        mock_generate_tokens.return_value = {"access": "mock_access_token", "refresh": "mock_refresh_token"}
+
+        url = reverse("google_login_callback")
+        response = self.client.get(url, {"code": "test_code", "state": "test_state"})
+
+        # 리다이렉트 응답 확인
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, "/")
+
+        # 쿠키 설정 확인
+        self.assertIn("access_token", response.cookies)
+        self.assertIn("refresh_token", response.cookies)
+
+        # 쿠키 값 확인
+        access_cookie = response.cookies["access_token"]
+        refresh_cookie = response.cookies["refresh_token"]
+
+        self.assertEqual(access_cookie.value, "mock_access_token")
+        self.assertEqual(refresh_cookie.value, "mock_refresh_token")
+        self.assertTrue(access_cookie["httponly"])
+        self.assertTrue(refresh_cookie["httponly"])
+        self.assertEqual(access_cookie["samesite"], "Lax")
+        self.assertEqual(refresh_cookie["samesite"], "Lax")
+
+        # 세션 정리 확인
+        self.assertNotIn("google_oauth_state", self.client.session)
+
+        # Mock 호출 확인
+        mock_create_user.assert_called_once_with(email="test@example.com", name="테스트 사용자")
+        mock_generate_tokens.assert_called_once_with(test_user)
 
     # GoogleLoginCallbackView 테스트 (라인 115-171)
     def test_google_callback_missing_code_and_state(self):
