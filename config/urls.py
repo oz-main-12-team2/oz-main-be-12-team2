@@ -1,22 +1,42 @@
-"""
-URL configuration for config project.
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/5.2/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
-"""
+from django.conf import settings
+from django.conf.urls.static import static
 from django.contrib import admin
-from django.urls import path
+from django.urls import include, path
+from drf_yasg import openapi
+from drf_yasg.views import get_schema_view
+from rest_framework import permissions
+
+schema_view = get_schema_view(
+    openapi.Info(
+        title="Project API",
+        default_version="v1",
+        description="API 문서",
+    ),
+    public=True,
+    permission_classes=[permissions.AllowAny],
+)
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path("admin/", admin.site.urls),
+    # 앱 API
+    path("api/products/", include("apps.products.urls")),
+    path("api/admin/products/", include(("apps.products.admin_urls", "products_admin"), namespace="products_admin")),
+    path("api/user/", include("apps.users.urls")),
+    path("api/admin/users/", include("apps.users.admin_urls")),
+    path("api/orders/", include("apps.orders.urls")),  # ✅ config에서 api/order/로 감싸기
+    path("api/admin/orders/", include("apps.orders.admin_urls")),
+    path("api/cart/", include("apps.carts.urls")),
+    path("api/payments/", include("apps.payments.urls")),
+    path("api/admin/payments/", include("apps.payments.admin_urls")),
+    path("api/admin/stats/", include("apps.stats.urls")),
+    path("api/support/", include("apps.support.urls")),
+    path("api/admin/support/", include("apps.support.admin_urls")),
+    # Swagger 문서
+    path("swagger/", schema_view.with_ui("swagger", cache_timeout=0), name="schema-swagger-ui"),
+    path("redoc/", schema_view.with_ui("redoc", cache_timeout=0), name="schema-redoc"),
+    # 인증
+    path("accounts/", include("django.contrib.auth.urls")),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

@@ -1,4 +1,4 @@
-version: '3.9'
+#version: "3.9"
 
 services:
   db:
@@ -21,21 +21,22 @@ services:
     env_file:
       - .env
     environment:
-      POSTGRES_HOST: db
+      POSTGRES_HOST: db         # 여기를 db 컨테이너 이름으로 설정
+      POSTGRES_PORT: ${DB_PORT}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       DJANGO_SETTINGS_MODULE: config.settings
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
     ports:
       - "8000:8000"
     depends_on:
       - db
     volumes:
-      - .:/app:cached       # 소스 코드 마운트
-      - /app/.venv          # .venv는 컨테이너 내부 유지
+      - .:/app:cached
+      - /app/.venv
       - ./staticfiles:/app/staticfiles
       - ./media:/app/media
+
 volumes:
   postgres_data:
-
-
-#docker-compose up -d (야물파일 디렉토리안에서) 백그라운드로 실행하기
-#docker-compose down ("") 종료시키기
-#docker-compose up -d --build 변경사항 빌드 후 실행
