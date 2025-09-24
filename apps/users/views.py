@@ -25,7 +25,7 @@ User = get_user_model()
 
 
 @swagger_auto_schema(methods=["post"], request_body=UserSignUpSerializer)
-@api_view(["POST"])
+@api_view(["POST", "OPTIONS"])
 @permission_classes([AllowAny])
 def register(request):
     """일반 회원가입"""
@@ -46,7 +46,7 @@ def register(request):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(["GET"])
+@api_view(["GET", "OPTIONS"])
 @permission_classes([AllowAny])
 def activate_user(request, uidb64, token):
     """이메일 인증"""
@@ -84,7 +84,7 @@ def activate_user(request, uidb64, token):
         )
     },
 )
-@api_view(["POST"])
+@api_view(["POST", "OPTIONS"])
 @permission_classes([AllowAny])
 def login(request):
     """일반 로그인"""
@@ -121,7 +121,7 @@ def login(request):
     )
 
 
-@api_view(["POST"])
+@api_view(["POST", "OPTIONS"])
 @permission_classes([IsAuthenticated])
 def logout(request):
     """로그아웃 - 쿠키 삭제 및 리프레시 토큰 블랙리스트 처리"""
@@ -154,7 +154,7 @@ def logout(request):
         },
     ),
 )
-@api_view(["GET", "PUT"])
+@api_view(["GET", "PUT", "OPTIONS"])
 @permission_classes([IsAuthenticated])
 def user_profile(request):
     """사용자 프로필 조회 및 수정"""
@@ -172,7 +172,7 @@ def user_profile(request):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(["DELETE"])
+@api_view(["DELETE", "OPTIONS"])
 @permission_classes([IsAuthenticated])
 def user_delete(request):
     """회원 탈퇴"""
@@ -182,7 +182,7 @@ def user_delete(request):
 
 
 @swagger_auto_schema(methods=["put"], request_body=ChangePasswordSerializer)
-@api_view(["PUT"])
+@api_view(["PUT", "OPTIONS"])
 @permission_classes([IsAuthenticated])
 def change_password(request):
     """비밀번호 변경"""
@@ -232,7 +232,7 @@ def change_password(request):
         400: "유효성 검사 실패",
     },
 )
-@api_view(["POST"])
+@api_view(["POST", "OPTIONS"])
 @permission_classes([AllowAny])
 def password_reset_request(request):
     """비밀번호 재설정 메일 발송"""
@@ -272,7 +272,7 @@ def password_reset_request(request):
         400: "잘못된 링크 또는 유효하지 않은 토큰",
     },
 )
-@api_view(["POST"])
+@api_view(["POST", "OPTIONS"])
 @permission_classes([AllowAny])
 def password_reset_confirm(request, uidb64, token):
     """비밀번호 재설정"""
