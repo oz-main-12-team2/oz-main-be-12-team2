@@ -46,11 +46,6 @@ class OrdersAPITestCase(TestCase):
             image_url="http://example.com/image.jpg",
         )
 
-        # ✅ 카트에 아이템 추가 (주문 생성 가능하도록)
-        cls.cart_item = CartProduct.objects.create(
-            cart=cls.cart, product=cls.product, quantity=2
-        )
-
         # 기본 주문 생성
         cls.order = Order.objects.create(
             user=cls.user,
@@ -62,23 +57,30 @@ class OrdersAPITestCase(TestCase):
         )
 
     def setUp(self):
-        """각 테스트 실행 전 클라이언트 인증"""
+        """각 테스트 실행 전 클라이언트 인증 및 CartProduct 보장"""
         self.client = APIClient()
         self.client.force_authenticate(user=self.user)
+
+        # 테스트 DB에서 CartProduct가 항상 존재하도록 보장
+        if not self.cart.items.exists():
+            self.cart_item = CartProduct.objects.create(
+                cart=self.cart,
+                product=self.product,
+                quantity=2
+            )
+        else:
+            self.cart_item = self.cart.items.first()
 
     def create_order_payload(self, **kwargs):
         """
         주문 생성 시 payload
-        - selected_items: list of dicts with id and quantity
-        - total_price는 서버에서 계산하도록 하지 않음
+        - selected_items: 단순 정수 ID 리스트
         """
         payload = {
             "recipient_name": "홍길동",
             "recipient_phone": "010-1234-5678",
             "recipient_address": "서울시 강남구",
-            "selected_items": [
-                {"id": self.cart_item.id, "quantity": self.cart_item.quantity}
-            ],
+            "selected_items": [self.cart_item.id],  # 단순 ID 리스트
         }
         payload.update(kwargs)
         return payload
