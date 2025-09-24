@@ -73,6 +73,7 @@ REST_FRAMEWORK = {
 }
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",  # CORS 헤더 설정
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -148,6 +149,7 @@ AUTH_USER_MODEL = "users.User"
 
 # 로그인/로그아웃 URL
 LOGIN_URL = "/api/user/login/"
+LOGIN_REDIRECT_URL = "/"
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/api/user/login/"
 
