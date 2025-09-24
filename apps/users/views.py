@@ -117,14 +117,14 @@ def logout(request):
             token.blacklist()
 
         response = JsonResponse({"message": "로그아웃되었습니다."})
-        response.delete_cookie("access_token")
-        response.delete_cookie("refresh_token")
+        response.delete_cookie("access_token", samesite="None")
+        response.delete_cookie("refresh_token", samesite="None")
         return response
 
     except Exception:
         response = JsonResponse({"error": "로그아웃 처리 중 오류가 발생했습니다."}, status=400)
-        response.delete_cookie("access_token")
-        response.delete_cookie("refresh_token")
+        response.delete_cookie("access_token", samesite="None")
+        response.delete_cookie("refresh_token", samesite="None")
         return response
 
 
