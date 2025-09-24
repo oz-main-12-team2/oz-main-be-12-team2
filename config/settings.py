@@ -172,15 +172,8 @@ CORS_ALLOW_CREDENTIALS = True
 
 # Swagger 설정
 SWAGGER_SETTINGS = {
-    "SECURITY_DEFINITIONS": {
-        "Bearer": {
-            "type": "apiKey",
-            "name": "Authorization",
-            "in": "header",
-            "description": "JWT 인증 (예: Bearer <your_token>)",
-        }
-    },
     "USE_SESSION_AUTH": False,  # Session 인증 버튼 숨김
+    "DEFAULT_API_URL": os.getenv("SWAGGER_API_URL", "http://localhost:8000/api/"),
 }
 
 # OAuth 콜백 URL
