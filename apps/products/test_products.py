@@ -176,3 +176,27 @@ class ProductSearchAndOrderingTest(BaseProductTestCase):
 
         prices = [Decimal(item["price"]) for item in response.data["results"]]
         self.assertEqual(prices, sorted(prices, reverse=True))
+
+
+class ProductPaginationTest(BaseProductTestCase):
+    """커스텀 페이지네이션 - page_size 지정 테스트"""
+
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+
+        # 테스트용 상품 여러 개 생성 (총 15개)
+        for i in range(1, 16):
+            Product.objects.create(
+                name=f"상품{i}",
+                price=Decimal(1000 * i),
+                stock=i,
+                author="작가",
+                category="카테고리",
+            )
+
+    def test_custom_page_size(self):
+        """사용자가 page_size 지정 가능"""
+        response = self.client.get(self.list_url, {"page_size": 5})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data["results"]), 5)

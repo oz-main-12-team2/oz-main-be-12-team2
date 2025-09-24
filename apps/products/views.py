@@ -7,6 +7,7 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
 from .filters import ProductFilter
 from .models import Product
+from .pagination import ProductPagination
 from .serializers import ProductSerializer
 
 
@@ -22,6 +23,8 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
     # 정렬 허용 필드
     ordering_fields = ["name", "price", "author", "category"]
     ordering = ["name"]  # 기본 정렬 (이름 순)
+
+    pagination_class = ProductPagination
 
     @swagger_auto_schema(
         manual_parameters=[

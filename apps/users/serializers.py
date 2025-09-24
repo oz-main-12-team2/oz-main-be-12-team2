@@ -80,3 +80,13 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
         if attrs["new_password"] != attrs["new_password_confirm"]:
             raise serializers.ValidationError({"new_password_confirm": "비밀번호가 일치하지 않습니다."})
         return attrs
+
+
+class UserLoginSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(read_only=True)
+    email = serializers.EmailField(read_only=True)
+    name = serializers.CharField(read_only=True)
+
+    class Meta:
+        model = User
+        fields = ["id", "email", "name"]

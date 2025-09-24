@@ -14,4 +14,9 @@ class PaymentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Payment
         fields = ["id", "order_id", "method", "total_price", "status", "created_at"]
-        read_only_fields = ["id", "created_at"]
+        read_only_fields = ["id", "total_price", "created_at"]
+
+    def create(self, validated_data):
+        order = validated_data["order"]
+        validated_data["total_price"] = order.total_price  # 생성 시 자동 세팅
+        return super().create(validated_data)

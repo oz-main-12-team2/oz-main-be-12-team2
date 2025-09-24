@@ -46,7 +46,7 @@ class OrderViewSet(viewsets.ModelViewSet):
                 return Response({"detail": "No items selected for order"}, status=status.HTTP_400_BAD_REQUEST)
 
             # 선택된 CartProduct만 주문 처리
-            cart_items = cart.items.filter(id__in=selected_items).select_related("product")
+            cart_items = cart.items.filter(product__id__in=selected_items).select_related("product")
 
             if not cart_items.exists():
                 return Response({"detail": "No valid items in cart"}, status=status.HTTP_400_BAD_REQUEST)
