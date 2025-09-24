@@ -47,23 +47,6 @@ def register(request):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(["GET", "OPTIONS"])
-@permission_classes([AllowAny])
-def activate_user(request, uidb64, token):
-    """이메일 인증"""
-    try:
-        uid = force_str(urlsafe_base64_decode(uidb64))
-        user = User.objects.get(pk=uid)
-    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
-        return Response({"error": "잘못된 링크입니다."}, status=status.HTTP_400_BAD_REQUEST)
-
-    if default_token_generator.check_token(user, token):
-        user.is_active = True
-        user.save()
-        return Response({"message": "계정이 활성화되었습니다."}, status=status.HTTP_200_OK)
-    return Response({"error": "유효하지 않은 토큰입니다."}, status=status.HTTP_400_BAD_REQUEST)
-
-
 @swagger_auto_schema(
     methods=["post"],
     request_body=openapi.Schema(
@@ -260,11 +243,46 @@ def password_reset_request(request):
 
 
 @swagger_auto_schema(
-    method="post",
-    request_body=PasswordResetConfirmSerializer,  # ✅ 기존 serializer 사용
+    method="get",
     manual_parameters=[
-        openapi.Parameter("uidb64", openapi.IN_PATH, description="사용자 ID Base64", type=openapi.TYPE_STRING),
-        openapi.Parameter("token", openapi.IN_PATH, description="토큰", type=openapi.TYPE_STRING),
+        openapi.Parameter("uid", openapi.IN_QUERY, description="사용자 ID(Base64)", type=openapi.TYPE_STRING),
+        openapi.Parameter("token", openapi.IN_QUERY, description="토큰", type=openapi.TYPE_STRING),
+    ],
+    responses={
+        200: openapi.Response("성공", examples={"application/json": {"message": "계정이 활성화되었습니다."}}),
+        400: "잘못된 링크 또는 유효하지 않은 토큰",
+    },
+)
+@api_view(["GET", "OPTIONS"])
+@permission_classes([AllowAny])
+def activate_user(request):
+    uidb64 = request.GET.get("uid")
+    token = request.GET.get("token")
+
+    if not uidb64 or not token:
+        return Response({"error": "uid 또는 token이 누락되었습니다."}, status=status.HTTP_400_BAD_REQUEST)
+
+    """이메일 인증"""
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        return Response({"error": "잘못된 링크입니다."}, status=status.HTTP_400_BAD_REQUEST)
+
+    if default_token_generator.check_token(user, token):
+        if not user.is_active:  # 이미 활성화된 유저라면 중복 처리 방지
+            user.is_active = True
+            user.save()
+        return Response({"message": "계정이 활성화되었습니다."}, status=status.HTTP_200_OK)
+    return Response({"error": "유효하지 않은 토큰입니다."}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@swagger_auto_schema(
+    method="post",
+    request_body=PasswordResetConfirmSerializer,
+    manual_parameters=[
+        openapi.Parameter("uid", openapi.IN_QUERY, description="사용자 ID Base64", type=openapi.TYPE_STRING),
+        openapi.Parameter("token", openapi.IN_QUERY, description="토큰", type=openapi.TYPE_STRING),
     ],
     responses={
         200: openapi.Response(
@@ -275,8 +293,17 @@ def password_reset_request(request):
 )
 @api_view(["POST", "OPTIONS"])
 @permission_classes([AllowAny])
-def password_reset_confirm(request, uidb64, token):
-    """비밀번호 재설정"""
+def password_reset_confirm(request):
+    """
+    비밀번호 재설정 (쿼리 파라미터 기반)
+    예: /api/user/password-reset/confirm/?uid=abc123&token=xyz456
+    """
+    uidb64 = request.GET.get("uid")
+    token = request.GET.get("token")
+
+    if not uidb64 or not token:
+        return Response({"error": "uid 또는 token이 누락되었습니다."}, status=status.HTTP_400_BAD_REQUEST)
+
     try:
         uid = force_str(urlsafe_base64_decode(uidb64))
         user = User.objects.get(pk=uid)
@@ -291,5 +318,6 @@ def password_reset_confirm(request, uidb64, token):
         new_password = serializer.validated_data["new_password"]
         user.set_password(new_password)
         user.save()
-        return Response({"message": "비밀번호가 성공적으로 재설정되었습니다."})
+        return Response({"message": "비밀번호가 성공적으로 재설정되었습니다."}, status=status.HTTP_200_OK)
+
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
