@@ -19,15 +19,19 @@ class OrdersAPITestCase(TestCase):
     @classmethod
     def setUpTestData(cls):
         # 유저 / 관리자 생성
-        cls.user = User.objects.create_user(email="testuser@example.com", name="테스트 유저", password="testpass")
+        cls.user = User.objects.create_user(
+            email="testuser@example.com", name="테스트 유저", password="testpass"
+        )
         cls.user.is_active = True
         cls.user.save()
 
-        cls.admin_user = User.objects.create_superuser(email="admin@example.com", name="관리자", password="adminpass")
+        cls.admin_user = User.objects.create_superuser(
+            email="admin@example.com", name="관리자", password="adminpass"
+        )
         cls.admin_user.is_active = True
         cls.admin_user.save()
 
-        # ✅ 유저 생성 시 자동 생성된 카트 가져오기
+        # 유저 생성 시 자동 생성된 카트 가져오기
         cls.cart = cls.user.cart
 
         # 상품 생성
@@ -42,31 +46,41 @@ class OrdersAPITestCase(TestCase):
             image_url="http://example.com/image.jpg",
         )
 
-        # ✅ 카트에 아이템 추가 (주문 생성 가능하도록)
-        cls.cart_item = CartProduct.objects.create(cart=cls.cart, product=cls.product, quantity=2)
-
-        # 기본 주문 생성
+        # 기본 주문 생성 (테스트용)
         cls.order = Order.objects.create(
             user=cls.user,
             recipient_name="홍길동",
             recipient_phone="010-1234-5678",
             recipient_address="서울시 강남구",
-            total_price=Decimal("45000.00"),
+            total_price=Decimal("20000.00"),
             status="결제 완료",
         )
 
     def setUp(self):
-        """각 테스트 실행 전 클라이언트 인증"""
+        """각 테스트 실행 전 클라이언트 인증 및 CartProduct 보장"""
         self.client = APIClient()
         self.client.force_authenticate(user=self.user)
 
+        # CartProduct 항상 존재하도록 보장
+        if not self.cart.items.exists():
+            self.cart_item = CartProduct.objects.create(
+                cart=self.cart,
+                product=self.product,
+                quantity=2
+            )
+        else:
+            self.cart_item = self.cart.items.first()
+
     def create_order_payload(self, **kwargs):
+        """
+        주문 생성 payload
+        - selected_items: CartProduct.id 기준
+        """
         payload = {
             "recipient_name": "홍길동",
             "recipient_phone": "010-1234-5678",
             "recipient_address": "서울시 강남구",
-            # ✅ 실제 카트 아이템 id를 넣음
-            "selected_items": [self.cart_item.id],
+            "selected_items": [self.cart_item.id],  # CartProduct.id
         }
         payload.update(kwargs)
         return payload
@@ -83,9 +97,19 @@ class OrdersAPITestCase(TestCase):
         self.assertTrue(len(response.data) >= 1)
 
     def test_create_order(self):
-        response = self.client.post(self.get_order_url(), self.create_order_payload(), format="json")
+        payload = self.create_order_payload()
+        response = self.client.post(self.get_order_url(), payload, format="json")
+        if response.status_code != status.HTTP_201_CREATED:
+            print(response.data)  # 실패 시 에러 확인
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertGreaterEqual(Order.objects.count(), 2)
+
+    def test_create_order_no_selection(self):
+        """선택된 상품 없으면 주문 실패"""
+        payload = self.create_order_payload(selected_items=[])
+        response = self.client.post(self.get_order_url(), payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data["detail"], "No items selected for order")
 
     def test_retrieve_order(self):
         response = self.client.get(self.get_order_url(self.order.id))
