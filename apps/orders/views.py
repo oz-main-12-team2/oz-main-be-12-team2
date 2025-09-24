@@ -31,8 +31,7 @@ class OrderViewSet(viewsets.ModelViewSet):
         with transaction.atomic():
             # 장바구니 조회 및 잠금
             cart = get_object_or_404(
-                Cart.objects.select_for_update().prefetch_related("items__product"),
-                user=request.user
+                Cart.objects.select_for_update().prefetch_related("items__product"), user=request.user
             )
 
             # 장바구니가 비어있으면 주문 불가
@@ -75,13 +74,15 @@ class OrderViewSet(viewsets.ModelViewSet):
                 line_total = (unit_price * quantity).quantize(Decimal("0.01"))
                 total_price += line_total
 
-                order_items.append(OrderItem(
-                    order=order,
-                    product=item.product,
-                    quantity=quantity,
-                    unit_price=unit_price,
-                    total_price=line_total
-                ))
+                order_items.append(
+                    OrderItem(
+                        order=order,
+                        product=item.product,
+                        quantity=quantity,
+                        unit_price=unit_price,
+                        total_price=line_total,
+                    )
+                )
 
             OrderItem.objects.bulk_create(order_items)
 

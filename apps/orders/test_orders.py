@@ -19,15 +19,11 @@ class OrdersAPITestCase(TestCase):
     @classmethod
     def setUpTestData(cls):
         # 유저 / 관리자 생성
-        cls.user = User.objects.create_user(
-            email="testuser@example.com", name="테스트 유저", password="testpass"
-        )
+        cls.user = User.objects.create_user(email="testuser@example.com", name="테스트 유저", password="testpass")
         cls.user.is_active = True
         cls.user.save()
 
-        cls.admin_user = User.objects.create_superuser(
-            email="admin@example.com", name="관리자", password="adminpass"
-        )
+        cls.admin_user = User.objects.create_superuser(email="admin@example.com", name="관리자", password="adminpass")
         cls.admin_user.is_active = True
         cls.admin_user.save()
 
@@ -63,11 +59,7 @@ class OrdersAPITestCase(TestCase):
 
         # CartProduct 항상 존재하도록 보장
         if not self.cart.items.exists():
-            self.cart_item = CartProduct.objects.create(
-                cart=self.cart,
-                product=self.product,
-                quantity=2
-            )
+            self.cart_item = CartProduct.objects.create(cart=self.cart, product=self.product, quantity=2)
         else:
             self.cart_item = self.cart.items.first()
 
