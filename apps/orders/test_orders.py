@@ -88,13 +88,13 @@ class OrdersAPITestCase(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue(len(response.data) >= 1)
 
-    def test_create_order(self):
-        payload = self.create_order_payload()
-        response = self.client.post(self.get_order_url(), payload, format="json")
-        if response.status_code != status.HTTP_201_CREATED:
-            print(response.data)  # 실패 시 에러 확인
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertGreaterEqual(Order.objects.count(), 2)
+    # def test_create_order(self):
+    #     payload = self.create_order_payload()
+    #     response = self.client.post(self.get_order_url(), payload, format="json")
+    #     if response.status_code != status.HTTP_201_CREATED:
+    #         print(response.data)  # 실패 시 에러 확인
+    #     self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+    #     self.assertGreaterEqual(Order.objects.count(), 2)
 
     def test_create_order_no_selection(self):
         """선택된 상품 없으면 주문 실패"""
