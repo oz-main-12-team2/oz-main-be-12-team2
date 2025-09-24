@@ -17,6 +17,7 @@ from .serializers import (
     ChangePasswordSerializer,
     PasswordResetConfirmSerializer,
     PasswordResetRequestSerializer,
+    UserLoginSerializer,
     UserProfileSerializer,
     UserSignUpSerializer,
 )
@@ -106,7 +107,7 @@ def login(request):
         access_lifetime = settings.SIMPLE_JWT["ACCESS_TOKEN_LIFETIME"].total_seconds()
         refresh_lifetime = settings.SIMPLE_JWT["REFRESH_TOKEN_LIFETIME"].total_seconds()
 
-        response = JsonResponse({"success": True})
+        response = JsonResponse({"success": True, "user": UserLoginSerializer(user).data})
         response.set_cookie(
             "access_token", str(access_token), max_age=int(access_lifetime), httponly=True, secure=False, samesite="Lax"
         )
