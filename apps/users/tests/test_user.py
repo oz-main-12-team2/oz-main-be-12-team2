@@ -409,8 +409,8 @@ class UserLoginTest(TestCase):
 
         self.assertTrue(access_cookie["httponly"])
         self.assertTrue(refresh_cookie["httponly"])
-        self.assertEqual(access_cookie["samesite"], "Lax")
-        self.assertEqual(refresh_cookie["samesite"], "Lax")
+        self.assertEqual(access_cookie["samesite"], "None")
+        self.assertEqual(refresh_cookie["samesite"], "None")
 
         # 쿠키 값이 비어있지 않은지 확인
         self.assertNotEqual(access_cookie.value, "")
