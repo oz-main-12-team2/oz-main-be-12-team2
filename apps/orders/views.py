@@ -1,5 +1,4 @@
 from decimal import Decimal
-
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from rest_framework import status, viewsets
@@ -35,15 +34,19 @@ class OrderViewSet(viewsets.ModelViewSet):
                 user=request.user
             )
 
+            # 장바구니가 비어있으면 주문 불가
             if not cart.items.exists():
                 return Response({"detail": "Cart is empty"}, status=status.HTTP_400_BAD_REQUEST)
 
-            # 선택된 상품(product) ID 기반 필터링
+            # 선택된 상품 ID 가져오기
             selected_items = serializer.validated_data.get("selected_items")
-            if selected_items:
-                cart_items = cart.items.filter(product__id__in=selected_items).select_related("product")
-            else:
-                cart_items = cart.items.all().select_related("product")
+
+            # 🚨 선택 항목 없으면 주문 불가
+            if not selected_items:
+                return Response({"detail": "No items selected for order"}, status=status.HTTP_400_BAD_REQUEST)
+
+            # 선택된 CartProduct만 주문 처리
+            cart_items = cart.items.filter(id__in=selected_items).select_related("product")
 
             if not cart_items.exists():
                 return Response({"detail": "No valid items in cart"}, status=status.HTTP_400_BAD_REQUEST)
@@ -62,7 +65,7 @@ class OrderViewSet(viewsets.ModelViewSet):
                 total_price=Decimal("0.00"),
             )
 
-            # 주문 아이템 생성 및 가격 계산
+            # 주문 아이템 생성 및 총액 계산
             total_price = Decimal("0.00")
             order_items = []
             for item in cart_items:
@@ -85,9 +88,10 @@ class OrderViewSet(viewsets.ModelViewSet):
             order.total_price = total_price
             order.save()
 
-            # 장바구니에서 해당 아이템 삭제
+            # 장바구니에서 주문한 아이템 삭제
             cart_items.delete()
 
+        # 응답
         read_serializer = OrderSerializer(order)
         return Response(read_serializer.data, status=status.HTTP_201_CREATED)
 

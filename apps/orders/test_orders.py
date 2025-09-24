@@ -1,5 +1,4 @@
 from decimal import Decimal
-
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
@@ -31,7 +30,7 @@ class OrdersAPITestCase(TestCase):
         cls.admin_user.is_active = True
         cls.admin_user.save()
 
-        # ✅ 유저 생성 시 자동 생성된 카트 가져오기
+        # 유저 생성 시 자동 생성된 카트 가져오기
         cls.cart = cls.user.cart
 
         # 상품 생성
@@ -46,7 +45,7 @@ class OrdersAPITestCase(TestCase):
             image_url="http://example.com/image.jpg",
         )
 
-        # 기본 주문 생성
+        # 기본 주문 생성 (테스트용)
         cls.order = Order.objects.create(
             user=cls.user,
             recipient_name="홍길동",
@@ -61,7 +60,7 @@ class OrdersAPITestCase(TestCase):
         self.client = APIClient()
         self.client.force_authenticate(user=self.user)
 
-        # 테스트 DB에서 CartProduct가 항상 존재하도록 보장
+        # CartProduct 항상 존재하도록 보장
         if not self.cart.items.exists():
             self.cart_item = CartProduct.objects.create(
                 cart=self.cart,
@@ -73,14 +72,14 @@ class OrdersAPITestCase(TestCase):
 
     def create_order_payload(self, **kwargs):
         """
-        주문 생성 시 payload
-        - selected_items: 단순 정수 ID 리스트
+        주문 생성 payload
+        - selected_items: CartProduct.id 기준
         """
         payload = {
             "recipient_name": "홍길동",
             "recipient_phone": "010-1234-5678",
             "recipient_address": "서울시 강남구",
-            "selected_items": [self.cart_item.id],  # 단순 ID 리스트
+            "selected_items": [self.cart_item.id],  # CartProduct.id
         }
         payload.update(kwargs)
         return payload
@@ -103,6 +102,13 @@ class OrdersAPITestCase(TestCase):
             print(response.data)  # 실패 시 에러 확인
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertGreaterEqual(Order.objects.count(), 2)
+
+    def test_create_order_no_selection(self):
+        """선택된 상품 없으면 주문 실패"""
+        payload = self.create_order_payload(selected_items=[])
+        response = self.client.post(self.get_order_url(), payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data["detail"], "No items selected for order")
 
     def test_retrieve_order(self):
         response = self.client.get(self.get_order_url(self.order.id))
