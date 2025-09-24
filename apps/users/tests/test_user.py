@@ -242,7 +242,8 @@ class UserAPITest(TestCase):
         uid = urlsafe_base64_encode(force_bytes(user.pk))
         token = default_token_generator.make_token(user)
 
-        response = self.client.get(reverse("user_activate", kwargs={"uidb64": uid, "token": token}))
+        url = reverse("user_activate") + f"?uid={uid}&token={token}"
+        response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         user.refresh_from_db()
         self.assertTrue(user.is_active)
@@ -252,14 +253,16 @@ class UserAPITest(TestCase):
         user = User.objects.create_user(email="test@example.com", name="잘못된 활성화 테스트", password="testpass123")
         token = default_token_generator.make_token(user)
 
-        response = self.client.get(reverse("user_activate", kwargs={"uidb64": "invalid_uid", "token": token}))
+        url = reverse("user_activate") + f"?uid=invalid_uid&token={token}"
+        response = self.client.get(url)
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.data["error"], "잘못된 링크입니다.")
 
     def test_activate_user_nonexistent_user(self):
         """존재하지 않는 사용자 ID"""
         fake_uid = urlsafe_base64_encode(force_bytes(99999))
-        response = self.client.get(reverse("user_activate", kwargs={"uidb64": fake_uid, "token": "fake_token"}))
+        url = reverse("user_activate") + f"?uid={fake_uid}&token=fake_token"
+        response = self.client.get(url)
         self.assertEqual(response.status_code, 400)
 
     def test_activate_user_invalid_token(self):
@@ -267,7 +270,8 @@ class UserAPITest(TestCase):
         user = User.objects.create_user(email="test@example.com", name="토큰 테스트", password="testpass123")
         uid = urlsafe_base64_encode(force_bytes(user.pk))
 
-        response = self.client.get(reverse("user_activate", kwargs={"uidb64": uid, "token": "invalid_token"}))
+        url = reverse("user_activate") + f"?uid={uid}&token=invalid_token"
+        response = self.client.get(url)
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.data["error"], "유효하지 않은 토큰입니다.")
 
@@ -309,20 +313,16 @@ class UserAPITest(TestCase):
         token = default_token_generator.make_token(user)
 
         data = {"new_password": "newpass123", "new_password_confirm": "newpass123"}
-        response = self.client.post(
-            reverse("user_password_reset_confirm", kwargs={"uidb64": uid, "token": token}), data, format="json"
-        )
+        url = reverse("user_password_reset_confirm") + f"?uid={uid}&token={token}"
+        response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data["message"], "비밀번호가 성공적으로 재설정되었습니다.")
 
     def test_password_reset_confirm_invalid_uid(self):
         """잘못된 UID"""
         data = {"new_password": "newpass123", "new_password_confirm": "newpass123"}
-        response = self.client.post(
-            reverse("user_password_reset_confirm", kwargs={"uidb64": "invalid_uid", "token": "fake_token"}),
-            data,
-            format="json",
-        )
+        url = reverse("user_password_reset_confirm") + "?uid=invalid_uid&token=fake_token"
+        response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.data["error"], "잘못된 링크입니다.")
 
@@ -330,11 +330,8 @@ class UserAPITest(TestCase):
         """존재하지 않는 사용자 ID"""
         fake_uid = urlsafe_base64_encode(force_bytes(99999))
         data = {"new_password": "newpass123", "new_password_confirm": "newpass123"}
-        response = self.client.post(
-            reverse("user_password_reset_confirm", kwargs={"uidb64": fake_uid, "token": "fake_token"}),
-            data,
-            format="json",
-        )
+        url = reverse("user_password_reset_confirm") + f"?uid={fake_uid}&token=fake_token"
+        response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.data["error"], "잘못된 링크입니다.")
 
@@ -344,11 +341,8 @@ class UserAPITest(TestCase):
         uid = urlsafe_base64_encode(force_bytes(user.pk))
 
         data = {"new_password": "newpass123", "new_password_confirm": "newpass123"}
-        response = self.client.post(
-            reverse("user_password_reset_confirm", kwargs={"uidb64": uid, "token": "invalid_token"}),
-            data,
-            format="json",
-        )
+        url = reverse("user_password_reset_confirm") + f"?uid={uid}&token=invalid_token"
+        response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.data["error"], "유효하지 않은 토큰입니다.")
 
@@ -359,9 +353,8 @@ class UserAPITest(TestCase):
         token = default_token_generator.make_token(user)
 
         data = {"new_password": "short"}  # 잘못된 비밀번호
-        response = self.client.post(
-            reverse("user_password_reset_confirm", kwargs={"uidb64": uid, "token": token}), data, format="json"
-        )
+        url = reverse("user_password_reset_confirm") + f"?uid={uid}&token={token}"
+        response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, 400)
 
     def test_password_reset_confirm_serializer_password_mismatch(self):
