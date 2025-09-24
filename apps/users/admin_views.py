@@ -18,7 +18,7 @@ class IsAdmin:
         return request.user.is_authenticated and request.user.is_admin
 
 
-@api_view(["GET"])
+@api_view(["GET", "OPTIONS"])
 @permission_classes([IsAuthenticated])
 def admin_user_list(request):
     """전체 사용자 조회 - 관리자 전용"""

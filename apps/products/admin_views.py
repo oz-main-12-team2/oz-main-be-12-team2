@@ -11,7 +11,7 @@ from .serializers import ProductSerializer
 
 # 상품 등록 (POST)
 @swagger_auto_schema(method="post", request_body=ProductSerializer)
-@api_view(["POST"])
+@api_view(["POST", "OPTIONS"])
 @permission_classes([IsAdminUser])
 def admin_product_create(request):
     serializer = ProductSerializer(data=request.data)
@@ -29,7 +29,7 @@ def admin_product_create(request):
     method="put",
     request_body=ProductSerializer,
 )
-@api_view(["GET", "PUT", "DELETE"])
+@api_view(["GET", "PUT", "DELETE", "OPTIONS"])
 @permission_classes([IsAdminUser])
 def admin_product_detail_update_delete(request, pk):
     product = get_object_or_404(Product, pk=pk)

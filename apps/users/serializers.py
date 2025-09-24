@@ -33,8 +33,8 @@ class UserSignUpSerializer(serializers.ModelSerializer):
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ["email", "name", "address", "created_at", "updated_at"]
-        read_only_fields = ["email", "created_at", "updated_at"]
+        fields = ["email", "name", "address", "is_admin", "created_at", "updated_at"]
+        read_only_fields = ["email", "is_admin", "created_at", "updated_at"]
 
 
 class AdminUserSerializer(serializers.ModelSerializer):
