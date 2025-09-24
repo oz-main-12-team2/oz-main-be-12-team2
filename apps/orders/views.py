@@ -3,7 +3,6 @@ from decimal import Decimal
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from rest_framework import status, viewsets
-from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -17,6 +16,7 @@ class OrderViewSet(viewsets.ModelViewSet):
     http_method_names = ["get", "post", "put", "delete"]
 
     def get_queryset(self):
+        # 로그인한 사용자의 주문만 조회
         return Order.objects.filter(user=self.request.user).order_by("-created_at")
 
     def get_serializer_class(self):
@@ -31,7 +31,8 @@ class OrderViewSet(viewsets.ModelViewSet):
         with transaction.atomic():
             # 장바구니 조회 및 잠금
             cart = get_object_or_404(
-                Cart.objects.select_for_update().prefetch_related("items__product"), user=request.user
+                Cart.objects.select_for_update().prefetch_related("items__product"),
+                user=request.user
             )
 
             # 장바구니가 비어있으면 주문 불가
@@ -41,7 +42,7 @@ class OrderViewSet(viewsets.ModelViewSet):
             # 선택된 상품 ID 가져오기
             selected_items = serializer.validated_data.get("selected_items")
 
-            # 🚨 선택 항목 없으면 주문 불가
+            # 선택 항목 없으면 주문 불가
             if not selected_items:
                 return Response({"detail": "No items selected for order"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -96,16 +97,3 @@ class OrderViewSet(viewsets.ModelViewSet):
         # 응답
         read_serializer = OrderSerializer(order)
         return Response(read_serializer.data, status=status.HTTP_201_CREATED)
-
-    # --------------------------
-    # 커스텀 액션: my_detail
-    # --------------------------
-    @action(detail=True, methods=["get"], url_path="my-detail")
-    def my_detail(self, request, pk=None):
-        """
-        로그인한 사용자의 주문 상세 조회
-        URL: /orders/<pk>/my-detail/
-        """
-        order = get_object_or_404(Order, pk=pk, user=request.user)
-        serializer = OrderSerializer(order)
-        return Response(serializer.data)
