@@ -38,5 +38,15 @@ services:
       - ./staticfiles:/app/staticfiles
       - ./media:/app/media
 
+  locust:
+    image: locustio/locust
+    ports:
+      - "8089:8089"
+    volumes:
+      - ./locust_tests:/mnt/locust
+    command: -f /mnt/locust/locustfile.py --host=http://web:8000
+    depends_on:
+      - web
+
 volumes:
   postgres_data:

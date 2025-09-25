@@ -18,6 +18,7 @@ dependencies = [
     "django-filter>=25.1",
     "google-genai>=1.38.0",
     "django-cors-headers>=4.9.0",
+    "locust>=2.40.5",
 ]
 
 [dependency-groups]
