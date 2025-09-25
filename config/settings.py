@@ -209,3 +209,8 @@ COOKIE_SECURE = os.getenv("COOKIE_SECURE", "False").lower() in ("true", "1", "ye
 COOKIE_SAMESITE = os.getenv("COOKIE_SAMESITE", "Lax")
 
 FRONT_BASE_URL = os.getenv("FRONT_BASE_URL", "http://localhost:5173")
+
+# admin 페이지 접근하기 위한
+CSRF_TRUSTED_ORIGINS = [
+    "https://lov2ly.kro.kr",
+]
