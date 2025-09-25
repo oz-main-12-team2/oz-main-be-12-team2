@@ -321,3 +321,45 @@ def password_reset_confirm(request):
         return Response({"message": "비밀번호가 성공적으로 재설정되었습니다."}, status=status.HTTP_200_OK)
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["POST", "OPTIONS"])
+@permission_classes([AllowAny])
+def token_refresh(request):
+    """쿠키 기반 토큰 갱신"""
+    refresh_token = request.COOKIES.get("refresh_token")
+
+    if not refresh_token:
+        return Response({"error": "Refresh token not found"}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        refresh = RefreshToken(refresh_token)
+        new_access_token = refresh.access_token
+
+        # ROTATE_REFRESH_TOKENS=True라면 새 refresh token도 받음
+        new_refresh_token = str(refresh)
+
+        access_lifetime = settings.SIMPLE_JWT["ACCESS_TOKEN_LIFETIME"].total_seconds()
+        refresh_lifetime = settings.SIMPLE_JWT["REFRESH_TOKEN_LIFETIME"].total_seconds()
+
+        response = JsonResponse({"success": True})
+        response.set_cookie(
+            "access_token",
+            str(new_access_token),
+            max_age=int(access_lifetime),
+            httponly=True,
+            secure=True,
+            samesite="None",
+        )
+        response.set_cookie(
+            "refresh_token",
+            new_refresh_token,
+            max_age=int(refresh_lifetime),
+            httponly=True,
+            secure=True,
+            samesite="None",
+        )
+        return response
+
+    except Exception:
+        return Response({"error": "Invalid refresh token"}, status=status.HTTP_400_BAD_REQUEST)
