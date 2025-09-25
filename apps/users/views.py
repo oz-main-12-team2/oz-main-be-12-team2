@@ -35,7 +35,7 @@ def register(request):
         user = serializer.save()
         uid = urlsafe_base64_encode(force_bytes(user.pk))
         token = default_token_generator.make_token(user)
-        activation_link = f"https://lov2ly.vercel.app/activate/uid={uid}&token={token}/"
+        activation_link = f"{settings.FRONT_BASE_URL}/activate?uid={uid}&token={token}"
 
         send_mail(
             "회원가입 이메일 인증",
@@ -240,7 +240,7 @@ def password_reset_request(request):
 
         uid = urlsafe_base64_encode(force_bytes(user.pk))
         token = default_token_generator.make_token(user)
-        reset_link = f"http://https://lov2ly.vercel.app/password-reset/confirm/uid={uid}&token={token}/"
+        reset_link = f"{settings.FRONT_BASE_URL}/password-reset/confirm?uid={uid}&token={token}"
 
         send_mail(
             "비밀번호 재설정",
