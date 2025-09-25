@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt.token_blacklist",
     "django_filters",
     "drf_yasg",
+    "storages",
     # 소셜로그인 서드파티
     "django.contrib.sites",
 ]
@@ -140,10 +141,6 @@ STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
 
-MEDIA_URL = os.getenv("MEDIA_URL", "/media/")
-MEDIA_ROOT = os.getenv("MEDIA_ROOT", BASE_DIR / "media")
-
-
 # 커스텀 유저 모델
 AUTH_USER_MODEL = "users.User"
 
@@ -199,7 +196,32 @@ DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", EMAIL_HOST_USER)
 # 제미나이 API
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
-SESSION_COOKIE_SECURE = False  # TODO: 배포시에는 True로 변경
-SESSION_COOKIE_HTTPONLY = True
-SESSION_COOKIE_SAMESITE = "None"
-CSRF_COOKIE_SECURE = True
+# SESSION_COOKE_* 설정은 Django 세션 쿠키에만 적용 -> set_cookie로 직접 굽는 경우 적용 안 됨
+# SESSION_COOKIE_SECURE = os.getenv("COOKIE_SECURE", "False").lower() in ("true", "1", "yes")
+# SESSION_COOKIE_HTTPONLY = True
+# SESSION_COOKIE_SAMESITE = "None"
+# CSRF_COOKIE_SECURE = True
+
+COOKIE_SECURE = os.getenv("COOKIE_SECURE", "False").lower() in ("true", "1", "yes")
+COOKIE_SAMESITE = os.getenv("COOKIE_SAMESITE", "Lax")
+
+FRONT_BASE_URL = os.getenv("FRONT_BASE_URL", "http://localhost:5173")
+
+# admin 페이지 접근하기 위한
+CSRF_TRUSTED_ORIGINS = [
+    "https://lov2ly.kro.kr",
+]
+
+# S3 버킷 정보
+AWS_STORAGE_BUCKET_NAME = "oz-main-be-12-team2"  # 버킷 이름
+AWS_S3_REGION_NAME = "ap-northeast-2"  # 서울 리전
+
+AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID", None)
+AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY", None)
+
+# 기본 파일 저장소를 S3로 지정
+DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+
+# URL (이미지 접근용)
+AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com"
+MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/"

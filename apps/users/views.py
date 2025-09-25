@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.contrib.auth import authenticate, get_user_model
+from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.http import JsonResponse
@@ -35,7 +35,7 @@ def register(request):
         user = serializer.save()
         uid = urlsafe_base64_encode(force_bytes(user.pk))
         token = default_token_generator.make_token(user)
-        activation_link = f"https://lov2ly.vercel.app/activate/uid={uid}&token={token}/"
+        activation_link = f"{settings.FRONT_BASE_URL}/activate?uid={uid}&token={token}"
 
         send_mail(
             "회원가입 이메일 인증",
@@ -81,28 +81,51 @@ def login(request):
             status=status.HTTP_400_BAD_REQUEST,
         )
 
-    user = authenticate(username=email, password=password)
-    if user:
-        refresh = RefreshToken.for_user(user)
-        access_token = refresh.access_token
-
-        # settings에서 설정된 시간 사용
-        access_lifetime = settings.SIMPLE_JWT["ACCESS_TOKEN_LIFETIME"].total_seconds()
-        refresh_lifetime = settings.SIMPLE_JWT["REFRESH_TOKEN_LIFETIME"].total_seconds()
-
-        response = JsonResponse({"success": True, "user": UserLoginSerializer(user).data})
-        response.set_cookie(
-            "access_token", str(access_token), max_age=int(access_lifetime), httponly=True, secure=True, samesite="None"
+    try:
+        user = User.objects.get(email=email)
+    except User.DoesNotExist:
+        return Response(
+            {"error": "이메일 또는 비밀번호가 올바르지 않습니다."},
+            status=status.HTTP_400_BAD_REQUEST,
         )
-        response.set_cookie(
-            "refresh_token", str(refresh), max_age=int(refresh_lifetime), httponly=True, secure=True, samesite="None"
-        )
-        return response
 
-    return Response(
-        {"error": "이메일 또는 비밀번호가 올바르지 않습니다."},
-        status=status.HTTP_400_BAD_REQUEST,
+    if not user.check_password(password):
+        return Response(
+            {"error": "이메일 또는 비밀번호가 올바르지 않습니다."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    if not user.is_active:
+        return Response(
+            {"error": "비활성화된 계정입니다."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    refresh = RefreshToken.for_user(user)
+    access_token = refresh.access_token
+
+    # settings에서 설정된 시간 사용
+    access_lifetime = settings.SIMPLE_JWT["ACCESS_TOKEN_LIFETIME"].total_seconds()
+    refresh_lifetime = settings.SIMPLE_JWT["REFRESH_TOKEN_LIFETIME"].total_seconds()
+
+    response = JsonResponse({"success": True, "user": UserLoginSerializer(user).data})
+    response.set_cookie(
+        "access_token",
+        str(access_token),
+        max_age=int(access_lifetime),
+        httponly=True,
+        secure=settings.COOKIE_SECURE,
+        samesite=settings.COOKIE_SAMESITE,
     )
+    response.set_cookie(
+        "refresh_token",
+        str(refresh),
+        max_age=int(refresh_lifetime),
+        httponly=True,
+        secure=settings.COOKIE_SECURE,
+        samesite=settings.COOKIE_SAMESITE,
+    )
+    return response
 
 
 @api_view(["POST", "OPTIONS"])
@@ -117,14 +140,14 @@ def logout(request):
             token.blacklist()
 
         response = JsonResponse({"message": "로그아웃되었습니다."})
-        response.delete_cookie("access_token", samesite="None")
-        response.delete_cookie("refresh_token", samesite="None")
+        response.delete_cookie("access_token", samesite=settings.COOKIE_SAMESITE)
+        response.delete_cookie("refresh_token", samesite=settings.COOKIE_SAMESITE)
         return response
 
     except Exception:
         response = JsonResponse({"error": "로그아웃 처리 중 오류가 발생했습니다."}, status=400)
-        response.delete_cookie("access_token", samesite="None")
-        response.delete_cookie("refresh_token", samesite="None")
+        response.delete_cookie("access_token", samesite=settings.COOKIE_SAMESITE)
+        response.delete_cookie("refresh_token", samesite=settings.COOKIE_SAMESITE)
         return response
 
 
@@ -230,7 +253,7 @@ def password_reset_request(request):
 
         uid = urlsafe_base64_encode(force_bytes(user.pk))
         token = default_token_generator.make_token(user)
-        reset_link = f"http://https://lov2ly.vercel.app/password-reset/confirm/uid={uid}&token={token}/"
+        reset_link = f"{settings.FRONT_BASE_URL}/password-reset/confirm?uid={uid}&token={token}"
 
         send_mail(
             "비밀번호 재설정",
@@ -321,3 +344,45 @@ def password_reset_confirm(request):
         return Response({"message": "비밀번호가 성공적으로 재설정되었습니다."}, status=status.HTTP_200_OK)
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["POST", "OPTIONS"])
+@permission_classes([AllowAny])
+def token_refresh(request):
+    """쿠키 기반 토큰 갱신"""
+    refresh_token = request.COOKIES.get("refresh_token")
+
+    if not refresh_token:
+        return Response({"error": "Refresh token not found"}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        refresh = RefreshToken(refresh_token)
+        new_access_token = refresh.access_token
+
+        # ROTATE_REFRESH_TOKENS=True라면 새 refresh token도 받음
+        new_refresh_token = str(refresh)
+
+        access_lifetime = settings.SIMPLE_JWT["ACCESS_TOKEN_LIFETIME"].total_seconds()
+        refresh_lifetime = settings.SIMPLE_JWT["REFRESH_TOKEN_LIFETIME"].total_seconds()
+
+        response = JsonResponse({"success": True})
+        response.set_cookie(
+            "access_token",
+            str(new_access_token),
+            max_age=int(access_lifetime),
+            httponly=True,
+            secure=settings.COOKIE_SECURE,
+            samesite=settings.COOKIE_SAMESITE,
+        )
+        response.set_cookie(
+            "refresh_token",
+            new_refresh_token,
+            max_age=int(refresh_lifetime),
+            httponly=True,
+            secure=settings.COOKIE_SECURE,
+            samesite=settings.COOKIE_SAMESITE,
+        )
+        return response
+
+    except Exception:
+        return Response({"error": "Invalid refresh token"}, status=status.HTTP_400_BAD_REQUEST)

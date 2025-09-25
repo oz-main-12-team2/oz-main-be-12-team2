@@ -1,5 +1,6 @@
 from rest_framework import generics, permissions
 
+from ..utils.pagination import CustomPagination
 from .models import Payment
 from .serializers import PaymentSerializer
 
@@ -9,6 +10,7 @@ class AdminPaymentListView(generics.ListAPIView):
     queryset = Payment.objects.all().order_by("-created_at")
     serializer_class = PaymentSerializer
     permission_classes = [permissions.IsAdminUser]
+    pagination_class = CustomPagination
 
 
 # ✅ 특정 결제 내역 상세 조회 (관리자 전용)

@@ -39,7 +39,7 @@ class OrdersAPITestCase(TestCase):
             price=Decimal("10000.00"),
             stock=10,
             category="소설",
-            image_url="http://example.com/image.jpg",
+            image="http://example.com/image.jpg",
         )
 
         # 기본 주문 생성 (total_price는 OrderItem 기준으로 계산)
@@ -79,7 +79,7 @@ class OrdersAPITestCase(TestCase):
             "recipient_name": "홍길동",
             "recipient_phone": "010-1234-5678",
             "recipient_address": "서울시 강남구",
-            "selected_items": [self.cart_item.id],  # CartProduct.id
+            "selected_items": [self.cart_item.product.id],
         }
         payload.update(kwargs)
         return payload

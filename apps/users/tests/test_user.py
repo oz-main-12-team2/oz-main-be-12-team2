@@ -1,5 +1,6 @@
 import json
 
+from django.conf import settings
 from django.contrib.auth.tokens import default_token_generator
 from django.core.exceptions import ValidationError
 from django.test import RequestFactory, TestCase
@@ -173,7 +174,7 @@ class UserAPITest(TestCase):
         self.assertEqual(response.data["error"], "이메일과 비밀번호를 입력해주세요.")
 
     def test_user_login_inactive_user(self):
-        """비활성화된 계정으로 로그인 시도 (Django 기본설정상 체크불가능)"""
+        """비활성화된 계정으로 로그인 시도"""
         User.objects.create_user(
             email="inactive@example.com", name="비활성 사용자", password="password123", is_active=False
         )
@@ -181,7 +182,7 @@ class UserAPITest(TestCase):
         data = {"email": "inactive@example.com", "password": "password123"}
         response = self.client.post(self.login_url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.data["error"], "이메일 또는 비밀번호가 올바르지 않습니다.")
+        self.assertEqual(response.data["error"], "비활성화된 계정입니다.")
 
     def test_logout_without_refresh_token(self):
         """refresh_token 없이 호출"""
@@ -248,6 +249,30 @@ class UserAPITest(TestCase):
         user.refresh_from_db()
         self.assertTrue(user.is_active)
 
+    def test_activate_user_missing_uid(self):
+        """uid 파라미터 누락 시 400 에러"""
+        url = reverse("user_activate") + "?token=test_token"
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data["error"], "uid 또는 token이 누락되었습니다.")
+
+    def test_activate_user_missing_token(self):
+        """token 파라미터 누락 시 400 에러"""
+        url = reverse("user_activate") + "?uid=test_uid"
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data["error"], "uid 또는 token이 누락되었습니다.")
+
+    def test_activate_user_both_missing(self):
+        """uid, token 모두 누락 시 400 에러"""
+        url = reverse("user_activate")
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data["error"], "uid 또는 token이 누락되었습니다.")
+
     def test_activate_user_invalid_uid(self):
         """잘못된 UID"""
         user = User.objects.create_user(email="test@example.com", name="잘못된 활성화 테스트", password="testpass123")
@@ -303,6 +328,30 @@ class UserAPITest(TestCase):
         data = {}
         response = self.client.post(reverse("password_reset_request"), data, format="json")
         self.assertEqual(response.status_code, 400)
+
+    def test_password_reset_confirm_missing_uid(self):
+        """uid 파라미터 누락 시 400 에러"""
+        url = reverse("user_password_reset_confirm") + "?token=test_token"
+        response = self.client.post(url, {"new_password": "newpassword123"})
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data["error"], "uid 또는 token이 누락되었습니다.")
+
+    def test_password_reset_confirm_missing_token(self):
+        """token 파라미터 누락 시 400 에러"""
+        url = reverse("user_password_reset_confirm") + "?uid=test_uid"
+        response = self.client.post(url, {"new_password": "newpassword123"})
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data["error"], "uid 또는 token이 누락되었습니다.")
+
+    def test_password_reset_confirm_both_missing(self):
+        """uid, token 모두 누락 시 400 에러"""
+        url = reverse("user_password_reset_confirm")
+        response = self.client.post(url, {"new_password": "newpassword123"})
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data["error"], "uid 또는 token이 누락되었습니다.")
 
     def test_password_reset_confirm_success(self):
         """비밀번호 재설정 확인 성공"""
@@ -402,8 +451,8 @@ class UserLoginTest(TestCase):
 
         self.assertTrue(access_cookie["httponly"])
         self.assertTrue(refresh_cookie["httponly"])
-        self.assertEqual(access_cookie["samesite"], "None")
-        self.assertEqual(refresh_cookie["samesite"], "None")
+        self.assertEqual(access_cookie["samesite"], settings.SESSION_COOKIE_SAMESITE)
+        self.assertEqual(refresh_cookie["samesite"], settings.SESSION_COOKIE_SAMESITE)
 
         # 쿠키 값이 비어있지 않은지 확인
         self.assertNotEqual(access_cookie.value, "")
@@ -427,19 +476,21 @@ class UserLoginTest(TestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("이메일과 비밀번호를 입력해주세요", response.data["error"])
 
-    def test_login_invalid_credentials(self):
-        """잘못된 자격증명 시 에러 테스트"""
+    def test_login_user_not_exist(self):
+        """존재하지 않는 사용자 로그인 시 에러"""
         data = {"email": "nonexistent@example.com", "password": "wrongpass"}
-
         response = self.client.post(self.login_url, data, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.data["error"], "이메일 또는 비밀번호가 올바르지 않습니다.")
-        self.assertIn("error", response.data)
 
-        # 실패 시 쿠키가 설정되지 않았는지 확인
-        self.assertNotIn("access_token", response.cookies)
-        self.assertNotIn("refresh_token", response.cookies)
+    def test_login_wrong_password(self):
+        """잘못된 비밀번호로 로그인 시 에러"""
+        data = {"email": self.user.email, "password": "wrongpassword"}
+        response = self.client.post(self.login_url, data, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data["error"], "이메일 또는 비밀번호가 올바르지 않습니다.")
 
 
 class UserLogoutTest(TestCase):

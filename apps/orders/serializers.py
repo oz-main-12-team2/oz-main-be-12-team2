@@ -47,7 +47,7 @@ class OrderSerializer(serializers.ModelSerializer):
         max_digits=10, decimal_places=2, read_only=True
     )  # 수정: IntegerField → DecimalField
     user = serializers.PrimaryKeyRelatedField(read_only=True)
-
+    
     class Meta:
         model = Order
         fields = [
