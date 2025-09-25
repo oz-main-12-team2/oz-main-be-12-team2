@@ -10,6 +10,7 @@ urlpatterns = [
     path("me/", views.user_profile, name="user_profile"),
     path("me/delete/", views.user_delete, name="user_delete"),
     path("change-password/", views.change_password, name="user_change_password"),
+    path("token/refresh/", views.token_refresh, name="token_refresh"),
     # 소셜 로그인
     path("login/naver/", NaverLoginStartView.as_view(), name="naver_login_start"),
     path("login/naver/callback/", NaverLoginCallbackView.as_view(), name="naver_login_callback"),
