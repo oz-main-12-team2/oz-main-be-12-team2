@@ -1,7 +1,8 @@
 from django.shortcuts import get_object_or_404
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, parser_classes, permission_classes
+from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 
@@ -13,6 +14,7 @@ from .serializers import ProductSerializer
 @swagger_auto_schema(method="post", request_body=ProductSerializer)
 @api_view(["POST", "OPTIONS"])
 @permission_classes([IsAdminUser])
+@parser_classes([MultiPartParser, FormParser, JSONParser])  # ✅ 이미지 업로드 가능하게
 def admin_product_create(request):
     serializer = ProductSerializer(data=request.data)
     if serializer.is_valid():
@@ -31,6 +33,7 @@ def admin_product_create(request):
 )
 @api_view(["GET", "PUT", "DELETE", "OPTIONS"])
 @permission_classes([IsAdminUser])
+@parser_classes([MultiPartParser, FormParser, JSONParser])
 def admin_product_detail_update_delete(request, pk):
     product = get_object_or_404(Product, pk=pk)
 

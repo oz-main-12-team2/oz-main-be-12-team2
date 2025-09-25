@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt.token_blacklist",
     "django_filters",
     "drf_yasg",
+    "storages",
     # 소셜로그인 서드파티
     "django.contrib.sites",
 ]
@@ -214,3 +215,14 @@ FRONT_BASE_URL = os.getenv("FRONT_BASE_URL", "http://localhost:5173")
 CSRF_TRUSTED_ORIGINS = [
     "https://lov2ly.kro.kr",
 ]
+
+# S3 버킷 정보
+AWS_STORAGE_BUCKET_NAME = "oz-main-be-12-team2"  # 버킷 이름
+AWS_S3_REGION_NAME = "ap-northeast-2"  # 서울 리전
+
+# 기본 파일 저장소를 S3로 지정
+DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+
+# URL (이미지 접근용)
+AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com"
+MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/"

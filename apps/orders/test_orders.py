@@ -39,7 +39,7 @@ class OrdersAPITestCase(TestCase):
             price=Decimal("10000.00"),
             stock=10,
             category="소설",
-            image_url="http://example.com/image.jpg",
+            image="http://example.com/image.jpg",
         )
 
         # 기본 주문 생성 (테스트용)
