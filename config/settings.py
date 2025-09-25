@@ -207,3 +207,5 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 COOKIE_SECURE = os.getenv("COOKIE_SECURE", "False").lower() in ("true", "1", "yes")
 COOKIE_SAMESITE = os.getenv("COOKIE_SAMESITE", "Lax")
+
+FRONT_BASE_URL = os.getenv("FRONT_BASE_URL", "http://localhost:5173")
