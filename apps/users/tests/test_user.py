@@ -174,7 +174,7 @@ class UserAPITest(TestCase):
         self.assertEqual(response.data["error"], "이메일과 비밀번호를 입력해주세요.")
 
     def test_user_login_inactive_user(self):
-        """비활성화된 계정으로 로그인 시도 (Django 기본설정상 체크불가능)"""
+        """비활성화된 계정으로 로그인 시도"""
         User.objects.create_user(
             email="inactive@example.com", name="비활성 사용자", password="password123", is_active=False
         )
@@ -182,7 +182,7 @@ class UserAPITest(TestCase):
         data = {"email": "inactive@example.com", "password": "password123"}
         response = self.client.post(self.login_url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.data["error"], "이메일 또는 비밀번호가 올바르지 않습니다.")
+        self.assertEqual(response.data["error"], "비활성화된 계정입니다.")
 
     def test_logout_without_refresh_token(self):
         """refresh_token 없이 호출"""
