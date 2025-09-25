@@ -358,16 +358,16 @@ def token_refresh(request):
             str(new_access_token),
             max_age=int(access_lifetime),
             httponly=True,
-            secure=True,
-            samesite="None",
+            secure=settings.COOKIE_SECURE,
+            samesite=settings.COOKIE_SAMESITE,
         )
         response.set_cookie(
             "refresh_token",
             new_refresh_token,
             max_age=int(refresh_lifetime),
             httponly=True,
-            secure=True,
-            samesite="None",
+            secure=settings.COOKIE_SECURE,
+            samesite=settings.COOKIE_SAMESITE,
         )
         return response
 
