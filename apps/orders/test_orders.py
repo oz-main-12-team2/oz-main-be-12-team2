@@ -7,7 +7,7 @@ from rest_framework import status
 from rest_framework.test import APIClient
 
 from apps.carts.models import CartProduct
-from apps.orders.models import Order
+from apps.orders.models import Order, OrderItem
 from apps.products.models import Product
 
 User = get_user_model()
@@ -42,14 +42,21 @@ class OrdersAPITestCase(TestCase):
             image_url="http://example.com/image.jpg",
         )
 
-        # 기본 주문 생성 (테스트용)
+        # 기본 주문 생성 (total_price는 OrderItem 기준으로 계산)
         cls.order = Order.objects.create(
             user=cls.user,
             recipient_name="홍길동",
             recipient_phone="010-1234-5678",
             recipient_address="서울시 강남구",
-            total_price=Decimal("20000.00"),
             status="결제 완료",
+        )
+
+        # 주문 아이템 생성 → total_price 자동 계산
+        cls.order_item = OrderItem.objects.create(
+            order=cls.order,
+            product=cls.product,
+            quantity=2,
+            unit_price=Decimal("10000.00"),
         )
 
     def setUp(self):
@@ -87,14 +94,6 @@ class OrdersAPITestCase(TestCase):
         response = self.client.get(self.get_order_url())
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue(len(response.data) >= 1)
-
-    # def test_create_order(self):
-    #     payload = self.create_order_payload()
-    #     response = self.client.post(self.get_order_url(), payload, format="json")
-    #     if response.status_code != status.HTTP_201_CREATED:
-    #         print(response.data)  # 실패 시 에러 확인
-    #     self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-    #     self.assertGreaterEqual(Order.objects.count(), 2)
 
     def test_create_order_no_selection(self):
         """선택된 상품 없으면 주문 실패"""
@@ -141,3 +140,19 @@ class OrdersAPITestCase(TestCase):
         self.client.force_authenticate(user=self.admin_user)
         response = self.client.get(self.get_order_url())
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    # === 추가: total_price 검증 테스트 ===
+    def test_order_total_price_calculation(self):
+        """OrderItem 기준으로 Order.total_price가 올바르게 계산되는지 확인"""
+        order = Order.objects.create(
+            user=self.user,
+            recipient_name="테스트",
+            recipient_phone="010-0000-0000",
+            recipient_address="서울시 테스트구",
+        )
+        OrderItem.objects.create(order=order, product=self.product, quantity=3, unit_price=Decimal("10000.00"))
+        OrderItem.objects.create(order=order, product=self.product, quantity=2, unit_price=Decimal("15000.00"))
+
+        order.refresh_from_db()
+        expected_total = (3 * Decimal("10000.00")) + (2 * Decimal("15000.00"))
+        self.assertEqual(order.total_price, expected_total)
