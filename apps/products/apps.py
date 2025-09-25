@@ -6,5 +6,4 @@ class ProductsConfig(AppConfig):
     name = "apps.products"
 
     def ready(self):
-        # signals.py 불러와서 시그널 등록
-        pass
+        import apps.products.signals  # noqa : F401
