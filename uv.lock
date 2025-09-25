@@ -223,6 +223,11 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/1f/21/3cedee63417bc5553eed0c204be478071c9ab208e5e259e97287590194f1/django_storages-1.14.6-py3-none-any.whl", hash = "sha256:11b7b6200e1cb5ffcd9962bd3673a39c7d6a6109e8096f0e03d46fab3d3aabd9", size = 33095, upload-time = "2025-04-02T02:34:53.291Z" },
 ]
 
+[package.optional-dependencies]
+boto3 = [
+    { name = "boto3" },
+]
+
 [[package]]
 name = "djangorestframework"
 version = "3.16.1"
@@ -460,12 +465,11 @@ name = "oz-main-be-12-team2"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
-    { name = "boto3" },
     { name = "coverage" },
     { name = "django" },
     { name = "django-cors-headers" },
     { name = "django-filter" },
-    { name = "django-storages" },
+    { name = "django-storages", extra = ["boto3"] },
     { name = "djangorestframework" },
     { name = "djangorestframework-simplejwt" },
     { name = "drf-spectacular" },
@@ -487,12 +491,11 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "boto3", specifier = ">=1.40.38" },
     { name = "coverage", specifier = ">=7.10.6" },
     { name = "django", specifier = ">=5.0,<6.0" },
     { name = "django-cors-headers", specifier = ">=4.9.0" },
     { name = "django-filter", specifier = ">=25.1" },
-    { name = "django-storages", specifier = ">=1.14.6" },
+    { name = "django-storages", extras = ["boto3"], specifier = ">=1.14.6" },
     { name = "djangorestframework", specifier = ">=3.16.1" },
     { name = "djangorestframework-simplejwt", specifier = ">=5.5.1" },
     { name = "drf-spectacular" },

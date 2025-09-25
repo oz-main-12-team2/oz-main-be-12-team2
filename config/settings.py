@@ -141,10 +141,6 @@ STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
 
-MEDIA_URL = os.getenv("MEDIA_URL", "/media/")
-MEDIA_ROOT = os.getenv("MEDIA_ROOT", BASE_DIR / "media")
-
-
 # 커스텀 유저 모델
 AUTH_USER_MODEL = "users.User"
 
@@ -219,6 +215,9 @@ CSRF_TRUSTED_ORIGINS = [
 # S3 버킷 정보
 AWS_STORAGE_BUCKET_NAME = "oz-main-be-12-team2"  # 버킷 이름
 AWS_S3_REGION_NAME = "ap-northeast-2"  # 서울 리전
+
+AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID", None)
+AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY", None)
 
 # 기본 파일 저장소를 S3로 지정
 DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
