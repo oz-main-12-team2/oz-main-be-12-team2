@@ -70,8 +70,8 @@ class SocialLoginTest(TestCase):
         self.assertEqual(refresh_cookie.value, "mock_refresh_token")
         self.assertTrue(access_cookie["httponly"])
         self.assertTrue(refresh_cookie["httponly"])
-        self.assertEqual(access_cookie["samesite"], "None")
-        self.assertEqual(refresh_cookie["samesite"], "None")
+        self.assertEqual(access_cookie["samesite"], settings.SESSION_COOKIE_SAMESITE)
+        self.assertEqual(refresh_cookie["samesite"], settings.SESSION_COOKIE_SAMESITE)
 
         # 세션 정리 확인
         self.assertNotIn("naver_oauth_state", self.client.session)
@@ -244,8 +244,8 @@ class SocialLoginTest(TestCase):
         self.assertEqual(refresh_cookie.value, "mock_refresh_token")
         self.assertTrue(access_cookie["httponly"])
         self.assertTrue(refresh_cookie["httponly"])
-        self.assertEqual(access_cookie["samesite"], "None")
-        self.assertEqual(refresh_cookie["samesite"], "None")
+        self.assertEqual(access_cookie["samesite"], settings.SESSION_COOKIE_SAMESITE)
+        self.assertEqual(refresh_cookie["samesite"], settings.SESSION_COOKIE_SAMESITE)
 
         # 세션 정리 확인
         self.assertNotIn("google_oauth_state", self.client.session)
