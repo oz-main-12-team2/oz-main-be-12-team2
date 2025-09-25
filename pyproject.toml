@@ -19,6 +19,8 @@ dependencies = [
     "google-genai>=1.38.0",
     "django-cors-headers>=4.9.0",
     "locust>=2.40.5",
+    "django-storages[boto3]>=1.14.6",
+    "pillow>=11.3.0",
 ]
 
 [dependency-groups]

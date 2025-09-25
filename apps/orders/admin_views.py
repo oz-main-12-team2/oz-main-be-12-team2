@@ -4,11 +4,13 @@ from rest_framework.permissions import IsAdminUser
 
 from ..orders.models import Order
 from ..orders.serializers import OrderSerializer
+from ..utils.pagination import CustomPagination
 
 
 class AdminOrderViewSet(viewsets.ModelViewSet):
     serializer_class = OrderSerializer
     permission_classes = [IsAdminUser]
+    pagination_class = CustomPagination
 
     http_method_names = ["get", "post", "put", "delete"]  # PATCH 제거
 
