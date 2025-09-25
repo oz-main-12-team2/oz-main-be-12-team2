@@ -81,38 +81,51 @@ def login(request):
             status=status.HTTP_400_BAD_REQUEST,
         )
 
-    user = authenticate(username=email, password=password)
-    if user:
-        refresh = RefreshToken.for_user(user)
-        access_token = refresh.access_token
-
-        # settings에서 설정된 시간 사용
-        access_lifetime = settings.SIMPLE_JWT["ACCESS_TOKEN_LIFETIME"].total_seconds()
-        refresh_lifetime = settings.SIMPLE_JWT["REFRESH_TOKEN_LIFETIME"].total_seconds()
-
-        response = JsonResponse({"success": True, "user": UserLoginSerializer(user).data})
-        response.set_cookie(
-            "access_token",
-            str(access_token),
-            max_age=int(access_lifetime),
-            httponly=True,
-            secure=settings.COOKIE_SECURE,
-            samesite=settings.COOKIE_SAMESITE,
+    try:
+        user = User.objects.get(email=email)
+    except User.DoesNotExist:
+        return Response(
+            {"error": "이메일 또는 비밀번호가 올바르지 않습니다."},
+            status=status.HTTP_400_BAD_REQUEST,
         )
-        response.set_cookie(
-            "refresh_token",
-            str(refresh),
-            max_age=int(refresh_lifetime),
-            httponly=True,
-            secure=settings.COOKIE_SECURE,
-            samesite=settings.COOKIE_SAMESITE,
-        )
-        return response
 
-    return Response(
-        {"error": "이메일 또는 비밀번호가 올바르지 않습니다."},
-        status=status.HTTP_400_BAD_REQUEST,
+    if not user.check_password(password):
+        return Response(
+            {"error": "이메일 또는 비밀번호가 올바르지 않습니다."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    if not user.is_active:
+        return Response(
+            {"error": "비활성화된 계정입니다."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    refresh = RefreshToken.for_user(user)
+    access_token = refresh.access_token
+
+    # settings에서 설정된 시간 사용
+    access_lifetime = settings.SIMPLE_JWT["ACCESS_TOKEN_LIFETIME"].total_seconds()
+    refresh_lifetime = settings.SIMPLE_JWT["REFRESH_TOKEN_LIFETIME"].total_seconds()
+
+    response = JsonResponse({"success": True, "user": UserLoginSerializer(user).data})
+    response.set_cookie(
+        "access_token",
+        str(access_token),
+        max_age=int(access_lifetime),
+        httponly=True,
+        secure=settings.COOKIE_SECURE,
+        samesite=settings.COOKIE_SAMESITE,
     )
+    response.set_cookie(
+        "refresh_token",
+        str(refresh),
+        max_age=int(refresh_lifetime),
+        httponly=True,
+        secure=settings.COOKIE_SECURE,
+        samesite=settings.COOKIE_SAMESITE,
+    )
+    return response
 
 
 @api_view(["POST", "OPTIONS"])
