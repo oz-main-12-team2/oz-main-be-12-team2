@@ -92,10 +92,20 @@ def login(request):
 
         response = JsonResponse({"success": True, "user": UserLoginSerializer(user).data})
         response.set_cookie(
-            "access_token", str(access_token), max_age=int(access_lifetime), httponly=True, secure=True, samesite="None"
+            "access_token",
+            str(access_token),
+            max_age=int(access_lifetime),
+            httponly=True,
+            secure=settings.COOKIE_SECURE,
+            samesite=settings.COOKIE_SAMESITE,
         )
         response.set_cookie(
-            "refresh_token", str(refresh), max_age=int(refresh_lifetime), httponly=True, secure=True, samesite="None"
+            "refresh_token",
+            str(refresh),
+            max_age=int(refresh_lifetime),
+            httponly=True,
+            secure=settings.COOKIE_SECURE,
+            samesite=settings.COOKIE_SAMESITE,
         )
         return response
 
@@ -117,14 +127,14 @@ def logout(request):
             token.blacklist()
 
         response = JsonResponse({"message": "로그아웃되었습니다."})
-        response.delete_cookie("access_token", samesite="None")
-        response.delete_cookie("refresh_token", samesite="None")
+        response.delete_cookie("access_token", samesite=settings.COOKIE_SAMESITE)
+        response.delete_cookie("refresh_token", samesite=settings.COOKIE_SAMESITE)
         return response
 
     except Exception:
         response = JsonResponse({"error": "로그아웃 처리 중 오류가 발생했습니다."}, status=400)
-        response.delete_cookie("access_token", samesite="None")
-        response.delete_cookie("refresh_token", samesite="None")
+        response.delete_cookie("access_token", samesite=settings.COOKIE_SAMESITE)
+        response.delete_cookie("refresh_token", samesite=settings.COOKIE_SAMESITE)
         return response
 
 

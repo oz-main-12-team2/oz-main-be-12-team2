@@ -1,5 +1,6 @@
 import json
 
+from django.conf import settings
 from django.contrib.auth.tokens import default_token_generator
 from django.core.exceptions import ValidationError
 from django.test import RequestFactory, TestCase
@@ -402,8 +403,8 @@ class UserLoginTest(TestCase):
 
         self.assertTrue(access_cookie["httponly"])
         self.assertTrue(refresh_cookie["httponly"])
-        self.assertEqual(access_cookie["samesite"], "None")
-        self.assertEqual(refresh_cookie["samesite"], "None")
+        self.assertEqual(access_cookie["samesite"], settings.SESSION_COOKIE_SAMESITE)
+        self.assertEqual(refresh_cookie["samesite"], settings.SESSION_COOKIE_SAMESITE)
 
         # 쿠키 값이 비어있지 않은지 확인
         self.assertNotEqual(access_cookie.value, "")

@@ -199,7 +199,11 @@ DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", EMAIL_HOST_USER)
 # 제미나이 API
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
-SESSION_COOKIE_SECURE = os.getenv("SESSION_COOKIE_SECURE", "False").lower() in ("true", "1", "yes")
-SESSION_COOKIE_HTTPONLY = True
-SESSION_COOKIE_SAMESITE = "None"
-CSRF_COOKIE_SECURE = True
+# SESSION_COOKE_* 설정은 Django 세션 쿠키에만 적용 -> set_cookie로 직접 굽는 경우 적용 안 됨
+# SESSION_COOKIE_SECURE = os.getenv("COOKIE_SECURE", "False").lower() in ("true", "1", "yes")
+# SESSION_COOKIE_HTTPONLY = True
+# SESSION_COOKIE_SAMESITE = "None"
+# CSRF_COOKIE_SECURE = True
+
+COOKIE_SECURE = os.getenv("COOKIE_SECURE", "False").lower() in ("true", "1", "yes")
+COOKIE_SAMESITE = os.getenv("COOKIE_SAMESITE", "Lax")
