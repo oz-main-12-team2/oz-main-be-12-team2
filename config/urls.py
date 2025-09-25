@@ -14,6 +14,7 @@ schema_view = get_schema_view(
     ),
     public=True,
     permission_classes=[permissions.AllowAny],
+    url=settings.SWAGGER_SETTINGS.get("DEFAULT_API_URL"),
 )
 
 urlpatterns = [
