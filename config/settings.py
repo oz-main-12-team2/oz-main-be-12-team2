@@ -231,9 +231,6 @@ else:
     AWS_STORAGE_BUCKET_NAME = "oz-main-be-12-team2"  # 버킷 이름
     AWS_S3_REGION_NAME = "ap-northeast-2"  # 서울 리전
 
-    AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID", None)
-    AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY", None)
-
     # 기본 파일 저장소를 S3로 지정
     STORAGES = {
         "default": {
