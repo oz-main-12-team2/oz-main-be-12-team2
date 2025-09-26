@@ -151,9 +151,8 @@ LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/api/user/login/"
 
 # Swagger UI가 static 파일을 정상적으로 불러오기 위해 MIME 추가
-if DEBUG:
-    mimetypes.add_type("application/javascript", ".js", True)
-    mimetypes.add_type("text/css", ".css", True)
+mimetypes.add_type("application/javascript", ".js", True)
+mimetypes.add_type("text/css", ".css", True)
 
 SITE_ID = 1
 
