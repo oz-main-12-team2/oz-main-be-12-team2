@@ -28,10 +28,10 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       DJANGO_SETTINGS_MODULE: config.settings
       GEMINI_API_KEY: ${GEMINI_API_KEY}
-    ports:
-      - "8000:8000"
     depends_on:
       - db
+    expose:
+      - "8000"
     volumes:
       - .:/app:cached
       - /app/.venv
