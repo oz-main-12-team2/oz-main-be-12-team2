@@ -212,23 +212,38 @@ CSRF_TRUSTED_ORIGINS = [
     "https://lov2ly.kro.kr",
 ]
 
-# S3 버킷 정보
-AWS_STORAGE_BUCKET_NAME = "oz-main-be-12-team2"  # 버킷 이름
-AWS_S3_REGION_NAME = "ap-northeast-2"  # 서울 리전
 
-AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID", None)
-AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY", None)
+if DEBUG:
+    # 개발 환경 → 로컬 저장
+    MEDIA_URL = "/media/"
+    MEDIA_ROOT = BASE_DIR / "media"
 
-# 기본 파일 저장소를 S3로 지정
-STORAGES = {
-    "default": {
-        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
-    },
-    "staticfiles": {
-        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
-    },
-}
+    STORAGES = {
+        "default": {
+            "BACKEND": "django.core.files.storage.FileSystemStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+        },
+    }
+else:
+    # S3 버킷 정보
+    AWS_STORAGE_BUCKET_NAME = "oz-main-be-12-team2"  # 버킷 이름
+    AWS_S3_REGION_NAME = "ap-northeast-2"  # 서울 리전
 
-# URL (이미지 접근용)
-AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com"
-MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/"
+    AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID", None)
+    AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY", None)
+
+    # 기본 파일 저장소를 S3로 지정
+    STORAGES = {
+        "default": {
+            "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+        },
+        "staticfiles": {
+            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+        },
+    }
+
+    # URL (이미지 접근용)
+    AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com"
+    MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/"
