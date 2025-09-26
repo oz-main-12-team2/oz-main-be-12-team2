@@ -25,7 +25,7 @@ class CartAPITest(TestCase):
             price=Decimal("10000.00"),  # ✅ Decimal로 저장
             stock=10,
             category="소설",
-            image="http://example.com/image.jpg",
+            # image="http://example.com/image.jpg",
         )
 
     def setUp(self):
