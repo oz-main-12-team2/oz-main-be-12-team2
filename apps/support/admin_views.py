@@ -1,6 +1,7 @@
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 
+from ..utils.pagination import CustomPagination
 from .models import FAQ, Inquiry
 from .serializers import AdminInquiryUpdateSerializer, FAQSerializer, InquiryDetailSerializer, InquiryListSerializer
 
@@ -9,6 +10,7 @@ class AdminInquiryListAPIView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = InquiryListSerializer
     queryset = Inquiry.objects.all()
+    pagination_class = CustomPagination
 
     def check_admin_permission(self, user):
         """관리자 권한 체크"""

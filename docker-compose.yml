@@ -28,15 +28,39 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       DJANGO_SETTINGS_MODULE: config.settings
       GEMINI_API_KEY: ${GEMINI_API_KEY}
-    ports:
-      - "8000:8000"
     depends_on:
       - db
+    expose:
+      - "8000"
     volumes:
       - .:/app:cached
       - /app/.venv
       - ./staticfiles:/app/staticfiles
       - ./media:/app/media
 
+  nginx:
+    image: nginx:alpine
+    restart: always
+    ports:
+      - "8080:80"
+    volumes:
+      - static_volume:/usr/share/nginx/html/static:ro
+      - media_volume:/usr/share/nginx/html/media:ro
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - web
+
+  locust:
+    image: locustio/locust
+    ports:
+      - "8089:8089"
+    volumes:
+      - ./locust_tests:/mnt/locust
+    command: -f /mnt/locust/locustfile.py --host=http://web:8000
+    depends_on:
+      - web
+
 volumes:
   postgres_data:
+  static_volume:
+  media_volume:

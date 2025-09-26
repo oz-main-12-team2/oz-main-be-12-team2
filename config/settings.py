@@ -22,8 +22,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # 보안 키
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "unsafe-default-key")
 
-# 디버그 모드 - 환경변수에서 DEBUG 값을 주지 않으면 자동으로 FALSE
-DEBUG = os.getenv("DEBUG", "False").lower() in ("true", "1", "yes")
+# 디버그 모드 - 환경변수에서 DEBUG 값을 주지 않으면 자동으로 True
+DEBUG = os.getenv("DEBUG", "True").lower() in ("true", "1", "yes")
 
 # 허용 호스트
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost 127.0.0.1 0.0.0.0").split()
@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt.token_blacklist",
     "django_filters",
     "drf_yasg",
+    "storages",
     # 소셜로그인 서드파티
     "django.contrib.sites",
 ]
@@ -140,10 +141,6 @@ STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
 
-MEDIA_URL = os.getenv("MEDIA_URL", "/media/")
-MEDIA_ROOT = os.getenv("MEDIA_ROOT", BASE_DIR / "media")
-
-
 # 커스텀 유저 모델
 AUTH_USER_MODEL = "users.User"
 
@@ -154,9 +151,8 @@ LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/api/user/login/"
 
 # Swagger UI가 static 파일을 정상적으로 불러오기 위해 MIME 추가
-if DEBUG:
-    mimetypes.add_type("application/javascript", ".js", True)
-    mimetypes.add_type("text/css", ".css", True)
+mimetypes.add_type("application/javascript", ".js", True)
+mimetypes.add_type("text/css", ".css", True)
 
 SITE_ID = 1
 
@@ -172,15 +168,8 @@ CORS_ALLOW_CREDENTIALS = True
 
 # Swagger 설정
 SWAGGER_SETTINGS = {
-    "SECURITY_DEFINITIONS": {
-        "Bearer": {
-            "type": "apiKey",
-            "name": "Authorization",
-            "in": "header",
-            "description": "JWT 인증 (예: Bearer <your_token>)",
-        }
-    },
     "USE_SESSION_AUTH": False,  # Session 인증 버튼 숨김
+    "DEFAULT_API_URL": os.getenv("SWAGGER_API_URL", "http://localhost:8000/api/"),
 }
 
 # OAuth 콜백 URL
@@ -206,7 +195,51 @@ DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", EMAIL_HOST_USER)
 # 제미나이 API
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
-SESSION_COOKIE_SECURE = False  # TODO: 배포시에는 True로 변경
-SESSION_COOKIE_HTTPONLY = True
-SESSION_COOKIE_SAMESITE = "None"
-CSRF_COOKIE_SECURE = True
+# SESSION_COOKE_* 설정은 Django 세션 쿠키에만 적용 -> set_cookie로 직접 굽는 경우 적용 안 됨
+# SESSION_COOKIE_SECURE = os.getenv("COOKIE_SECURE", "False").lower() in ("true", "1", "yes")
+# SESSION_COOKIE_HTTPONLY = True
+# SESSION_COOKIE_SAMESITE = "None"
+# CSRF_COOKIE_SECURE = True
+
+COOKIE_SECURE = os.getenv("COOKIE_SECURE", "False").lower() in ("true", "1", "yes")
+COOKIE_SAMESITE = os.getenv("COOKIE_SAMESITE", "Lax")
+
+FRONT_BASE_URL = os.getenv("FRONT_BASE_URL", "http://localhost:5173")
+
+# admin 페이지 접근하기 위한
+CSRF_TRUSTED_ORIGINS = [
+    "https://lov2ly.kro.kr",
+]
+
+
+if DEBUG:
+    # 개발 환경 → 로컬 저장
+    MEDIA_URL = "/media/"
+    MEDIA_ROOT = BASE_DIR / "media"
+
+    STORAGES = {
+        "default": {
+            "BACKEND": "django.core.files.storage.FileSystemStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+        },
+    }
+else:
+    # S3 버킷 정보
+    AWS_STORAGE_BUCKET_NAME = "oz-main-be-12-team2"  # 버킷 이름
+    AWS_S3_REGION_NAME = "ap-northeast-2"  # 서울 리전
+
+    # 기본 파일 저장소를 S3로 지정
+    STORAGES = {
+        "default": {
+            "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+        },
+        "staticfiles": {
+            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+        },
+    }
+
+    # URL (이미지 접근용)
+    AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com"
+    MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/"

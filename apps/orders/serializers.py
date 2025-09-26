@@ -17,12 +17,15 @@ class OrderItemSerializer(serializers.ModelSerializer):
             "unit_price",
             "total_price",
         ]
+        read_only_fields = ["total_price"]  # total_price는 계산된 값만 표시
 
 
 # 주문 생성용 serializer (Swagger 입력용)
 class OrderCreateSerializer(serializers.ModelSerializer):
     selected_items = serializers.ListField(
-        child=serializers.IntegerField(), required=False, help_text="장바구니에서 선택한 아이템 ID 리스트"
+        child=serializers.IntegerField(),
+        required=False,
+        help_text="장바구니에서 선택한 아이템 ID 리스트",
     )
 
     class Meta:
@@ -38,7 +41,9 @@ class OrderCreateSerializer(serializers.ModelSerializer):
 # 조회/수정용 serializer
 class OrderSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(many=True, read_only=True)
-    total_price = serializers.IntegerField(read_only=True)
+    total_price = serializers.DecimalField(
+        max_digits=10, decimal_places=2, read_only=True
+    )  # 수정: IntegerField → DecimalField
     user = serializers.PrimaryKeyRelatedField(read_only=True)
 
     class Meta:
@@ -56,3 +61,4 @@ class OrderSerializer(serializers.ModelSerializer):
             "updated_at",
             "items",
         ]
+        read_only_fields = ["total_price", "order_number"]
