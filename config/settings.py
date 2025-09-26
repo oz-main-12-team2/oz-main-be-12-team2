@@ -22,8 +22,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # 보안 키
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "unsafe-default-key")
 
-# 디버그 모드 - 환경변수에서 DEBUG 값을 주지 않으면 자동으로 FALSE
-DEBUG = os.getenv("DEBUG", "False").lower() in ("true", "1", "yes")
+# 디버그 모드 - 환경변수에서 DEBUG 값을 주지 않으면 자동으로 True
+DEBUG = os.getenv("DEBUG", "True").lower() in ("true", "1", "yes")
 
 # 허용 호스트
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost 127.0.0.1 0.0.0.0").split()
