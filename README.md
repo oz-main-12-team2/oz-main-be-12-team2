@@ -17,7 +17,7 @@ oz-main-be-12-team2/
 │   │   └── views.py              # API 뷰
 │   ├── orders                    # 주문 관리
 │   │   ├── __init__.py
-│   │   ├── admin.py              # Django 관리자
+│   │   ├── admin.py              # 관리자 주문 모델
 │   │   ├── admin_urls.py         # 관리자 URL
 │   │   ├── admin_views.py        # 관리자 뷰
 │   │   ├── apps.py
@@ -91,10 +91,10 @@ oz-main-be-12-team2/
 │   ├── settings.py               # 프로젝트 설정
 │   ├── urls.py                   # 메인 URL 설정
 │   └── wsgi.py                   # WSGI 설정
-├── docker-compose.yml            # Docker Compose 설정
 ├── locust_tests                  # 부하 테스트
 │   └── locustfile.py             # Locust 시나리오
 ├── Dockerfile                    # Docker 컨테이너 설정
+├── docker-compose.yml            # Docker Compose 설정
 ├── README.md                     # 프로젝트 문서
 ├── main.py                       # 애플리케이션 진입점
 ├── manage.py                     # Django 관리 명령어
