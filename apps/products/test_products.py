@@ -3,7 +3,6 @@
 from decimal import Decimal
 
 from django.contrib.auth import get_user_model
-from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
@@ -116,7 +115,7 @@ class ProductSearchAndOrderingTest(BaseProductTestCase):
             category="소설",
             price=Decimal("15000.00"),
             stock=3,
-            image=SimpleUploadedFile("test.jpg", b"file_content", content_type="image/jpeg"),
+            # image=SimpleUploadedFile("test.jpg", b"file_content", content_type="image/jpeg"),
         )
         cls.product2 = Product.objects.create(
             name="데이터베이스 설계",
@@ -125,7 +124,7 @@ class ProductSearchAndOrderingTest(BaseProductTestCase):
             category="IT",
             price=Decimal("30000.00"),
             stock=7,
-            image=SimpleUploadedFile("test.jpg", b"file_content", content_type="image/jpeg"),
+            # image=SimpleUploadedFile("test.jpg", b"file_content", content_type="image/jpeg"),
         )
         cls.product3 = Product.objects.create(
             name="철학 입문",
@@ -134,7 +133,7 @@ class ProductSearchAndOrderingTest(BaseProductTestCase):
             category="인문",
             price=Decimal("10000.00"),
             stock=2,
-            image=SimpleUploadedFile("test.jpg", b"file_content", content_type="image/jpeg"),
+            # image=SimpleUploadedFile("test.jpg", b"file_content", content_type="image/jpeg"),
         )
 
     def test_search_by_query_name(self):
@@ -197,7 +196,7 @@ class ProductPaginationTest(BaseProductTestCase):
                 stock=i,
                 author="작가",
                 category="카테고리",
-                image=SimpleUploadedFile("test.jpg", b"file_content", content_type="image/jpeg"),
+                # image=SimpleUploadedFile("test.jpg", b"file_content", content_type="image/jpeg"),
             )
 
     def test_custom_page_size(self):
