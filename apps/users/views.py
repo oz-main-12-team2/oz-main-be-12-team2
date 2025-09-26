@@ -185,7 +185,10 @@ def user_delete(request):
     """회원 탈퇴"""
     user = request.user
     user.delete()
-    return Response({"message": "회원탈퇴가 완료되었습니다."}, status=status.HTTP_200_OK)
+    response = Response({"message": "회원탈퇴가 완료되었습니다."}, status=status.HTTP_200_OK)
+    response.delete_cookie("access_token")
+    response.delete_cookie("refresh_token")
+    return response
 
 
 @swagger_auto_schema(methods=["put"], request_body=ChangePasswordSerializer)

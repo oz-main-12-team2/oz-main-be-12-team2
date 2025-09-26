@@ -21,6 +21,7 @@ dependencies = [
     "locust>=2.40.5",
     "django-storages[boto3]>=1.14.6",
     "pillow>=11.3.0",
+    "tree>=0.2.4",
 ]
 
 [dependency-groups]
