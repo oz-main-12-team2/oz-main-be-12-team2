@@ -42,7 +42,7 @@ services:
     image: nginx:alpine
     restart: always
     ports:
-      - "80:80"
+      - "8080:80"
     volumes:
       - static_volume:/usr/share/nginx/html/static:ro
       - media_volume:/usr/share/nginx/html/media:ro
