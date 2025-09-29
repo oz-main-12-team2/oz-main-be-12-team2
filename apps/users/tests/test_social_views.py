@@ -56,7 +56,7 @@ class SocialLoginTest(TestCase):
 
         # 리다이렉트 응답 확인
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, "/")
+        self.assertEqual(response.url, settings.FRONT_BASE_URL)
 
         # 쿠키 설정 확인
         self.assertIn("access_token", response.cookies)
@@ -230,7 +230,7 @@ class SocialLoginTest(TestCase):
 
         # 리다이렉트 응답 확인
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, "/")
+        self.assertEqual(response.url, settings.FRONT_BASE_URL)
 
         # 쿠키 설정 확인
         self.assertIn("access_token", response.cookies)
