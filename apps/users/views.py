@@ -254,6 +254,12 @@ def password_reset_request(request):
         except User.DoesNotExist:
             return Response({"error": "해당 이메일의 사용자가 없습니다."}, status=status.HTTP_404_NOT_FOUND)
 
+        if user.is_social:
+            return Response(
+                {"error": "소셜 로그인 사용자는 비밀번호 재설정을 할 수 없습니다."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         uid = urlsafe_base64_encode(force_bytes(user.pk))
         token = default_token_generator.make_token(user)
         reset_link = f"{settings.FRONT_BASE_URL}/password-reset/confirm?uid={uid}&token={token}"
@@ -338,6 +344,12 @@ def password_reset_confirm(request):
 
     if not default_token_generator.check_token(user, token):
         return Response({"error": "유효하지 않은 토큰입니다."}, status=status.HTTP_400_BAD_REQUEST)
+
+    if user.is_social:
+        return Response(
+            {"error": "소셜 로그인 사용자는 비밀번호를 재설정할 수 없습니다."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
     serializer = PasswordResetConfirmSerializer(data=request.data)
     if serializer.is_valid():
