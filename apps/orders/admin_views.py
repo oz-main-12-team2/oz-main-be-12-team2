@@ -12,7 +12,7 @@ class AdminOrderViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAdminUser]
     pagination_class = CustomPagination
 
-    http_method_names = ["get", "post", "put", "delete"]  # PATCH 제거
+    http_method_names = ["get", "put", "delete"]  # PATCH 제거
 
     def get_queryset(self):
         if getattr(self, "swagger_fake_view", False):
