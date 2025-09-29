@@ -7,6 +7,7 @@ from .models import Product
 
 DEFAULT_PRODUCT_IMAGE = "products/product_default.jpg"
 
+
 @receiver(pre_save, sender=Product)
 def update_product_image_filename(sender, instance, **kwargs):
     """
