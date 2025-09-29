@@ -35,7 +35,8 @@ echo "OK"
 # Django test + coverage: 단위 테스트 실행 및 커버리지 리포트 생성
 # -----------------------------------------------------------
 echo "Starting Django test with coverage"
-uv run coverage run manage.py test --parallel
+# uv run coverage run manage.py test --parallel
+uv run coverage run manage.py test
 uv run coverage report -m
 uv run coverage html
 
