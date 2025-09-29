@@ -7,7 +7,7 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from .models import Product
+from .models import Product, ProductCategory
 
 User = get_user_model()
 
@@ -22,7 +22,13 @@ class BaseProductTestCase(APITestCase):
         cls.normal_user = User.objects.create_user(email="user@example.com", name="일반사용자", password="userpass")
 
         # 상품
-        cls.product = Product.objects.create(name="테스트 상품", price=Decimal("10000.00"), stock=10, author="작가")
+        cls.product = Product.objects.create(
+            name="테스트 상품",
+            price=Decimal("10000.00"),
+            stock=10,
+            author="작가",
+            category=ProductCategory.NOVEL,
+        )
 
         # URL
         cls.list_url = reverse("products:product-list")
@@ -57,7 +63,13 @@ class ProductAdminViewTest(BaseProductTestCase):
 
     def test_admin_create_product_success(self):
         """관리자가 상품을 생성할 수 있다"""
-        data = {"name": "새 상품", "price": "20000.00", "stock": 5, "author": "새 작가"}
+        data = {
+            "name": "새 상품",
+            "price": "20000.00",
+            "stock": 5,
+            "author": "새 작가",
+            "category": ProductCategory.PROGRAMMING,
+        }
         response = self.client.post(self.admin_create_url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertTrue(Product.objects.filter(name="새 상품").exists())
@@ -70,7 +82,12 @@ class ProductAdminViewTest(BaseProductTestCase):
 
     def test_admin_update_product_success(self):
         """관리자가 상품 수정 가능"""
-        data = {"name": "수정된 상품", "price": "15000.00", "stock": 20}
+        data = {
+            "name": "수정된 상품",
+            "price": "15000.00",
+            "stock": 20,
+            "category": ProductCategory.HUMANITIES,
+        }
         response = self.client.put(self.admin_detail_url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -78,6 +95,7 @@ class ProductAdminViewTest(BaseProductTestCase):
         self.assertEqual(self.product.name, "수정된 상품")
         self.assertEqual(self.product.price, Decimal("15000.00"))
         self.assertEqual(self.product.stock, 20)
+        self.assertEqual(self.product.category, ProductCategory.HUMANITIES)
 
     def test_admin_delete_product_success(self):
         """관리자가 상품 삭제 가능"""
@@ -94,7 +112,7 @@ class ProductPermissionTest(BaseProductTestCase):
         self.client.force_authenticate(user=self.normal_user)
         response = self.client.post(
             self.admin_create_url,
-            {"name": "권한 테스트 상품", "price": "5000.00", "stock": 1},
+            {"name": "권한 테스트 상품", "price": "5000.00", "stock": 1, "category": ProductCategory.NOVEL},
             format="json",
         )
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
@@ -112,7 +130,7 @@ class ProductSearchAndOrderingTest(BaseProductTestCase):
             name="해리포터",
             description="마법사 이야기",
             author="조앤 롤링",
-            category="소설",
+            category=ProductCategory.NOVEL,
             price=Decimal("15000.00"),
             stock=3,
             # image=SimpleUploadedFile("test.jpg", b"file_content", content_type="image/jpeg"),
@@ -121,7 +139,7 @@ class ProductSearchAndOrderingTest(BaseProductTestCase):
             name="데이터베이스 설계",
             description="DB 교재",
             author="홍길동",
-            category="IT",
+            category=ProductCategory.COMPUTER_IT,
             price=Decimal("30000.00"),
             stock=7,
             # image=SimpleUploadedFile("test.jpg", b"file_content", content_type="image/jpeg"),
@@ -130,7 +148,7 @@ class ProductSearchAndOrderingTest(BaseProductTestCase):
             name="철학 입문",
             description="고대 철학자들",
             author="아리스토텔레스",
-            category="인문",
+            category=ProductCategory.HUMANITIES,
             price=Decimal("10000.00"),
             stock=2,
             # image=SimpleUploadedFile("test.jpg", b"file_content", content_type="image/jpeg"),
@@ -152,10 +170,10 @@ class ProductSearchAndOrderingTest(BaseProductTestCase):
 
     def test_filter_by_category(self):
         """카테고리 필터"""
-        response = self.client.get(self.list_url, {"category": "인문"})
+        response = self.client.get(self.list_url, {"category": ProductCategory.HUMANITIES})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data["results"]), 1)
-        self.assertEqual(response.data["results"][0]["category"], "인문")
+        self.assertEqual(response.data["results"][0]["category"], ProductCategory.HUMANITIES)
 
     def test_filter_by_price_range(self):
         """가격 범위 필터"""
@@ -195,7 +213,7 @@ class ProductPaginationTest(BaseProductTestCase):
                 price=Decimal(1000 * i),
                 stock=i,
                 author="작가",
-                category="카테고리",
+                category=ProductCategory.NOVEL,
                 # image=SimpleUploadedFile("test.jpg", b"file_content", content_type="image/jpeg"),
             )
 
