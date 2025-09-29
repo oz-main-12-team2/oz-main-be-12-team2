@@ -35,19 +35,30 @@ class CartAPITest(TestCase):
 
     def test_cart_list(self):
         """장바구니 조회"""
+
+        CartProduct.objects.create(cart=self.user.cart, product=self.product, quantity=2)  # ✅ 아이템 추가
+
         url = reverse("cart-list")
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         data = response.json()
+        self.assertIsInstance(data, list)  # 최상위가 list
+        self.assertGreaterEqual(len(data), 1)
 
-        # 최상위 구조 검증
-        self.assertIsInstance(data, dict)
-        self.assertIn("results", data)
-        self.assertIsInstance(data["results"], list)
+        cart_data = data[0]  # 첫 번째 카트
+        self.assertIn("items", cart_data)
+        self.assertIsInstance(cart_data["items"], list)
+        self.assertEqual(len(cart_data["items"]), 1)
 
-        # 결과값 세부 검증 - 길이로 체크
-        self.assertEqual(data["count"], len(data["results"]))
+        item = cart_data["items"][0]  # 첫 번째 아이템
+        self.assertEqual(item["product_id"], self.product.id)
+        self.assertEqual(item["product_name"], self.product.name)
+        self.assertEqual(Decimal(item["product_price"]), self.product.price)
+        self.assertEqual(item["product_publisher"], self.product.publisher)
+        self.assertEqual(item["product_author"], self.product.author)
+        self.assertEqual(item["product_stock"], self.product.stock)
+        self.assertEqual(item["quantity"], 2)
 
     def test_add_product_to_cart(self):
         """장바구니에 상품 추가"""

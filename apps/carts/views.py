@@ -10,6 +10,7 @@ from .serializers import CartProductSerializer, CartProductUpdateSerializer, Car
 class CartListView(generics.ListAPIView):
     serializer_class = CartSerializer
     permission_classes = [permissions.IsAuthenticated]
+    pagination_class = None  # ✅ 페이지네이션 제거
 
     def get_queryset(self):
         return Cart.objects.filter(user=self.request.user)
