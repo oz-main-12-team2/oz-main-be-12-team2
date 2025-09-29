@@ -5,7 +5,8 @@ from rest_framework import viewsets
 from rest_framework.filters import OrderingFilter
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
-from ..utils.pagination import CustomPagination
+from apps.core.pagination import CustomPagination
+
 from .filters import ProductFilter
 from .models import Product
 from .serializers import ProductSerializer

@@ -2,8 +2,8 @@ from django.conf import settings
 from django.db import models
 from django.utils.crypto import get_random_string
 
+from apps.core.models import TimestampModel
 from apps.products.models import Product
-from apps.utils.models import TimestampModel
 
 
 class Order(TimestampModel):

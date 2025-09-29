@@ -2,9 +2,10 @@
 from rest_framework import viewsets
 from rest_framework.permissions import IsAdminUser
 
+from apps.core.pagination import CustomPagination
+
 from ..orders.models import Order
 from ..orders.serializers import OrderSerializer
-from ..utils.pagination import CustomPagination
 
 
 class AdminOrderViewSet(viewsets.ModelViewSet):

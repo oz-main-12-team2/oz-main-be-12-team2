@@ -2,7 +2,7 @@ from django.conf import settings
 from django.core.validators import MinValueValidator
 from django.db import models
 
-from apps.utils.models import TimestampModel
+from apps.core.models import TimestampModel
 
 User = settings.AUTH_USER_MODEL
 

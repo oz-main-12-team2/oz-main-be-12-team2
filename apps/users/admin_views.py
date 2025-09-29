@@ -6,7 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.utils.pagination import CustomPagination
+from apps.core.pagination import CustomPagination
 
 from .models import User
 from .serializers import AdminUserSerializer, AdminUserUpdateSerializer
