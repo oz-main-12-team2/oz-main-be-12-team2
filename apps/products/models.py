@@ -11,7 +11,7 @@ class Product(TimestampModel):
     price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="가격")
     stock = models.IntegerField(verbose_name="재고 수량")
     category = models.CharField(max_length=20, verbose_name="카테고리", blank=True, null=True)
-    image = models.ImageField(upload_to="", verbose_name="책 이미지", blank=True, null=True)
+    image = models.ImageField(upload_to="", verbose_name="책 이미지", default="products/product_default.jpg")
 
     def __str__(self):
         """객체를 문자열로 표현할 때 사용"""
