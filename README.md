@@ -86,5 +86,5 @@ project_name/
 
 ### commit 전 테스트 스크립트 수행
 ```bash
-./scripts/test.sh
+./resources/scripts/test.sh
 ```
