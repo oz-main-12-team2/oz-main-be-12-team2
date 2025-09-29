@@ -1,6 +1,7 @@
 from rest_framework import generics, permissions
 
-from ..utils.pagination import CustomPagination
+from apps.core.pagination import CustomPagination
+
 from .models import Payment
 from .serializers import PaymentSerializer
 

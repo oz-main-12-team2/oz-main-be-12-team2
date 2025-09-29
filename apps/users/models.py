@@ -2,7 +2,7 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, Permis
 from django.core.exceptions import ValidationError
 from django.db import models
 
-from apps.utils.models import TimestampModel
+from apps.core.models import TimestampModel
 
 
 class UserManager(BaseUserManager):

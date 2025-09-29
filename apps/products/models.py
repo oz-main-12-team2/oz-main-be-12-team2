@@ -1,6 +1,6 @@
 from django.db import models
 
-from apps.utils.models import TimestampModel
+from apps.core.models import TimestampModel
 
 
 class ProductCategory(models.TextChoices):

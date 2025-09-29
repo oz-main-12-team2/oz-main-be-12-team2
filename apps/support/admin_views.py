@@ -1,7 +1,8 @@
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 
-from ..utils.pagination import CustomPagination
+from apps.core.pagination import CustomPagination
+
 from .models import FAQ, Inquiry
 from .serializers import AdminInquiryUpdateSerializer, FAQSerializer, InquiryDetailSerializer, InquiryListSerializer
 
