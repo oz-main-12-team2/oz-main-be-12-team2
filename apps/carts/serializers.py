@@ -19,13 +19,37 @@ class CartProductSerializer(serializers.ModelSerializer):
         return value
 
 
+class CartProductDetailSerializer(serializers.ModelSerializer):
+    product_id = serializers.PrimaryKeyRelatedField(source="product", read_only=True)
+    product_name = serializers.CharField(source="product.name", read_only=True)
+    product_price = serializers.DecimalField(source="product.price", max_digits=10, decimal_places=2, read_only=True)
+    product_category = serializers.CharField(source="product.category.name", read_only=True)
+    product_publisher = serializers.CharField(source="product.publisher", read_only=True)
+    product_author = serializers.CharField(source="product.author", read_only=True)
+    product_stock = serializers.IntegerField(source="product.stock", read_only=True)
+    product_image = serializers.ImageField(source="product.image", read_only=True)
+
+    class Meta:
+        model = CartProduct
+        fields = [
+            "product_id",
+            "product_name",
+            "product_price",
+            "product_category",
+            "product_publisher",
+            "product_author",
+            "product_stock",
+            "product_image",
+            "quantity",
+        ]
+
+
 class CartSerializer(serializers.ModelSerializer):
-    items = CartProductSerializer(many=True, read_only=True)
+    items = CartProductDetailSerializer(many=True, read_only=True)
 
     class Meta:
         model = Cart
         fields = ["items"]
-        # read_only_fields = ["user", "id", "created_at", "updated_at"]
 
 
 class CartProductUpdateSerializer(serializers.ModelSerializer):
