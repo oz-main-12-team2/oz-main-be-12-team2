@@ -416,6 +416,20 @@ class UserAPITest(TestCase):
         self.assertIn("new_password_confirm", serializer.errors)
         self.assertEqual(serializer.errors["new_password_confirm"][0], "비밀번호가 일치하지 않습니다.")
 
+    def test_password_reset_confirm_social_user(self):
+        """소셜 로그인 사용자는 비밀번호 재설정 확인 불가"""
+        user = User.objects.create_user(
+            email="social@example.com", name="소셜 사용자", password="testpass123", is_social=True
+        )
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+        token = default_token_generator.make_token(user)
+
+        data = {"new_password": "newpass123", "new_password_confirm": "newpass123"}
+        url = reverse("user_password_reset_confirm") + f"?uid={uid}&token={token}"
+        response = self.client.post(url, data, format="json")
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data["error"], "소셜 로그인 사용자는 비밀번호를 재설정할 수 없습니다.")
+
 
 class UserLoginTest(TestCase):
     def setUp(self):
@@ -776,6 +790,18 @@ class ChangePasswordTest(TestCase):
         response = self.client.put(self.change_password_url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("new_password_confirm", response.data)
+
+    def test_new_password_same_as_old(self):
+        """새 비밀번호가 기존 비밀번호와 동일"""
+        self.client.force_authenticate(user=self.user)
+        data = {
+            "old_password": "oldpassword123",
+            "new_password": "oldpassword123",
+            "new_password_confirm": "oldpassword123",
+        }
+        response = self.client.put(self.change_password_url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("new_password", response.data)
 
     def test_change_password_weak_password(self):
         """약한 비밀번호 테스트 (Django validation)"""
