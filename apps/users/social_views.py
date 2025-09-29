@@ -74,7 +74,7 @@ class NaverLoginCallbackView(APIView):
             access_lifetime = settings.SIMPLE_JWT["ACCESS_TOKEN_LIFETIME"].total_seconds()
             refresh_lifetime = settings.SIMPLE_JWT["REFRESH_TOKEN_LIFETIME"].total_seconds()
 
-            response = redirect("/")
+            response = redirect(settings.FRONT_BASE_URL)
             response.set_cookie(
                 "access_token",
                 tokens["access"],
@@ -165,7 +165,7 @@ class GoogleLoginCallbackView(APIView):
             access_lifetime = settings.SIMPLE_JWT["ACCESS_TOKEN_LIFETIME"].total_seconds()
             refresh_lifetime = settings.SIMPLE_JWT["REFRESH_TOKEN_LIFETIME"].total_seconds()
 
-            response = redirect("/")
+            response = redirect(settings.FRONT_BASE_URL)
             response.set_cookie(
                 "access_token",
                 tokens["access"],
