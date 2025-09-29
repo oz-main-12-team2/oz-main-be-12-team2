@@ -17,7 +17,7 @@ services:
 
   web:
     build: .
-    command: /scripts/run.sh
+    command: /resources/scripts/run.sh
     env_file:
       - .env
     environment:

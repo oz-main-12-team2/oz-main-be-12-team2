@@ -34,7 +34,7 @@ COPY --from=builder /bin/uv /bin/uv
 COPY resources/scripts /scripts
 
 # 실행 스크립트 권한 및 CRLF 변환
-RUN chmod +x /scripts/run.sh && dos2unix /scripts/run.sh
+RUN chmod +x resources/scripts/run.sh && dos2unix resources/scripts/run.sh
 
 # 가상환경 PATH 추가
 ENV PATH="/app/.venv/bin:$PATH"
@@ -42,4 +42,4 @@ ENV PATH="/app/.venv/bin:$PATH"
 EXPOSE 8000
 
 # run.sh 실행
-CMD ["/bin/bash", "/scripts/run.sh"]
+CMD ["/bin/bash", "resources/scripts/run.sh"]
