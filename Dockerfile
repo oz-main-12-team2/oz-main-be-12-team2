@@ -31,7 +31,7 @@ WORKDIR /app
 # 빌드 스테이지에서 복사
 COPY --from=builder /app /app
 COPY --from=builder /bin/uv /bin/uv
-COPY ./scripts /scripts
+COPY resources/scripts /scripts
 
 # 실행 스크립트 권한 및 CRLF 변환
 RUN chmod +x /scripts/run.sh && dos2unix /scripts/run.sh
