@@ -1,7 +1,7 @@
 from rest_framework import generics, permissions
-from rest_framework.exceptions import PermissionDenied
+from rest_framework.exceptions import ParseError, PermissionDenied
 
-from apps.payments.models import Payment
+from apps.payments.models import Payment, PaymentStatus
 from apps.payments.serializers import PaymentSerializer
 
 
@@ -12,8 +12,14 @@ class PaymentCreateView(generics.CreateAPIView):
 
     def perform_create(self, serializer):
         order = serializer.validated_data["order"]
+
         if order.user != self.request.user:
             raise PermissionDenied("본인 주문에 대해서만 결제할 수 있습니다.")
+
+        # ✅ 이미 성공한 결제 내역이 있는지 확인
+        if order.payments.filter(status=PaymentStatus.SUCCESS.value).exists():
+            raise ParseError("이미 결제가 완료된 주문입니다.")
+
         serializer.save()
 
 
