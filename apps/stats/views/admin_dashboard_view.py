@@ -1,12 +1,13 @@
 # apps/stats/views.py
 from datetime import datetime
+
 from rest_framework import status
 from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 
-from apps.stats.serializers import DashboardSerializer
 from apps.stats import services
+from apps.stats.serializers import DashboardSerializer
 
 
 class DashboardAPIView(GenericAPIView):
