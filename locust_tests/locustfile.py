@@ -1,5 +1,3 @@
-import random
-
 from locust import HttpUser, between, task
 
 
@@ -54,11 +52,7 @@ class ApiUser(HttpUser):
     @task(1)
     def create_inquiry(self):
         """문의 작성"""
-        payload = {
-            "category": "product",
-            "title": "테스트 문의",
-            "content": "테스트 내용입니다."
-        }
+        payload = {"category": "product", "title": "테스트 문의", "content": "테스트 내용입니다."}
         with self.client.post("/api/support/inquiries/", json=payload, catch_response=True) as response:
             if response.status_code in [200, 201, 401]:
                 response.success()
