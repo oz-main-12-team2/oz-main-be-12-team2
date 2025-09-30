@@ -11,7 +11,7 @@ from apps.products.models import Product
 
 class Order(TimestampModel):
     STATUS_CHOICES = [
-        ("결제 완료", "결제 완료"),
+        ("주문 완료", "주문 완료"),
         ("배송중", "배송중"),
         ("배송완료", "배송완료"),
     ]
@@ -22,7 +22,7 @@ class Order(TimestampModel):
     recipient_name = models.CharField(max_length=10, blank=False)
     recipient_phone = models.CharField(max_length=20, blank=False)
     recipient_address = models.TextField(blank=False)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="결제 완료")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="주문 완료")
 
     def clean(self):
         if not (2 <= len(self.recipient_name) <= 10):
