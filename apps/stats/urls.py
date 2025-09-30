@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .views.admin_dashboard_views import DashboardAPIView
+from .views.admin_dashboard_view import DashboardAPIView
 from .views.product_ranking_view import ProductRankingAPIView
 
 urlpatterns = [
