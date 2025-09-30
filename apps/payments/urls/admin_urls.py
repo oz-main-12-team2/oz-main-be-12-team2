@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .admin_views import AdminPaymentDetailView, AdminPaymentListView
+from apps.payments.views.admin_views import AdminPaymentDetailView, AdminPaymentListView
 
 urlpatterns = [
     path("", AdminPaymentListView.as_view(), name="admin-payment-list"),

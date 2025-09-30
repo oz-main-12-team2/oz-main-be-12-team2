@@ -15,6 +15,10 @@ oz-main-be-12-team2/
 │   │   ├── test_carts.py         # 장바구니 테스트
 │   │   ├── urls.py               # URL 라우팅
 │   │   └── views.py              # API 뷰
+│   ├── core                      # 공통 유틸리티 앱
+│   │   ├── __init__.py           
+│   │   ├── models.py             # 공통 모델
+│   │   └── pagination.py         # 공통 페이지네이션
 │   ├── orders                    # 주문 관리
 │   │   ├── __init__.py
 │   │   ├── admin.py              # 관리자 주문 모델
@@ -27,15 +31,20 @@ oz-main-be-12-team2/
 │   │   ├── urls.py
 │   │   └── views.py
 │   ├── payments                  # 결제 처리
+│   │   ├── urls/
+│   │   │   ├── __init__.py
+│   │   │   ├── admin_urls.py     # 관리자 기능 URL
+│   │   │   └── user_urls.py      # 사용자 기능 URL 
+│   │   ├── views/
+│   │   │   ├── __init__.py
+│   │   │   ├── admin_views.py     # 관리자 기능
+│   │   │   └── user_views.py      # 사용자 기능 
 │   │   ├── __init__.py
-│   │   ├── admin_urls.py
-│   │   ├── admin_views.py
 │   │   ├── apps.py
+│   │   ├── filters.py            # 결제내역 조회 필터
 │   │   ├── models.py             # 결제 모델
 │   │   ├── serializers.py
-│   │   ├── test_payments.py      # 결제 테스트
-│   │   ├── urls.py
-│   │   └── views.py
+│   │   └── test_payments.py      # 결제 테스트
 │   ├── products                  # 상품 관리
 │   │   ├── __init__.py
 │   │   ├── admin.py
@@ -50,12 +59,15 @@ oz-main-be-12-team2/
 │   │   ├── urls.py
 │   │   └── views.py
 │   ├── stats                     # 통계 기능
+│   │   ├── views/
+│   │   │   ├── __init__.py
+│   │   │   ├── admin_dashboard_view.py     # 관리자 페이지 대시보드
+│   │   │   └── product_ranking_view.py     # 상품 랭킹 
 │   │   ├── __init__.py
 │   │   ├── apps.py
 │   │   ├── serializers.py
 │   │   ├── test_stats.py         # 통계 테스트
-│   │   ├── urls.py
-│   │   └── views.py
+│   │   └── urls.py
 │   ├── support                   # 고객 지원
 │   │   ├── __init__.py
 │   │   ├── admin_urls.py
@@ -67,24 +79,20 @@ oz-main-be-12-team2/
 │   │   ├── tests                 # 지원 테스트 모음
 │   │   ├── urls.py
 │   │   └── views.py
-│   ├── users                     # 사용자 관리
-│   │   ├── __init__.py
-│   │   ├── admin.py
-│   │   ├── admin_urls.py
-│   │   ├── admin_views.py
-│   │   ├── apps.py
-│   │   ├── middleware.py         # 인증 미들웨어
-│   │   ├── models.py             # 사용자 모델
-│   │   ├── serializers.py
-│   │   ├── social_utils.py       # 소셜 로그인 유틸
-│   │   ├── social_views.py       # 소셜 로그인 뷰
-│   │   ├── tests                 # 사용자 테스트 모음
-│   │   ├── urls.py
-│   │   └── views.py
-│   └── utils                     # 공통 유틸리티
-│       ├── models.py             # 공통 모델
-│       └── pagination.py         # 페이지네이션
-├── check_email.py                # 이메일 확인 스크립트
+│   └── users                     # 사용자 관리
+│       ├── __init__.py
+│       ├── admin.py
+│       ├── admin_urls.py
+│       ├── admin_views.py
+│       ├── apps.py
+│       ├── middleware.py         # 인증 미들웨어
+│       ├── models.py             # 사용자 모델
+│       ├── serializers.py
+│       ├── social_utils.py       # 소셜 로그인 유틸
+│       ├── social_views.py       # 소셜 로그인 뷰
+│       ├── tests                 # 사용자 테스트 모음
+│       ├── urls.py
+│       └── views.py
 ├── config                        # Django 설정
 │   ├── __init__.py
 │   ├── asgi.py                   # ASGI 설정
@@ -93,16 +101,20 @@ oz-main-be-12-team2/
 │   └── wsgi.py                   # WSGI 설정
 ├── locust_tests                  # 부하 테스트
 │   └── locustfile.py             # Locust 시나리오
-├── Dockerfile                    # Docker 컨테이너 설정
+├── resources            
+│   ├── nginx.conf                # nginx 설정
+│   └── scripts/
+│       ├── run.sh                # 서버 실행 스크립트
+│       └── test.sh               # 테스트 실행 스크립트
+├── .dockerignore                 
+├── .env.example                  # 환경변수 예시
+├── .gitignore                  
 ├── docker-compose.yml            # Docker Compose 설정
-├── README.md                     # 프로젝트 문서
-├── main.py                       # 애플리케이션 진입점
+├── Dockerfile                    # Docker 컨테이너 설정
 ├── manage.py                     # Django 관리 명령어
 ├── pyproject.toml                # 프로젝트 메타데이터
-├── requirements.txt              # Python 의존성
-└── scripts                       # 실행 스크립트
-    ├── run.sh                    # 서버 실행
-    └── test.sh                   # 테스트 실행
+├── README.md                     # 프로젝트 문서
+└── uv.lock                       # uv 의존성
 ```
 
 ## 성능 테스트

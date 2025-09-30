@@ -1,7 +1,6 @@
 from decimal import Decimal
 
 from django.contrib.auth import get_user_model
-from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
 from rest_framework import status
@@ -25,9 +24,6 @@ class OrdersAPITestCase(TestCase):
         # 장바구니 가져오기
         cls.cart = cls.user.cart
 
-        # 테스트용 이미지 생성
-        test_image = SimpleUploadedFile("test_image.jpg", b"fake_image_content", content_type="image/jpeg")
-
         # 상품 생성
         cls.product = Product.objects.create(
             name="테스트 상품",
@@ -37,7 +33,6 @@ class OrdersAPITestCase(TestCase):
             price=Decimal("10000.00"),
             stock=10,
             category="소설",
-            image=test_image,
         )
 
     def setUp(self):
