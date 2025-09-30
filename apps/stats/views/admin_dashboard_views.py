@@ -8,7 +8,7 @@ from rest_framework.response import Response
 
 from apps.orders.models import Order, OrderItem
 from apps.products.models import Product
-from apps.stats.serializers import DashboardSerializer, ProductRankingResponseSerializer
+from apps.stats.serializers import DashboardSerializer
 from apps.users.models import User
 
 
@@ -77,40 +77,4 @@ class DashboardAPIView(GenericAPIView):
         }
 
         serializer = self.get_serializer(data)  # ✅ GenericAPIView 제공
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-
-class ProductRankingAPIView(GenericAPIView):
-    """
-    관리자 상품 판매 랭킹 (일간 판매량 기준 Top 10)
-    GET /api/admin/stats/rankings/products
-    """
-
-    permission_classes = [IsAdminUser]
-    serializer_class = ProductRankingResponseSerializer  # ✅ 전체 응답 구조를 반영
-
-    def get(self, request, *args, **kwargs):
-        today = datetime.today().date()
-
-        qs = (
-            OrderItem.objects.filter(order__created_at__date=today)
-            .values("product_id", "product__name")
-            .annotate(quantity=Sum("quantity"), revenue=Sum("total_price"))
-            .order_by("-quantity")[:10]
-        )
-
-        rankings = [
-            {
-                "rank": idx + 1,
-                "product_id": item["product_id"],
-                "name": item["product__name"],
-                "quantity": item["quantity"],
-                "revenue": item["revenue"],
-            }
-            for idx, item in enumerate(qs)
-        ]
-
-        data = {"period": str(today), "rankings": rankings}
-
-        serializer = self.get_serializer(data)  # ✅ ResponseSerializer 사용
         return Response(serializer.data, status=status.HTTP_200_OK)
