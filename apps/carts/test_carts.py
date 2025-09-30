@@ -87,7 +87,7 @@ class CartAPITest(TestCase):
 
         url = reverse("cart-update", args=[self.product.id])
         response = self.client.delete(url)
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertFalse(CartProduct.objects.filter(product=self.product, cart=cart).exists())
 
     def test_clear_cart(self):
@@ -97,5 +97,5 @@ class CartAPITest(TestCase):
 
         url = reverse("cart-clear")
         response = self.client.delete(url)
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(cart.items.count(), 0)

@@ -82,10 +82,7 @@ class CartProductUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
     def delete(self, request, *args, **kwargs):
         instance = self.get_object()
         self.perform_destroy(instance)
-        return Response(
-            {"detail": "상품이 장바구니에서 삭제되었습니다."},
-            status=status.HTTP_200_OK
-        )
+        return Response({"detail": "상품이 장바구니에서 삭제되었습니다."}, status=status.HTTP_200_OK)
 
     # 404 에러 메세지 커스텀
     def get_object(self):
