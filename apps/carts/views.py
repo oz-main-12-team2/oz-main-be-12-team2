@@ -1,3 +1,4 @@
+from django.db.models import Prefetch
 from rest_framework import generics, permissions, serializers, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -10,10 +11,13 @@ from .serializers import CartProductSerializer, CartProductUpdateSerializer, Car
 class CartListView(generics.ListAPIView):
     serializer_class = CartSerializer
     permission_classes = [permissions.IsAuthenticated]
-    pagination_class = None  # ✅ 페이지네이션 제거
+    pagination_class = None  # 페이지네이션 제거
+    filter_backends = []     # 정렬 제거
 
     def get_queryset(self):
-        return Cart.objects.filter(user=self.request.user)
+        return Cart.objects.filter(user=self.request.user).prefetch_related(
+            Prefetch("items", queryset=CartProduct.objects.order_by("-id"))
+        )
 
 
 # ✅ 장바구니 상품 추가
