@@ -2,8 +2,8 @@ from rest_framework import generics, permissions
 
 from apps.core.pagination import CustomPagination
 
-from .models import Payment
-from .serializers import PaymentSerializer
+from apps.payments.models import Payment
+from apps.payments.serializers import PaymentSerializer
 
 
 # ✅ 전체 결제 내역 조회 (관리자 전용)

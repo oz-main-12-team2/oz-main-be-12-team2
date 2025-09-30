@@ -31,15 +31,19 @@ oz-main-be-12-team2/
 │   │   ├── urls.py
 │   │   └── views.py
 │   ├── payments                  # 결제 처리
+│   │   ├── urls/
+│   │   │   ├── __init__.py
+│   │   │   ├── admin_urls.py     # 관리자 기능 URL
+│   │   │   └── user_urls.py      # 사용자 기능 URL 
+│   │   ├── views/
+│   │   │   ├── __init__.py
+│   │   │   ├── admin_views.py     # 관리자 기능
+│   │   │   └── user_views.py      # 사용자 기능 
 │   │   ├── __init__.py
-│   │   ├── admin_urls.py
-│   │   ├── admin_views.py
 │   │   ├── apps.py
 │   │   ├── models.py             # 결제 모델
 │   │   ├── serializers.py
-│   │   ├── test_payments.py      # 결제 테스트
-│   │   ├── urls.py
-│   │   └── views.py
+│   │   └── test_payments.py      # 결제 테스트
 │   ├── products                  # 상품 관리
 │   │   ├── __init__.py
 │   │   ├── admin.py

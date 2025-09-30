@@ -1,8 +1,8 @@
 from rest_framework import generics, permissions
 from rest_framework.exceptions import PermissionDenied
 
-from .models import Payment
-from .serializers import PaymentSerializer
+from apps.payments.models import Payment
+from apps.payments.serializers import PaymentSerializer
 
 
 # ✅ 결제 내역 생성
