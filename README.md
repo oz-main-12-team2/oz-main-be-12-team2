@@ -107,7 +107,8 @@ oz-main-be-12-team2/
 
 ## 성능 테스트
 Locust를 사용한 부하 테스트 결과, 100명 동시 접속 시 평균 응답시간 11ms, RPS 50, 실패율 0%로 안정적인 성능을 확인했습니다. (Docker 환경)
-![image](https://github.com/oz-main-12-team2/oz-main-be-12-team2/issues/138#issue-3467735356)
+
+![image](https://github.com/user-attachments/assets/0f06561e-7467-446d-8272-c2ee2e87c501)
 
 ### commit 전 테스트 스크립트 수행
 ```bash
