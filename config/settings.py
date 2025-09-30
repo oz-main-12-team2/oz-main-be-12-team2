@@ -1,5 +1,6 @@
 import mimetypes
 import os
+import sys
 from datetime import timedelta
 from pathlib import Path
 
@@ -244,36 +245,5 @@ else:
     AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com"
     MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/"
 
-
-# if DEBUG:
-#     STATIC_URL = "/static/"
-#     STATIC_ROOT = BASE_DIR / "staticfiles"
-#
-#     MEDIA_URL = "/media/"
-#     MEDIA_ROOT = BASE_DIR / "media"
-#
-#     STORAGES = {
-#         "default": {
-#             "BACKEND": "django.core.files.storage.FileSystemStorage",
-#         },
-#         "staticfiles": {
-#             "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
-#         },
-#     }
-#
-# else:
-#     AWS_STORAGE_BUCKET_NAME = "oz-main-be-12-team2"
-#     AWS_S3_REGION_NAME = "ap-northeast-2"
-#     AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com"
-#
-#     STATIC_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/static/"
-#     MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/media/"
-#
-#     STORAGES = {
-#         "default": {
-#             "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
-#         },
-#         "staticfiles": {
-#             "BACKEND": "storages.backends.s3boto3.S3StaticStorage",
-#         },
-#     }
+# pytest나 manage.py test 실행 시 True
+TESTING = "test" in sys.argv

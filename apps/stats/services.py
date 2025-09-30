@@ -1,12 +1,16 @@
 # apps/stats/services.py
 from concurrent.futures import ThreadPoolExecutor
 from datetime import timedelta
+
+from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.db.models import Sum
 from django.db.models.functions import TruncDate
 
 from apps.orders.models import Order, OrderItem
 from apps.products.models import Product
-from apps.users.models import User
+
+User = get_user_model()
 
 
 def get_total_users():
@@ -75,11 +79,13 @@ def get_trend(base_date, days=30):
     for i in range(days):
         d = base_date - timedelta(days=days - 1 - i)  # 과거 → 오늘 순서
         record = trend_map.get(d, {"quantity": 0, "revenue": 0})
-        result.append({
-            "date": d,
-            "quantity": record["quantity"] or 0,
-            "revenue": record["revenue"] or 0,
-        })
+        result.append(
+            {
+                "date": d,
+                "quantity": record["quantity"] or 0,
+                "revenue": record["revenue"] or 0,
+            }
+        )
 
     return result
 
@@ -88,6 +94,20 @@ def get_dashboard_data(base_date):
     """
     대시보드 전체 통계 (ThreadPoolExecutor로 병렬 처리)
     """
+
+    if getattr(settings, "TESTING", False):
+        # 순차 실행 (테스트 환경)
+        return {
+            "total_users": get_total_users(),
+            "total_revenue": get_total_revenue(),
+            "total_stock": get_total_stock(),
+            "today_orders": get_today_orders(base_date),
+            "daily_sales": get_daily_sales(base_date),
+            "weekly_sales": get_weekly_sales(base_date),
+            "monthly_sales": get_monthly_sales(base_date),
+            "trend": get_trend(base_date),
+        }
+
     with ThreadPoolExecutor() as executor:
         futures = {
             "total_users": executor.submit(get_total_users),

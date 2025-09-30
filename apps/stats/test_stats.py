@@ -1,12 +1,14 @@
 from datetime import datetime
 
+from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
 from rest_framework.test import APIClient
 
 from apps.orders.models import Order, OrderItem
 from apps.products.models import Product
-from apps.users.models import User
+
+User = get_user_model()
 
 
 class BaseStatsTestCase(TestCase):
