@@ -41,6 +41,7 @@ oz-main-be-12-team2/
 │   │   │   └── user_views.py      # 사용자 기능 
 │   │   ├── __init__.py
 │   │   ├── apps.py
+│   │   ├── filters.py            # 결제내역 조회 필터
 │   │   ├── models.py             # 결제 모델
 │   │   ├── serializers.py
 │   │   └── test_payments.py      # 결제 테스트

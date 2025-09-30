@@ -1,6 +1,10 @@
+from django_filters.rest_framework import DjangoFilterBackend
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import generics, permissions
 from rest_framework.exceptions import ParseError, PermissionDenied
 
+from apps.payments.filters import PaymentFilter
 from apps.payments.models import Payment, PaymentStatus
 from apps.payments.serializers import PaymentSerializer
 
@@ -27,6 +31,38 @@ class PaymentCreateView(generics.CreateAPIView):
 class UserPaymentListView(generics.ListAPIView):
     serializer_class = PaymentSerializer
     permission_classes = [permissions.IsAuthenticated]
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = PaymentFilter
+
+    # ✅ Swagger 수동 파라미터 등록
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(
+                "status",
+                openapi.IN_QUERY,
+                description="결제 상태 (대기, 성공, 실패, 취소)",
+                type=openapi.TYPE_STRING,
+                enum=[choice[0] for choice in Payment._meta.get_field("status").choices],
+            ),
+            openapi.Parameter(
+                "created_at__gte",
+                openapi.IN_QUERY,
+                description="시작일 (YYYY-MM-DD)",
+                type=openapi.TYPE_STRING,
+                format=openapi.FORMAT_DATE,
+            ),
+            openapi.Parameter(
+                "created_at__lte",
+                openapi.IN_QUERY,
+                description="종료일 (YYYY-MM-DD)",
+                type=openapi.TYPE_STRING,
+                format=openapi.FORMAT_DATE,
+            ),
+        ]
+    )
+    def get(self, request, *args, **kwargs):
+        """결제 내역을 상태와 기간으로 필터링"""
+        return super().get(request, *args, **kwargs)
 
     def get_queryset(self):
         return Payment.objects.filter(order__user=self.request.user).order_by("-created_at")
