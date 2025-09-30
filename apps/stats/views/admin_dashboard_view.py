@@ -1,4 +1,3 @@
-# apps/stats/views.py
 from datetime import datetime
 
 from rest_framework import status
