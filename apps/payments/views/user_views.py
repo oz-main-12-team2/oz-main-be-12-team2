@@ -96,6 +96,15 @@ class UserPaymentCancelView(APIView):
             return Response({"detail": "결제 내역을 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
 
         result = cancel_payment(payment.transaction_id)
+
+        # ✅ 실패한 결제 취소
+        if result["status"] == PaymentStatus.FAIL.value and "취소할 수 없습니다" in result["message"]:
+            return Response(result, status=status.HTTP_400_BAD_REQUEST)
+
+        # ✅ 이미 취소된 결제
+        if result["status"] == PaymentStatus.CANCEL.value and "이미 취소된" in result["message"]:
+            return Response(result, status=status.HTTP_400_BAD_REQUEST)
+
         payment.status = result["status"]
         payment.save()
 

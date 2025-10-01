@@ -2,7 +2,7 @@ import random
 import uuid
 from typing import Optional
 
-from apps.payments.models import PaymentStatus  # ✅ DB enum 사용
+from apps.payments.models import Payment, PaymentStatus  # ✅ DB enum 사용
 
 # 결제 상태 저장소 (실제 PG 대신 메모리에 저장)
 _FAKE_PAYMENT_DB = {}  # {tx_id: {"amount": int, "method": str, "status": PaymentStatus }}
@@ -14,12 +14,6 @@ def process_payment(amount: int, method: str) -> dict:
     - 요청 시 상태: PENDING
     - 현재는 즉시 SUCCESS/FAIL로 확정되지만, 실 PG 연동 시 웹훅에서 상태 변경
     """
-    if amount <= 0:
-        return {
-            "status": PaymentStatus.FAIL.value,
-            "transaction_id": None,
-            "message": "결제 금액 오류",
-        }
 
     tx_id = f"tx_{uuid.uuid4().hex[:12]}"
 
@@ -55,12 +49,19 @@ def cancel_payment(transaction_id: str) -> dict:
     - ❌ CANCEL: 이미 취소됨 → 재취소 불가능
     """
     payment = _FAKE_PAYMENT_DB.get(transaction_id)
+
     if not payment:
-        return {
-            "status": PaymentStatus.FAIL.value,
-            "transaction_id": transaction_id,
-            "message": "결제 내역을 찾을 수 없습니다.",
-        }
+        # ✅ DB에서 복구
+        db_payment = Payment.objects.filter(transaction_id=transaction_id).first()
+        if db_payment:
+            _FAKE_PAYMENT_DB[transaction_id] = {
+                "amount": db_payment.total_price,
+                "method": db_payment.method,
+                "status": db_payment.status,
+            }
+            payment = _FAKE_PAYMENT_DB[transaction_id]
+        else:
+            return {"status": PaymentStatus.FAIL.value, "message": "결제 내역 없음"}
 
     current_status = payment["status"]
 
