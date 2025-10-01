@@ -15,8 +15,8 @@ class PaymentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Payment
-        fields = ["id", "order_id", "method", "total_price", "status", "created_at"]
-        read_only_fields = ["id", "total_price", "created_at"]
+        fields = ["id", "order_id", "method", "total_price", "status", "transaction_id", "created_at"]
+        read_only_fields = ["id", "total_price", "status", "transaction_id", "created_at"]
 
     def create(self, validated_data):
         order = validated_data["order"]
@@ -41,10 +41,11 @@ class AdminPaymentSerializer(serializers.ModelSerializer):
             "method",
             "total_price",
             "status",
+            "transaction_id",
             "created_at",
             "user",
         ]
-        read_only_fields = ["id", "total_price", "created_at"]
+        read_only_fields = ["id", "total_price", "status", "transaction_id", "created_at"]
 
     def get_user(self, obj):
         """주문과 연결된 유저 정보를 반환"""
