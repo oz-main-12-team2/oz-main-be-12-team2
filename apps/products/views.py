@@ -5,7 +5,8 @@ from rest_framework import viewsets
 from rest_framework.filters import OrderingFilter
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
-from ..utils.pagination import CustomPagination
+from apps.core.pagination import CustomPagination
+
 from .filters import ProductFilter
 from .models import Product
 from .serializers import ProductSerializer
@@ -21,8 +22,8 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
     filterset_class = ProductFilter
 
     # 정렬 허용 필드
-    ordering_fields = ["name", "price", "author", "category"]
-    ordering = ["name"]  # 기본 정렬 (이름 순)
+    ordering_fields = ["id", "name", "price", "author", "category"]
+    ordering = ["id"]  # 기본 정렬 (아이디 순)
 
     pagination_class = CustomPagination
 

@@ -31,3 +31,15 @@ class UserEmailTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(mail.outbox), 1)
         self.assertIn("비밀번호 재설정", mail.outbox[0].subject)
+
+    def test_password_reset_social_user_fails(self):
+        """소셜 로그인 사용자는 비밀번호 재설정 불가"""
+        user = User.objects.create_user(
+            email="social@example.com", name="SocialUser", password="Pass123!", is_social=True
+        )
+
+        response = self.client.post(reverse("password_reset_request"), {"email": user.email})
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("소셜 로그인 사용자는 비밀번호 재설정을 할 수 없습니다.", response.data["error"])
+        self.assertEqual(len(mail.outbox), 0)

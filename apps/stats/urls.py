@@ -1,8 +1,9 @@
 from django.urls import path
 
-from .views import DashboardAPIView, ProductRankingAPIView
+from .views.admin_dashboard_view import DashboardAPIView
+from .views.product_ranking_view import ProductRankingAPIView
 
 urlpatterns = [
-    path("dashboard/", DashboardAPIView.as_view(), name="admin-dashboard"),
-    path("rankings/", ProductRankingAPIView.as_view(), name="product-ranking"),
+    path("admin/stats/dashboard/", DashboardAPIView.as_view(), name="admin-dashboard"),
+    path("stats/rankings/", ProductRankingAPIView.as_view(), name="product-ranking"),
 ]

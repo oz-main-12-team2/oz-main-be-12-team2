@@ -1,5 +1,6 @@
 import mimetypes
 import os
+import sys
 from datetime import timedelta
 from pathlib import Path
 
@@ -123,7 +124,7 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
-LANGUAGE_CODE = "en-us"
+LANGUAGE_CODE = "ko-kr"
 TIME_ZONE = "UTC"
 USE_I18N = True
 USE_TZ = True
@@ -212,43 +213,8 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 
 
-# if DEBUG:
-#     # 개발 환경 → 로컬 저장
-#     MEDIA_URL = "/media/"
-#     MEDIA_ROOT = BASE_DIR / "media"
-#
-#     STORAGES = {
-#         "default": {
-#             "BACKEND": "django.core.files.storage.FileSystemStorage",
-#         },
-#         "staticfiles": {
-#             "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
-#         },
-#     }
-# else:
-#     # S3 버킷 정보
-#     AWS_STORAGE_BUCKET_NAME = "oz-main-be-12-team2"  # 버킷 이름
-#     AWS_S3_REGION_NAME = "ap-northeast-2"  # 서울 리전
-#
-#     # 기본 파일 저장소를 S3로 지정
-#     STORAGES = {
-#         "default": {
-#             "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
-#         },
-#         "staticfiles": {
-#             "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
-#         },
-#     }
-#
-#     # URL (이미지 접근용)
-#     AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com"
-#     MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/"
-
-
 if DEBUG:
-    STATIC_URL = "/static/"
-    STATIC_ROOT = BASE_DIR / "staticfiles"
-
+    # 개발 환경 → 로컬 저장
     MEDIA_URL = "/media/"
     MEDIA_ROOT = BASE_DIR / "media"
 
@@ -260,20 +226,24 @@ if DEBUG:
             "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
         },
     }
-
 else:
-    AWS_STORAGE_BUCKET_NAME = "oz-main-be-12-team2"
-    AWS_S3_REGION_NAME = "ap-northeast-2"
-    AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com"
+    # S3 버킷 정보
+    AWS_STORAGE_BUCKET_NAME = "oz-main-be-12-team2"  # 버킷 이름
+    AWS_S3_REGION_NAME = "ap-northeast-2"  # 서울 리전
 
-    STATIC_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/static/"
-    MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/media/"
-
+    # 기본 파일 저장소를 S3로 지정
     STORAGES = {
         "default": {
             "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
         },
         "staticfiles": {
-            "BACKEND": "storages.backends.s3boto3.S3StaticStorage",
+            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
         },
     }
+
+    # URL (이미지 접근용)
+    AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com"
+    MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/"
+
+# pytest나 manage.py test 실행 시 True
+TESTING = "test" in sys.argv

@@ -2,11 +2,7 @@ from locust import HttpUser, between, task
 
 
 class ApiUser(HttpUser):
-    wait_time = between(1, 3)  # 요청 간 1-3초 대기
-
-    def on_start(self):
-        """테스트 시작 시 한 번 실행"""
-        print("API 테스트 시작")
+    wait_time = between(1, 3)
 
     @task(4)
     def view_products_list(self):
@@ -49,6 +45,16 @@ class ApiUser(HttpUser):
         """문의 목록 조회"""
         with self.client.get("/api/support/inquiries/", catch_response=True) as response:
             if response.status_code in [200, 401]:
+                response.success()
+            else:
+                response.failure(f"응답 코드: {response.status_code}")
+
+    @task(1)
+    def create_inquiry(self):
+        """문의 작성"""
+        payload = {"category": "product", "title": "테스트 문의", "content": "테스트 내용입니다."}
+        with self.client.post("/api/support/inquiries/", json=payload, catch_response=True) as response:
+            if response.status_code in [200, 201, 401]:
                 response.success()
             else:
                 response.failure(f"응답 코드: {response.status_code}")
