@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from django.db.models import Sum
+from django.db.models import F, Sum
 from rest_framework import status
 from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import AllowAny
@@ -26,8 +26,17 @@ class ProductRankingAPIView(GenericAPIView):
 
         qs = (
             OrderItem.objects.filter(order__created_at__date=today)
-            .values("product_id", "product__name")
-            .annotate(quantity=Sum("quantity"), revenue=Sum("total_price"))
+            .values("product_id")  # ✅ product 기준으로 그룹화
+            .annotate(
+                name=F("product__name"),
+                category=F("product__category"),
+                author=F("product__author"),
+                description=F("product__description"),
+                publisher=F("product__publisher"),
+                image=F("product__image"),
+                quantity=Sum("quantity"),
+                revenue=Sum("total_price"),
+            )
             .order_by("-quantity")[:10]
         )
 
@@ -35,7 +44,12 @@ class ProductRankingAPIView(GenericAPIView):
             {
                 "rank": idx + 1,
                 "product_id": item["product_id"],
-                "name": item["product__name"],
+                "name": item["name"],
+                "category": item["category"],
+                "author": item["author"],
+                "description": item["description"],
+                "publisher": item["publisher"],
+                "image": item["image"],
                 "quantity": item["quantity"],
                 "revenue": item["revenue"],
             }

@@ -29,6 +29,11 @@ class ProductRankingSerializer(serializers.Serializer):
     rank = serializers.IntegerField()
     product_id = serializers.IntegerField()
     name = serializers.CharField()
+    category = serializers.CharField()
+    author = serializers.CharField(allow_null=True)
+    description = serializers.CharField(allow_null=True)
+    publisher = serializers.CharField(allow_null=True)
+    image = serializers.URLField(allow_null=True)
     quantity = serializers.IntegerField()
     revenue = serializers.DecimalField(max_digits=12, decimal_places=2)
 
