@@ -1,10 +1,13 @@
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import generics, permissions
+from rest_framework import generics, permissions, status
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from apps.core.pagination import CustomPagination
 from apps.payments.filters import PaymentFilter
+from apps.payments.mock_payment.payment import cancel_payment
 from apps.payments.models import Payment
 from apps.payments.serializers import AdminPaymentSerializer
 
@@ -55,3 +58,18 @@ class AdminPaymentDetailView(generics.RetrieveAPIView):
     queryset = Payment.objects.all()
     serializer_class = AdminPaymentSerializer
     permission_classes = [permissions.IsAdminUser]
+
+
+class AdminPaymentCancelView(APIView):
+    permission_classes = [permissions.IsAdminUser]
+
+    def post(self, request, pk):
+        payment = Payment.objects.filter(pk=pk).first()
+        if not payment:
+            return Response({"detail": "결제 내역을 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
+
+        result = cancel_payment(payment.transaction_id)
+        payment.status = result["status"]
+        payment.save()
+
+        return Response(result, status=status.HTTP_200_OK)

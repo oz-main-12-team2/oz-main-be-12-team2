@@ -1,10 +1,13 @@
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import generics, permissions
+from rest_framework import generics, permissions, status
 from rest_framework.exceptions import ParseError, PermissionDenied
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from apps.payments.filters import PaymentFilter
+from apps.payments.mock_payment.payment import cancel_payment, process_payment
 from apps.payments.models import Payment, PaymentStatus
 from apps.payments.serializers import PaymentSerializer
 
@@ -24,7 +27,13 @@ class PaymentCreateView(generics.CreateAPIView):
         if order.payments.filter(status=PaymentStatus.SUCCESS.value).exists():
             raise ParseError("이미 결제가 완료된 주문입니다.")
 
-        serializer.save()
+        # ✅ 결제 요청 (mock_payment)
+        result = process_payment(order.total_price, serializer.validated_data["method"])
+
+        serializer.save(
+            status=result["status"],
+            transaction_id=result["transaction_id"],
+        )
 
 
 # ✅ 본인 결제 내역 조회 (리스트)
@@ -75,3 +84,19 @@ class UserPaymentDetailView(generics.RetrieveAPIView):
 
     def get_queryset(self):
         return Payment.objects.filter(order__user=self.request.user)
+
+
+# ✅ 결제 취소 (사용자)
+class UserPaymentCancelView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, pk):
+        payment = Payment.objects.filter(pk=pk, order__user=request.user).first()
+        if not payment:
+            return Response({"detail": "결제 내역을 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
+
+        result = cancel_payment(payment.transaction_id)
+        payment.status = result["status"]
+        payment.save()
+
+        return Response(result, status=status.HTTP_200_OK)
