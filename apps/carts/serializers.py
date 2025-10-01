@@ -23,7 +23,7 @@ class CartProductDetailSerializer(serializers.ModelSerializer):
     product_id = serializers.PrimaryKeyRelatedField(source="product", read_only=True)
     product_name = serializers.CharField(source="product.name", read_only=True)
     product_price = serializers.DecimalField(source="product.price", max_digits=10, decimal_places=2, read_only=True)
-    product_category = serializers.CharField(source="product.category.name", read_only=True)
+    product_category = serializers.CharField(source="product.category", read_only=True)
     product_publisher = serializers.CharField(source="product.publisher", read_only=True)
     product_author = serializers.CharField(source="product.author", read_only=True)
     product_stock = serializers.IntegerField(source="product.stock", read_only=True)
