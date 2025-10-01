@@ -1,4 +1,5 @@
 from django.shortcuts import get_object_or_404
+from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
@@ -19,6 +20,23 @@ class IsAdmin:
         return request.user.is_authenticated and request.user.is_admin
 
 
+@swagger_auto_schema(
+    method="get",
+    manual_parameters=[
+        openapi.Parameter(
+            "page",
+            openapi.IN_QUERY,
+            description="페이지 번호 (기본값: 1)",
+            type=openapi.TYPE_INTEGER,
+        ),
+        openapi.Parameter(
+            "page_size",
+            openapi.IN_QUERY,
+            description="한 페이지당 항목 수 (예: 10, 20, 50)",
+            type=openapi.TYPE_INTEGER,
+        ),
+    ],
+)
 @api_view(["GET", "OPTIONS"])
 @permission_classes([IsAuthenticated])
 def admin_user_list(request):
