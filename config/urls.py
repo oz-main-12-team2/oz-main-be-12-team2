@@ -32,12 +32,14 @@ urlpatterns = [
     path("api/", include("apps.stats.urls")),
     path("api/support/", include("apps.support.urls")),
     path("api/admin/support/", include("apps.support.admin_urls")),
-    # Swagger 문서 (TODO : 개발 완료 후 DEBUG 설정으로 이동)
-    path("swagger/", schema_view.with_ui("swagger", cache_timeout=0), name="schema-swagger-ui"),
-    path("redoc/", schema_view.with_ui("redoc", cache_timeout=0), name="schema-redoc"),
     # 인증
     path("accounts/", include("django.contrib.auth.urls")),
 ]
 
 if settings.DEBUG:
+    urlpatterns += [
+        # Swagger 문서
+        path("swagger/", schema_view.with_ui("swagger", cache_timeout=0), name="schema-swagger-ui"),
+        path("redoc/", schema_view.with_ui("redoc", cache_timeout=0), name="schema-redoc"),
+    ]
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

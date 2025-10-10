@@ -797,7 +797,6 @@ dependencies = [
     { name = "django-storages", extra = ["boto3"] },
     { name = "djangorestframework" },
     { name = "djangorestframework-simplejwt" },
-    { name = "drf-yasg" },
     { name = "google-genai" },
     { name = "gunicorn" },
     { name = "psycopg", extra = ["binary"] },
@@ -809,6 +808,7 @@ dependencies = [
 [package.dev-dependencies]
 dev = [
     { name = "coverage" },
+    { name = "drf-yasg" },
     { name = "locust" },
     { name = "mypy" },
     { name = "ruff" },
@@ -822,7 +822,6 @@ requires-dist = [
     { name = "django-storages", extras = ["boto3"], specifier = ">=1.14.6" },
     { name = "djangorestframework", specifier = ">=3.16.1" },
     { name = "djangorestframework-simplejwt", specifier = ">=5.5.1" },
-    { name = "drf-yasg", specifier = ">=1.21.10" },
     { name = "google-genai", specifier = ">=1.38.0" },
     { name = "gunicorn", specifier = ">=23.0.0" },
     { name = "psycopg", extras = ["binary"], specifier = ">=3.2.10" },
@@ -834,6 +833,7 @@ requires-dist = [
 [package.metadata.requires-dev]
 dev = [
     { name = "coverage", specifier = ">=7.10.6" },
+    { name = "drf-yasg", specifier = ">=1.21.10" },
     { name = "locust", specifier = ">=2.40.5" },
     { name = "mypy", specifier = ">=1.17.1" },
     { name = "ruff", specifier = ">=0.12.12" },
