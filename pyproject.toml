@@ -8,7 +8,6 @@ dependencies = [
     "django>=5.0,<6.0",
     "djangorestframework>=3.16.1",
     "djangorestframework-simplejwt>=5.5.1",
-    "drf-yasg>=1.21.10",    # TODO : 스웨거 페이지 개발용으로 빼면 의존성도 dev 그룹으로 분리
     "gunicorn>=23.0.0",
     "psycopg[binary]>=3.2.10",
     "python-dotenv>=1.1.1",
@@ -26,6 +25,7 @@ dev = [
     "mypy>=1.17.1",
     "coverage>=7.10.6",
     "locust>=2.40.5",
+    "drf-yasg>=1.21.10",
 ]
 
 [tool.ruff]
